@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- General -->
+    <string name="app_name">Bluefruit LE</string>
+    <string name="app_full_name">Bluefruit LE Connect</string>
+    <string name="action_info">Info</string>
+    <string name="action_settings">Settings</string>
+
+    <!-- Scan Activity -->
+    <string name="scan_scanbutton_scan">Scan for peripherals</string>
+    <string name="scan_scanbutton_scanning">Scanning</string>
+    <string name="scan_nodevicesfound">No peripherals found</string>
+    <string name="scan_device_localname">Local Name</string>
+    <string name="scan_device_rssi_notavailable">N/A</string>
+    <string name="scan_device_connect">Connect</string>
+    <string name="scan_device_uuid">UUID</string>
+    <string name="scan_device_services">Service UUIDs</string>
+    <string name="scan_device_txpower">TX Power Level</string>
+    <string name="scan_connectservice_title">Connect to</string>
+    <string name="scan_connecting">Connecting ...</string>
+    <string name="scan_tag_id">Id</string>
+
+    <string-array name="scan_connectservice_items">
+        <item>Info</item>
+        <item>UART</item>
+        <item>Pin I/O</item>
+        <item>Controller</item>
+    </string-array>
+
+    <!-- Scan Help Activity -->
+    <string name="title_activity_mainhelp">Help</string>
+
+    <!-- Info Activity -->
+    <string name="title_activity_info">Info</string>
+    <string name="info_item_service">Service</string>
+    <string name="info_help_title">Info List Help</string>
+
+    <!-- Uart Activity -->
+    <string name="title_activity_uart">UART</string>
+    <string name="uart_format_ascii">Ascii</string>
+    <string name="uart_format_hex">Hex</string>
+    <string name="uart_help_title">UART Help</string>
+
+    <!-- PinIO Activity -->
+    <string name="title_activity_pin_io">PinIO</string>
+    <string name="pinio_sectiontitle_digital">Digital</string>
+    <string name="pinio_sectiontitle_analog">Analog</string>
+    <string name="pinio_pintype_input">Input</string>
+    <string name="pinio_pintype_unknown">Unknown</string>
+    <string name="pinio_pintype_output">Output</string>
+    <string name="pinio_pintype_pwm">PWM</string>
+    <string name="pinio_pintype_analog">Analog</string>
+    <string name="pinio_pintype_low">Low</string>
+    <string name="pinio_pintype_high">High</string>
+    <string name="pinio_pinname_digital_format">Pin %s</string>
+    <string name="pinio_pinname_analog_format">Pin A%s</string>
+    <string name="pinio_tag_mode">Mode</string>
+    <string name="pinio_help_title">Pin I/O Help</string>
+
+    <!-- Controller Activity -->
+    <string name="title_activity_controller">Controller</string>
+    <string name="controller_sectiontitle_stream">Stream Sensor Data</string>
+    <string name="controller_sectiontitle_interface">Interface</string>
+    <string name="controller_help_title">Controller Help</string>
+
+    <string name="controller_interface_controlpad">Control Pad</string>
+
+    <string-array name="controller_stream_items">
+        <item>Quaternion</item>
+        <item>Accelerometer</item>
+        <item>Gyro</item>
+        <item>Magnetometer</item>
+        <item>Location</item>
+        <item>Magnetometer</item>
+    </string-array>
+
+    <!-- Pad Activity -->
+    <string name="title_activity_pad">Control Pad</string>
+
+
+
+    <!-- Debug -->
+    <string name="hello_world">Hello world!</string>
+
+</resources>

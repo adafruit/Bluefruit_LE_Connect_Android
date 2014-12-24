@@ -1,0 +1,129 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/default_background"
+
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.adafruit.bluefruit.le.connect.app.PadActivity">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:background="#929292"
+        android:onClick="onClickExit"
+        android:src="@drawable/pad_button_exit" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="20dp"
+            android:layout_marginTop="20dp"
+            android:layout_weight="1"
+            android:paddingLeft="10dp"
+            android:paddingRight="20dp">
+
+            <ImageButton
+                android:id="@+id/upArrowImageButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:background="#1994FA"
+                android:src="@drawable/pad_arrow_button_up"
+                android:tag="5" />
+
+            <ImageButton
+                android:id="@+id/leftArrowImageButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:background="#1994FA"
+                android:src="@drawable/pad_arrow_button_left"
+                android:tag="7" />
+
+            <ImageButton
+                android:id="@+id/rightArrowImageButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:background="#1994FA"
+                android:src="@drawable/pad_arrow_button_right"
+                android:tag="8" />
+
+
+            <ImageButton
+                android:id="@+id/bottomArrowImageButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:background="#1994FA"
+                android:src="@drawable/pad_arrow_button_down"
+                android:tag="6" />
+
+        </RelativeLayout>
+
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="50dp"
+            android:layout_marginTop="50dp"
+            android:layout_weight="1"
+            android:paddingLeft="70dp"
+            android:paddingRight="10dp">
+
+
+            <ImageButton
+                android:id="@+id/button1ImageButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#1994FA"
+                android:src="@drawable/pad_button_numbers_1"
+                android:tag="1" />
+
+
+            <ImageButton
+                android:id="@+id/button2ImageButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:background="#1994FA"
+                android:src="@drawable/pad_button_numbers_2"
+                android:tag="2" />
+
+            <ImageButton
+                android:id="@+id/button3ImageButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:background="#1994FA"
+                android:src="@drawable/pad_button_numbers_3"
+                android:tag="3" />
+
+
+            <ImageButton
+                android:id="@+id/button4ImageButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:background="#1994FA"
+                android:src="@drawable/pad_button_numbers_4"
+                android:tag="4" />
+        </RelativeLayout>
+    </LinearLayout>
+</RelativeLayout>

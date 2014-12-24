@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.adafruit.bluefruit.le.connect" >
+
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="true" />
+
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+
+        <meta-data android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
+        <activity
+            android:name=".app.MainActivity"
+            android:screenOrientation="portrait"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".app.MainHelpActivity"
+            android:screenOrientation="portrait"
+            android:label="@string/title_activity_mainhelp"
+            android:parentActivityName=".app.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.adafruit.bluefruit.le.connect.app.MainActivity" />
+        </activity>
+        <activity
+            android:name=".app.InfoActivity"
+            android:screenOrientation="portrait"
+            android:label="@string/title_activity_info"
+            android:parentActivityName=".app.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.adafruit.bluefruit.le.connect.app.MainActivity" />
+        </activity>
+        <activity
+            android:name=".app.CommonHelpActivity"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".app.InfoActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.adafruit.bluefruit.le.connect.app.InfoActivity" />
+        </activity>
+        <activity
+            android:name=".app.UartActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            android:label="@string/title_activity_uart" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.adafruit.bluefruit.le.connect.app.MainActivity" />
+        </activity>
+        <activity
+            android:name=".app.PinIOActivity"
+            android:label="@string/title_activity_pin_io" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.adafruit.bluefruit.le.connect.app.MainActivity" />
+        </activity>
+        <activity
+            android:name=".app.ControllerActivity"
+            android:screenOrientation="portrait"
+            android:label="@string/title_activity_controller"
+            android:parentActivityName=".app.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.adafruit.bluefruit.le.connect.app.MainActivity" />
+        </activity>
+        <activity
+            android:name=".app.PadActivity"
+            android:screenOrientation="landscape"
+            android:label="@string/title_activity_pad" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.adafruit.bluefruit.le.connect.app.MainActivity" />
+        </activity>
+    </application>
+
+</manifest>
