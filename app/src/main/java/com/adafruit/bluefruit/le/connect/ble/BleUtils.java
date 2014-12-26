@@ -156,7 +156,7 @@ public class BleUtils {
         public void cancel() {
             try {
                 mContext.unregisterReceiver(mBleAdapterStateReceiver);
-            } catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException ignored) {
 
             }
         }

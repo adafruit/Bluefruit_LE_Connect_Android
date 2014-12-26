@@ -377,14 +377,15 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
     // endregion
 
     private void setLastLocation(Location location) {
-        SensorData sensorData = mSensorData[kSensorType_Location];
+        if (location != null) {
+            SensorData sensorData = mSensorData[kSensorType_Location];
 
-        float[] values = new float[3];
-        values[0] = (float) location.getLatitude();
-        values[1] = (float) location.getLongitude();
-        values[2] = (float) location.getAltitude();
-        sensorData.values = values;
-
+            float[] values = new float[3];
+            values[0] = (float) location.getLatitude();
+            values[1] = (float) location.getLongitude();
+            values[2] = (float) location.getAltitude();
+            sensorData.values = values;
+        }
         mControllerListAdapter.notifyDataSetChanged();
     }
 

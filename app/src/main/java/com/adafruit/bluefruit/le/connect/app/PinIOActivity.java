@@ -598,6 +598,14 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
                 }
             });
 
+            // spacer visibility (spacers are shown if pwm or analog are visible)
+            final boolean isSpacer2Visible = isPwmVisible || !mIsDigital;
+            View spacer2View = convertView.findViewById(R.id.spacer2View);
+            spacer2View.setVisibility(isSpacer2Visible?View.VISIBLE:View.GONE);
+            final boolean isSpacer3Visible = isSpacer2Visible;
+            View spacer3View = convertView.findViewById(R.id.spacer3View);
+            spacer3View.setVisibility(isSpacer3Visible?View.VISIBLE:View.GONE);
+
             return convertView;
         }
 

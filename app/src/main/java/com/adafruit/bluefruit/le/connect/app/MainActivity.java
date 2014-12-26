@@ -9,7 +9,6 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.ParcelUuid;
 import android.os.SystemClock;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -20,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.adafruit.bluefruit.le.connect.R;
@@ -28,7 +28,6 @@ import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ble.BleServiceListener;
 import com.adafruit.bluefruit.le.connect.ble.BleUtils;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -45,8 +44,12 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     private ExpandableHeightExpandableListView mScannedDevicesListView;
     private ExpandableListAdapter mScannedDevicesAdapter;
     private Button mScanButton;
-    private TextView mConnectionStatusView;
+    private View mConnectionStatusLayout;
     private long mLastUpdateMillis;
+    private TextView mNoDevicesTextView;
+    private ScrollView mDevicesScrollView;
+
+    private AlertDialog mConnectingDialog;
 
     // Data
     private BleDevicesScanner mScanner;
@@ -64,7 +67,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
 
         // Init variables
         mIsScanPaused = true;     // so the scanning starts automatically
-        mScannedDevices = new ArrayList<BluetoothDeviceData>();
+        mScannedDevices = new ArrayList<>();
 
         mBleManager = BleManager.getInstance(this);
 
@@ -76,8 +79,11 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
 
         mScanButton = (Button) findViewById(R.id.scanButton);
 
-        mConnectionStatusView = (TextView) findViewById(R.id.connectionStatusTextView);
-        showConnectionStatus(false);
+        mConnectionStatusLayout = (View) findViewById(R.id.connectionStatusLayout);
+        //showConnectionStatus(false);
+        mNoDevicesTextView = (TextView) findViewById(R.id.nodevicesTextView);
+        mDevicesScrollView = (ScrollView) findViewById(R.id.devicesScrollView);
+        mDevicesScrollView.setVisibility(View.GONE);
     }
 
     @Override
@@ -132,11 +138,12 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     }
 
     private void showChooseDeviceServiceDialog(final BluetoothDevice device) {
+        // Prepare dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Connect to " + device.getName())
+        String title = String.format(getString(R.string.scan_connectto_dialog_title_format), device.getName());
+        builder.setTitle(title)
                 .setItems(R.array.scan_connectservice_items, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        Class<?> componentClass = null;
                         switch (which) {
                             case 0: { // Info
                                 mComponentToStartWhenConnected = InfoActivity.class;
@@ -157,18 +164,21 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                         }
 
                         if (mComponentToStartWhenConnected != null) {
-                            connect(device);
+                            connect(device);            // First connect to the device, and when connected go to selected activity
                         }
                     }
                 });
+
+        // Show dialog
         AlertDialog dialog = builder.create();
+        dialog.getWindow().setDimAmount(0.75f);
         dialog.show();
     }
 
 
     private void connect(BluetoothDevice device) {
-        boolean connecting = mBleManager.connect(device.getAddress());
-        if (connecting) {
+        boolean isConnecting = mBleManager.connect(device.getAddress());
+        if (isConnecting) {
             showConnectionStatus(true);
         }
     }
@@ -180,7 +190,24 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     }
 
     private void showConnectionStatus(boolean enable) {
-        mConnectionStatusView.setVisibility(enable ? View.VISIBLE : View.GONE);
+        if (enable) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(getString(R.string.scan_connecting))
+                    .setCancelable(false);
+
+            // Show dialog
+            mConnectingDialog = builder.create();
+            mConnectingDialog.getWindow().setDimAmount(0.75f);
+            mConnectingDialog.setCanceledOnTouchOutside(false);
+            mConnectingDialog.show();
+        }
+        else {
+            if (mConnectingDialog != null) {
+                mConnectingDialog.cancel();
+            }
+        }
+
+        //mConnectionStatusLayout.setVisibility(enable ? View.VISIBLE : View.GONE);
     }
 
     // region Actions
@@ -189,7 +216,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
         if (mScannedDevicesListView.isGroupExpanded(groupPosition)) {
             mScannedDevicesListView.collapseGroup(groupPosition);
         } else {
-            // Expand this, Collapse the rest
+            // Expand this, collapse the rest
             int len = mScannedDevicesAdapter.getGroupCount();
             for (int i = 0; i < len; i++) {
                 if (i != groupPosition) {
@@ -198,7 +225,6 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
             }
 
             mScannedDevicesListView.expandGroup(groupPosition, true);
-
         }
     }
 
@@ -248,6 +274,10 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                         // Add it to the mScannedDevice list
                         deviceData = new BluetoothDeviceData();
                         mScannedDevices.add(deviceData);
+
+                        // Show list and hide "no devices" label
+                        mNoDevicesTextView.setVisibility(View.GONE);
+                        mDevicesScrollView.setVisibility(View.VISIBLE);
                     } else {
                         deviceData = previouslyScannedDeviceData;
                     }
@@ -301,7 +331,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
 
         byte[] advertisedData = Arrays.copyOf(scanRecord, scanRecord.length);
         int offset = 0;
-        while (offset < advertisedData.length -2) {
+        while (offset < advertisedData.length - 2) {
             // Lenght
             int len = advertisedData[offset++];
             if (len == 0) break;
@@ -313,14 +343,14 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
             // Data
 //            Log.d(TAG, "record -> lenght: " + length + " type:" + type + " data" + data);
 
-            switch(type) {
+            switch (type) {
                 case 0x02: // Partial list of 16-bit UUIDs
                 case 0x03: {// Complete list of 16-bit UUIDs
                     while (len > 1) {
                         int uuid16 = advertisedData[offset++] & 0xFF;
                         uuid16 |= (advertisedData[offset++] << 8);
                         len -= 2;
-                        uuids.add(UUID.fromString(String.format( "%08x-0000-1000-8000-00805f9b34fb", uuid16)));
+                        uuids.add(UUID.fromString(String.format("%08x-0000-1000-8000-00805f9b34fb", uuid16)));
                     }
                     break;
                 }
@@ -333,7 +363,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                             ByteBuffer buffer = ByteBuffer.wrap(advertisedData, offset++, 16).order(ByteOrder.LITTLE_ENDIAN);
                             long mostSignificantBit = buffer.getLong();
                             long leastSignificantBit = buffer.getLong();
-                            uuids.add(new UUID(leastSignificantBit,  mostSignificantBit));
+                            uuids.add(new UUID(leastSignificantBit, mostSignificantBit));
                         } catch (IndexOutOfBoundsException e) {
                             // Defensive programming.
                             Log.e("BlueToothDeviceFilter.parseUUID", e.toString());
@@ -353,7 +383,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
 //                    String dataBinary = toBinary(value);
 //                    short txPower = (short) Integer.parseInt(dataBinary, 2);
                     deviceData.txPower = low;
-                   // Log.d(TAG, "tx power: " + data[0] + ":" + dataBinary + ":" + txPower);
+                    // Log.d(TAG, "tx power: " + data[0] + ":" + dataBinary + ":" + txPower);
                     break;
                 }
 
@@ -401,12 +431,14 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
         deviceData.uuids = uuids;
     }
 
+    /*
     private String toBinary(byte[] bytes) {
         StringBuilder sb = new StringBuilder(bytes.length * Byte.SIZE);
         for (int i = 0; i < Byte.SIZE * bytes.length; i++)
             sb.append((bytes[i / Byte.SIZE] << i % Byte.SIZE & 0x80) == 0 ? '0' : '1');
         return sb.toString();
     }
+    */
 
     private void updateUI() {
         // Scan button
@@ -518,8 +550,10 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
         public Object getChild(int groupPosition, int childPosition) {
             BluetoothDeviceData deviceData = mBluetoothDevices.get(groupPosition);
             switch (childPosition) {
-                case kChild_Name:
-                    return getString(R.string.scan_device_localname) + ": " + deviceData.device.getName();
+                case kChild_Name: {
+                    String name = deviceData.device.getName();
+                    return getString(R.string.scan_device_localname) + ": " + (name == null ? "" : name);
+                }
                 case kChild_UUIDs: {
                     String uuid = deviceData.uuidString;
                     return getString(R.string.scan_device_uuid) + ": " + (uuid == null ? "" : uuid);
@@ -535,9 +569,9 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                     }
                     */
                     if (deviceData.uuids != null) {
-                        int i=0;
+                        int i = 0;
                         for (UUID uuid : deviceData.uuids) {
-                            if (i>0) text.append(", ");
+                            if (i > 0) text.append(", ");
                             text.append(uuid.toString().toUpperCase());
                             i++;
                         }
@@ -582,7 +616,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                 holder.rssiImageView = (ImageView) convertView.findViewById(R.id.rssiImageView);
                 holder.rssiTextView = (TextView) convertView.findViewById(R.id.rssiTextView);
                 holder.connectButton = (Button) convertView.findViewById(R.id.connectButton);
-                holder.connectButton.setTag(new Integer(groupPosition));
+                holder.connectButton.setTag(groupPosition);
 
                 convertView.setTag(holder);
 
@@ -590,14 +624,14 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                 holder = (GroupViewHolder) convertView.getTag();
             }
 
-            convertView.setTag(R.string.scan_tag_id, new Integer(groupPosition));
+            convertView.setTag(R.string.scan_tag_id, groupPosition);
 
             BluetoothDeviceData deviceData = mBluetoothDevices.get(groupPosition);
             String deviceName = deviceData.device.getName();
             holder.nameTextView.setText(deviceName != null ? deviceName : deviceData.device.getAddress());
 
             boolean isUart = false;
-            for(UUID uuid : deviceData.uuids) {
+            for (UUID uuid : deviceData.uuids) {
                 if (uuid.toString().equalsIgnoreCase(UartInterfaceActivity.UUID_SERVICE)) {
                     isUart = true;
                     break;

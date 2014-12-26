@@ -10,7 +10,7 @@ public class StandardUUIDs {
     private static final Map<String, String> sServiceUUIDs;
 
     static {
-        Map<String, String> aMap = new HashMap<String, String>();
+        Map<String, String> aMap = new HashMap<>();
 
         // Adopted
         aMap.put("1811", "Alert Notification Service");
@@ -55,7 +55,7 @@ public class StandardUUIDs {
     private static final Map<String, String> sCharacteristicUUIDs;
 
     static {
-        Map<String, String> aMap = new HashMap<String, String>();
+        Map<String, String> aMap = new HashMap<>();
 
         // Adopted
         aMap.put("2A7E", "Aerobic Heart Rate Lower Limit");
@@ -213,7 +213,7 @@ public class StandardUUIDs {
     private static final Map<String, String> sDescriptorUUIDs;
 
     static {
-        Map<String, String> aMap = new HashMap<String, String>();
+        Map<String, String> aMap = new HashMap<>();
 
         // Adopted
         aMap.put("2900", "Characteristic Extended Properties");
@@ -266,7 +266,7 @@ public class StandardUUIDs {
     }
 
 
-    private static final String convertTo16Bits(String uuid) {
+    private static String convertTo16Bits(String uuid) {
         String result = null;
 
         // If is convertible to 16 bits

@@ -7,74 +7,106 @@
 
     <RadioGroup
         android:layout_width="match_parent"
-        android:orientation="horizontal"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
 
         <RadioButton
             android:id="@+id/inputRadioButton"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
             android:onClick="onClickMode"
             android:text="@string/pinio_pintype_input" />
 
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
         <RadioButton
             android:id="@+id/outputRadioButton"
-            android:onClick="onClickMode"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:onClick="onClickMode"
             android:text="@string/pinio_pintype_output" />
+
+        <View
+            android:id="@+id/spacer2View"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
 
         <RadioButton
             android:id="@+id/pwmRadioButton"
-            android:onClick="onClickMode"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:onClick="onClickMode"
             android:text="@string/pinio_pintype_pwm" />
 
         <RadioButton
             android:id="@+id/analogRadioButton"
-            android:onClick="onClickMode"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:onClick="onClickMode"
             android:text="@string/pinio_pintype_analog" />
+
+        <View
+            android:id="@+id/spacer3View"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
 
     </RadioGroup>
 
     <RadioGroup
         android:id="@+id/stateRadioGroup"
-        android:layout_marginTop="10dp"
         android:layout_width="match_parent"
-        android:orientation="horizontal"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
 
         <RadioButton
             android:id="@+id/lowRadioButton"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
             android:onClick="onClickOutputType"
             android:text="@string/pinio_pintype_low" />
 
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
         <RadioButton
             android:id="@+id/highRadioButton"
-            android:onClick="onClickOutputType"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:onClick="onClickOutputType"
             android:text="@string/pinio_pintype_high" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
 
     </RadioGroup>
 
     <SeekBar
         android:id="@+id/pmwSeekBar"
-        android:layout_marginTop="10dp"
-        android:max="255"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:max="255" />
 </LinearLayout>

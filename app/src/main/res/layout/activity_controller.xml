@@ -23,7 +23,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-
+                android:textColor="@drawable/default_textcolor"
                 android:text="@string/controller_sectiontitle_stream" />
 
             <com.adafruit.bluefruit.le.connect.app.ExpandableHeightExpandableListView
@@ -38,6 +38,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@drawable/default_textcolor"
                 android:layout_marginTop="20dp"
                 android:text="@string/controller_sectiontitle_interface" />
 
@@ -45,7 +46,8 @@
                 layout="@layout/layout_controller_interface_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp" />
+                android:layout_marginTop="10dp"
+                />
 
         </LinearLayout>
 

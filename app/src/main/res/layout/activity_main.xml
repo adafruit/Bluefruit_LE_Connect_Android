@@ -26,29 +26,50 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:background="#000000"
-
         android:onClick="onClickScan"
-
         android:textColor="#ffffff" />
 
+    <TextView
+        android:id="@+id/nodevicesTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="80dp"
+        android:gravity="center_horizontal"
+        android:text="@string/scan_nodevicesfound"
+        android:textColor="@drawable/default_textcolor" />
+
     <ScrollView
+        android:id="@+id/devicesScrollView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@id/scanButton"
         android:layout_alignParentTop="true">
 
-        <com.adafruit.bluefruit.le.connect.app.ExpandableHeightExpandableListView
-            android:id="@+id/scannedDevicesListView"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#ffffff"
-            android:childDivider="#00000000"
-            android:groupIndicator="@null" />
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:text="@string/scan_devicesheadertitle"
+                android:textColor="@drawable/default_textcolor" />
+
+            <com.adafruit.bluefruit.le.connect.app.ExpandableHeightExpandableListView
+                android:id="@+id/scannedDevicesListView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#ffffff"
+                android:childDivider="#00000000"
+                android:groupIndicator="@null" />
+        </LinearLayout>
     </ScrollView>
 
-
     <TextView
-        android:id="@+id/connectionStatusTextView"
+        android:visibility="gone"
+        android:id="@+id/connectionStatusLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"

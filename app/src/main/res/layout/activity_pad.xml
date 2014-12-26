@@ -1,129 +1,211 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/default_background"
-
+    android:orientation="horizontal"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.adafruit.bluefruit.le.connect.app.PadActivity">
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:background="#929292"
-        android:onClick="onClickExit"
-        android:src="@drawable/pad_button_exit" />
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:baselineAligned="false"
         android:orientation="horizontal">
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_marginBottom="20dp"
-            android:layout_marginTop="20dp"
-            android:layout_weight="1"
+            android:layout_marginBottom="30dp"
+            android:layout_marginTop="30dp"
+            android:layout_weight="1.2"
+            android:orientation="vertical"
             android:paddingLeft="10dp"
-            android:paddingRight="20dp">
+            android:paddingRight="10dp">
 
-            <ImageButton
-                android:id="@+id/upArrowImageButton"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:layout_centerHorizontal="true"
-                android:background="#1994FA"
-                android:src="@drawable/pad_arrow_button_up"
-                android:tag="5" />
+                android:layout_weight="1"
+                android:orientation="horizontal">
 
-            <ImageButton
-                android:id="@+id/leftArrowImageButton"
-                android:layout_width="wrap_content"
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+
+                <ImageButton
+                    android:id="@+id/upArrowImageButton"
+                    android:layout_width="0dp"
+                    android:layout_margin="2dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.8"
+                    android:background="@drawable/roundedborders"
+                    android:src="@drawable/pad_arrow_button_up"
+                    android:tag="5" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_centerVertical="true"
-                android:background="#1994FA"
-                android:src="@drawable/pad_arrow_button_left"
-                android:tag="7" />
+                android:layout_weight="1.1"
+                android:orientation="horizontal">
 
-            <ImageButton
-                android:id="@+id/rightArrowImageButton"
-                android:layout_width="wrap_content"
+                <ImageButton
+                    android:id="@+id/leftArrowImageButton"
+                    android:layout_width="0dp"
+                    android:layout_margin="2dp"                    
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@drawable/roundedborders"
+                    android:src="@drawable/pad_arrow_button_left"
+                    android:tag="7" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+
+                <ImageButton
+                    android:id="@+id/rightArrowImageButton"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_margin="2dp"
+
+                    android:layout_weight="1"
+                    android:background="@drawable/roundedborders"
+                    android:src="@drawable/pad_arrow_button_right"
+                    android:tag="8" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:background="#1994FA"
-                android:src="@drawable/pad_arrow_button_right"
-                android:tag="8" />
+                android:layout_weight="1"
+                android:orientation="horizontal">
 
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
 
-            <ImageButton
-                android:id="@+id/bottomArrowImageButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_centerHorizontal="true"
-                android:background="#1994FA"
-                android:src="@drawable/pad_arrow_button_down"
-                android:tag="6" />
+                <ImageButton
+                    android:id="@+id/bottomArrowImageButton"
+                    android:layout_width="0dp"
+                    android:layout_margin="2dp"
 
-        </RelativeLayout>
+                    android:layout_height="match_parent"
+                    android:layout_weight=".8"
 
+                    android:background="@drawable/roundedborders"
+                    android:src="@drawable/pad_arrow_button_down"
+                    android:tag="6" />
 
-        <RelativeLayout
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:background="#929292"
+            android:onClick="onClickExit"
+            android:padding="15dp"
+            android:layout_gravity="bottom"
+            android:src="@drawable/pad_button_exit" />
+
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_marginBottom="50dp"
             android:layout_marginTop="50dp"
             android:layout_weight="1"
-            android:paddingLeft="70dp"
+            android:orientation="vertical"
+            android:paddingLeft="10dp"
             android:paddingRight="10dp">
 
 
-            <ImageButton
-                android:id="@+id/button1ImageButton"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#1994FA"
-                android:src="@drawable/pad_button_numbers_1"
-                android:tag="1" />
+                android:layout_weight="1"
+                android:orientation="horizontal">
 
+                <ImageButton
+                    android:id="@+id/button1ImageButton"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
 
-            <ImageButton
-                android:id="@+id/button2ImageButton"
-                android:layout_width="wrap_content"
+                    android:background="@drawable/roundedborders"
+                    android:src="@drawable/pad_button_numbers_1"
+                    android:tag="1" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+
+                <ImageButton
+                    android:id="@+id/button2ImageButton"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@drawable/roundedborders"
+                    android:src="@drawable/pad_button_numbers_2"
+                    android:tag="2" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:background="#1994FA"
-                android:src="@drawable/pad_button_numbers_2"
-                android:tag="2" />
+                android:layout_weight="1" />
 
-            <ImageButton
-                android:id="@+id/button3ImageButton"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:background="#1994FA"
-                android:src="@drawable/pad_button_numbers_3"
-                android:tag="3" />
+                android:layout_weight="1"
+                android:orientation="horizontal">
 
+                <ImageButton
+                    android:id="@+id/button3ImageButton"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@drawable/roundedborders"
+                    android:src="@drawable/pad_button_numbers_3"
+                    android:tag="3" />
 
-            <ImageButton
-                android:id="@+id/button4ImageButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentRight="true"
-                android:background="#1994FA"
-                android:src="@drawable/pad_button_numbers_4"
-                android:tag="4" />
-        </RelativeLayout>
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+
+                <ImageButton
+                    android:id="@+id/button4ImageButton"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@drawable/roundedborders"
+                    android:src="@drawable/pad_button_numbers_4"
+                    android:tag="4" />
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
-</RelativeLayout>
+</LinearLayout>

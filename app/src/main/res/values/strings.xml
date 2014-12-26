@@ -10,6 +10,7 @@
     <!-- Scan Activity -->
     <string name="scan_scanbutton_scan">Scan for peripherals</string>
     <string name="scan_scanbutton_scanning">Scanning</string>
+    <string name="scan_devicesheadertitle">PERIPHERALS</string>
     <string name="scan_nodevicesfound">No peripherals found</string>
     <string name="scan_device_localname">Local Name</string>
     <string name="scan_device_rssi_notavailable">N/A</string>
@@ -17,8 +18,10 @@
     <string name="scan_device_uuid">UUID</string>
     <string name="scan_device_services">Service UUIDs</string>
     <string name="scan_device_txpower">TX Power Level</string>
-    <string name="scan_connectservice_title">Connect to</string>
     <string name="scan_connecting">Connecting ...</string>
+    <string name="scan_connectto_dialog_title_format">Choose mode to connect to %s</string>
+
+
     <string name="scan_tag_id">Id</string>
 
     <string-array name="scan_connectservice_items">
@@ -38,6 +41,8 @@
 
     <!-- Uart Activity -->
     <string name="title_activity_uart">UART</string>
+    <string name="uart_echo">Echo:</string>
+    <string name="uart_eol">Add EOL:</string>
     <string name="uart_format_ascii">Ascii</string>
     <string name="uart_format_hex">Hex</string>
     <string name="uart_help_title">UART Help</string>

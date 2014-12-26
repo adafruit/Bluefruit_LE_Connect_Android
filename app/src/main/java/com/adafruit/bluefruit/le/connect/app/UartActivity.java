@@ -32,8 +32,9 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
     private final static String TAG = UartActivity.class.getSimpleName();
 
     // UI
-    Switch mEchoSwitch;
-    private EditText mReceivedTextView;
+    private Switch mEchoSwitch;
+    private Switch mEolSwitch;
+    private EditText mBufferTextView;
     private EditText mSendEditText;
 
     // Data
@@ -51,6 +52,7 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
 
         // UI
         mEchoSwitch = (Switch) findViewById(R.id.echoSwitch);
+        mEolSwitch = (Switch) findViewById(R.id.eolSwitch);
 
         mSendEditText = (EditText) findViewById(R.id.sendEditText);
         mSendEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -64,8 +66,8 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
                 return false;
             }
         });
-        mReceivedTextView = (EditText) findViewById(R.id.receivedTextView);
-        mReceivedTextView.setKeyListener(null);     // make it not editable
+        mBufferTextView = (EditText) findViewById(R.id.bufferTextView);
+        mBufferTextView.setKeyListener(null);     // make it not editable
 
         onServicesDiscovered();
     }
@@ -75,13 +77,20 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
         sendData(data);
         mSendEditText.setText("");       // Clear editText
 
+        if (mEolSwitch.isChecked()) {
+            // Add newline character if checked
+            data += "\n";
+        }
+
         if (mEchoSwitch.isChecked()) {
+            // Add send data to visible buffer if checked
             int from = mSpanBuffer.length();
             mSpanBuffer.append(data);
             mSpanBuffer.setSpan(new ForegroundColorSpan(Color.BLUE), from, from + data.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
 //            mTextBuffer += data;
         }
+
 
         updateUI();
     }
@@ -206,7 +215,7 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
         if (mShowDataInHexFormat) {
             finalSpanBuffer = new SpannableStringBuilder();
             String text = mSpanBuffer.toString();
-            ForegroundColorSpan[] colorSpans = mSpanBuffer.getSpans(0, text.length(), ForegroundColorSpan.class);
+ //           ForegroundColorSpan[] colorSpans = mSpanBuffer.getSpans(0, text.length(), ForegroundColorSpan.class);
 
             for (int i = 0; i < text.length(); i++) {
                 String charString = String.format("0x%02X", (byte) text.charAt(i));
@@ -219,8 +228,7 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
             finalSpanBuffer = mSpanBuffer;
         }
 
-        mReceivedTextView.setText(finalSpanBuffer);
-
-        mReceivedTextView.setSelection(0, mReceivedTextView.getText().length());        // to automatically scroll to the end
+        mBufferTextView.setText(finalSpanBuffer);
+        mBufferTextView.setSelection(0, mBufferTextView.getText().length());        // to automatically scroll to the end
     }
 }

@@ -20,7 +20,7 @@ public class BleManager implements BleExecutorListener {
     private final static String TAG = BleManager.class.getSimpleName();
 
     // Configuration
-    private final static boolean kForceCloseBeforeNewConnection = false;
+    private final static boolean kForceCloseBeforeNewConnection = true;// false;
     private final static boolean reuseExistingConnection = false;// true;
     private final static boolean gattAutoconnect = true;
 
@@ -124,8 +124,9 @@ public class BleManager implements BleExecutorListener {
         Log.d(TAG, "Trying to create a new connection.");
         mDeviceAddress = address;
         mConnectionState = STATE_CONNECTING;
-        if (mBleListener != null)
+        if (mBleListener != null) {
             mBleListener.onConnecting();
+        }
         return true;
     }
 

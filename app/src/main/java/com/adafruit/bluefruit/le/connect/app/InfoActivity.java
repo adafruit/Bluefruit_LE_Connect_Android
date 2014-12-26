@@ -176,9 +176,6 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
             String finalServiceName = serviceName != null ? serviceName : serviceUuid;
             ElementPath serviceElementPath = new ElementPath(serviceUuid, instanceId, null, null, finalServiceName, serviceUuid);
             mServicesList.add(serviceElementPath);
-            //Log.d(TAG, "Service: " + finalServiceName + " - " + service.getUuid());
-
-            //BleService<?> bleService = BleDiscoveredServicesManager.getInstance().getService(serviceUuid, instanceId);
 
             // Characteristics
             List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
@@ -228,19 +225,13 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
         String key = new ElementPath(service.getUuid().toString(), service.getInstanceId(), characteristic.getUuid().toString(), null, null, null).getKey();
         mValuesMap.put(key, characteristic.getValue());
 
+        // Update UI
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-
                 mInfoListAdapter.notifyDataSetChanged();
             }
         });
-
-//        Log.d(TAG, "data from: "+key);
-
-        // Update UI
-//        updateUI();
-
     }
 
     @Override
@@ -272,7 +263,6 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
         public String getKey() {
             return serviceUUID + serviceInstance + characteristicUUID + descriptorUUID;
         }
-
 
         @Override
         public String toString() {
@@ -370,7 +360,7 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
             // Value
             TextView valueTextView = (TextView) convertView.findViewById(R.id.valueTextView);
             byte[] value = mValuesMap.get(elementPath.getKey());
-            String valueString = getValueFormatted(value, elementPath.dataFormat);
+            String valueString = value.toString();//getValueFormatted(value, elementPath.dataFormat);
             valueTextView.setText(valueString);
             valueTextView.setVisibility(valueString == null ? View.GONE : View.VISIBLE);
 
