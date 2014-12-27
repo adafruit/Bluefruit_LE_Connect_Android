@@ -1,6 +1,7 @@
 package com.adafruit.bluefruit.le.connect.app;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
@@ -16,6 +17,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
@@ -38,6 +40,7 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
     // Log
     private final static String TAG = ControllerActivity.class.getSimpleName();
 
+    // Constants
     private final static int kSendDataInterval = 500;   // milliseconds
 
     // Sensor Types
@@ -204,6 +207,18 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
         startActivity(intent);
     }
 
+    @Override
+    protected void onActivityResult (int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 0) {
+            if (resultCode < 0) {       // Unexpected disconnect
+                setResult(resultCode);
+                finish();
+            }
+        }
+    }
+
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -273,7 +288,7 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
 
     public void onClickInterfacePad(View view) {
         Intent intent = new Intent(this, PadActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, 0);
     }
 
     @Override
@@ -326,7 +341,9 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
 
     @Override
     public void onDisconnected() {
-
+        Log.d(TAG, "Disconnected. Back to previous activity");
+        setResult(-1);      // Unexpected Disconnect
+        finish();
     }
 
     @Override
@@ -461,6 +478,19 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
             ToggleButton enableToggleButton = (ToggleButton) convertView.findViewById(R.id.enableToggleButton);
             enableToggleButton.setTag(groupPosition);
             enableToggleButton.setChecked(mSensorData[groupPosition].enabled);
+            enableToggleButton.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View view, MotionEvent event) {
+                    // Set onclick to action_down to avoid losing state because the button is recreated when notifiydatasetchanged is called and it could be really fast (before the user has time to generate a ACTION_UP event)
+                    if (event.getAction() == MotionEvent.ACTION_DOWN ) {
+                        ToggleButton button = (ToggleButton)view;
+                        button.setChecked(!button.isChecked());
+                        onClickToggle(view);
+                        return true;
+                    }
+                    return false;
+                }
+            });
 
             return convertView;
         }

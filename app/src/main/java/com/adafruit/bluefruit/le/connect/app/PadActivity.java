@@ -3,6 +3,7 @@ package com.adafruit.bluefruit.le.connect.app;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -53,10 +54,12 @@ public class PadActivity extends UartInterfaceActivity implements BleServiceList
         public boolean onTouch(View view, MotionEvent event) {
             final int tag = new Integer((String)view.getTag());
             if (event.getAction() == MotionEvent.ACTION_DOWN ) {
+                view.setPressed(true);
                 sendTouchEvent(tag, true);
                 return true;
             }
             else if (event.getAction() == MotionEvent.ACTION_UP ) {
+                view.setPressed(false);
                 sendTouchEvent(tag, false);
                 return true;
             }
@@ -66,10 +69,6 @@ public class PadActivity extends UartInterfaceActivity implements BleServiceList
 
     private void sendTouchEvent(int tag, boolean pressed) {
         String data = "!B"+tag+(pressed?"1":"0");
-        /*
-        ByteBuffer buffer = ByteBuffer.allocate(data.length()+4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
-        buffer.put(data.getBytes());
-        */
         sendData(data.getBytes());
     }
 
@@ -137,7 +136,9 @@ public class PadActivity extends UartInterfaceActivity implements BleServiceList
 
     @Override
     public void onDisconnected() {
-
+        Log.d(TAG, "Disconnected. Back to previous activity");
+        setResult(-1);      // Unexpected Disconnect
+        finish();
     }
 
     @Override

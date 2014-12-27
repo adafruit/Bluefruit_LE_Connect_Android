@@ -209,7 +209,9 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
 
     @Override
     public void onDisconnected() {
-
+        Log.d(TAG, "Disconnected. Back to previous activity");
+        setResult(-1);      // Unexpected Disconnect
+        finish();
     }
 
     @Override

@@ -44,7 +44,6 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     private ExpandableHeightExpandableListView mScannedDevicesListView;
     private ExpandableListAdapter mScannedDevicesAdapter;
     private Button mScanButton;
-    private View mConnectionStatusLayout;
     private long mLastUpdateMillis;
     private TextView mNoDevicesTextView;
     private ScrollView mDevicesScrollView;
@@ -79,8 +78,6 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
 
         mScanButton = (Button) findViewById(R.id.scanButton);
 
-        mConnectionStatusLayout = (View) findViewById(R.id.connectionStatusLayout);
-        //showConnectionStatus(false);
         mNoDevicesTextView = (TextView) findViewById(R.id.nodevicesTextView);
         mDevicesScrollView = (ScrollView) findViewById(R.id.devicesScrollView);
         mDevicesScrollView.setVisibility(View.GONE);
@@ -140,7 +137,8 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     private void showChooseDeviceServiceDialog(final BluetoothDevice device) {
         // Prepare dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        String title = String.format(getString(R.string.scan_connectto_dialog_title_format), device.getName());
+        String deviceName = device.getName();
+        String title = String.format(getString(R.string.scan_connectto_dialog_title_format), deviceName != null ? deviceName : device.getAddress());
         builder.setTitle(title)
                 .setItems(R.array.scan_connectservice_items, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
@@ -171,7 +169,6 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
 
         // Show dialog
         AlertDialog dialog = builder.create();
-        dialog.getWindow().setDimAmount(0.75f);
         dialog.show();
     }
 
@@ -189,19 +186,32 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
         startActivity(intent);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 0) {
+            if (resultCode < 0) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(getString(R.string.scan_unexpecteddisconnect))
+                        .setPositiveButton(R.string.dialog_ok, null)
+                        .create()
+                        .show();
+            }
+        }
+    }
+
     private void showConnectionStatus(boolean enable) {
         if (enable) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(getString(R.string.scan_connecting))
+            builder.setMessage(getString(R.string.scan_connecting))
                     .setCancelable(false);
 
             // Show dialog
             mConnectingDialog = builder.create();
-            mConnectingDialog.getWindow().setDimAmount(0.75f);
             mConnectingDialog.setCanceledOnTouchOutside(false);
             mConnectingDialog.show();
-        }
-        else {
+        } else {
             if (mConnectingDialog != null) {
                 mConnectingDialog.cancel();
             }
@@ -460,7 +470,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                 // Launch activity
                 if (mComponentToStartWhenConnected != null) {
                     Intent intent = new Intent(MainActivity.this, mComponentToStartWhenConnected);
-                    startActivity(intent);
+                    startActivityForResult(intent, 0);
                 }
             }
         });
@@ -496,7 +506,6 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
         byte[] scanRecord;
 
         // Decoded scan record
-        String uuidString;
         int txPower;
         ArrayList<UUID> uuids;
     }
@@ -505,7 +514,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     // region adapters
     private class ExpandableListAdapter extends BaseExpandableListAdapter {
         private static final int kChild_Name = 0;
-        private static final int kChild_UUIDs = 1;
+        private static final int kChild_Address = 1;
         private static final int kChild_Services = 2;
         private static final int kChild_TXPower = 3;
 
@@ -554,9 +563,9 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                     String name = deviceData.device.getName();
                     return getString(R.string.scan_device_localname) + ": " + (name == null ? "" : name);
                 }
-                case kChild_UUIDs: {
-                    String uuid = deviceData.uuidString;
-                    return getString(R.string.scan_device_uuid) + ": " + (uuid == null ? "" : uuid);
+                case kChild_Address: {
+                    String address = deviceData.device.getAddress();
+                    return getString(R.string.scan_device_address) + ": " + (address == null ? "" : address);
                 }
                 case kChild_Services: {
                     StringBuilder text = new StringBuilder();

@@ -13,6 +13,7 @@
     <string name="scan_devicesheadertitle">PERIPHERALS</string>
     <string name="scan_nodevicesfound">No peripherals found</string>
     <string name="scan_device_localname">Local Name</string>
+    <string name="scan_device_address">Address</string>
     <string name="scan_device_rssi_notavailable">N/A</string>
     <string name="scan_device_connect">Connect</string>
     <string name="scan_device_uuid">UUID</string>
@@ -21,6 +22,7 @@
     <string name="scan_connecting">Connecting ...</string>
     <string name="scan_connectto_dialog_title_format">Choose mode to connect to %s</string>
 
+    <string name="scan_unexpecteddisconnect">Peripheral disconnected</string>
 
     <string name="scan_tag_id">Id</string>
 
@@ -84,6 +86,8 @@
     <string name="title_activity_pad">Control Pad</string>
 
 
+    <!-- Common -->
+    <string name="dialog_ok">Ok</string>
 
     <!-- Debug -->
     <string name="hello_world">Hello world!</string>

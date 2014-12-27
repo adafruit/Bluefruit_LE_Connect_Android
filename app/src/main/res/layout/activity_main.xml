@@ -19,7 +19,6 @@
         android:layout_marginBottom="90dp"
         android:src="@drawable/adaflower" />
 
-
     <Button
         android:id="@+id/scanButton"
         android:layout_width="match_parent"
@@ -67,18 +66,4 @@
         </LinearLayout>
     </ScrollView>
 
-    <TextView
-        android:visibility="gone"
-        android:id="@+id/connectionStatusLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:background="#ffffff"
-        android:gravity="center_horizontal"
-        android:paddingBottom="15dp"
-        android:paddingTop="15dp"
-        android:text="@string/scan_connecting"
-        android:textColor="#000000" />
 </RelativeLayout>

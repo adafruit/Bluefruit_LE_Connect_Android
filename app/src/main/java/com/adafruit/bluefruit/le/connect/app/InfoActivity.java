@@ -7,7 +7,6 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.ParcelUuid;
 import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -54,10 +53,10 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
         mBleManager = BleManager.getInstance(this);
 
         // Init variables
-        mServicesList = new ArrayList<ElementPath>();
-        mCharacteristicsMap = new LinkedHashMap<String, List<ElementPath>>();
-        mDescriptorsMap = new LinkedHashMap<String, List<ElementPath>>();
-        mValuesMap = new LinkedHashMap<String, byte[]>();
+        mServicesList = new ArrayList<>();
+        mCharacteristicsMap = new LinkedHashMap<>();
+        mDescriptorsMap = new LinkedHashMap<>();
+        mValuesMap = new LinkedHashMap<>();
 
         // UI
         mInfoListView = (ExpandableListView) findViewById(R.id.infoListView);
@@ -67,13 +66,12 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
         BluetoothDevice device = mBleManager.getConnectedDevice();
         if (device != null) {
             TextView nameTextView = (TextView) findViewById(R.id.nameTextView);
+            boolean isNameDefined = device.getName() != null;
             nameTextView.setText(device.getName());
+            nameTextView.setVisibility(isNameDefined?View.VISIBLE: View.GONE);
 
-            ParcelUuid[] uuids = device.getUuids();
-            if (uuids != null && uuids.length > 0) {
-                TextView uuidTextView = (TextView) findViewById(R.id.uuidTextView);
-                uuidTextView.setText(uuids[0].toString());
-            }
+            TextView addressTextView = (TextView) findViewById(R.id.addressTextView);
+            addressTextView.setText(getString(R.string.scan_device_address) + ": " + device.getAddress());
 
             onServicesDiscovered();
         } else {
@@ -155,6 +153,7 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
     @Override
     public void onDisconnected() {
         Log.d(TAG, "Disconnected. Back to previous activity");
+        setResult(-1);      // Unexpected Disconnect
         finish();
     }
 
@@ -179,7 +178,7 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
 
             // Characteristics
             List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
-            List<ElementPath> characteristicNamesList = new ArrayList<ElementPath>(characteristics.size());
+            List<ElementPath> characteristicNamesList = new ArrayList<>(characteristics.size());
             for (BluetoothGattCharacteristic characteristic : characteristics) {
                 String characteristicUuid = characteristic.getUuid().toString();
                 String characteristicName = KnownUUIDs.getCharacteristicName(characteristicUuid);
@@ -360,7 +359,7 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
             // Value
             TextView valueTextView = (TextView) convertView.findViewById(R.id.valueTextView);
             byte[] value = mValuesMap.get(elementPath.getKey());
-            String valueString = value.toString();//getValueFormatted(value, elementPath.dataFormat);
+            String valueString = getValueFormatted(value, elementPath.dataFormat);
             valueTextView.setText(valueString);
             valueTextView.setVisibility(valueString == null ? View.GONE : View.VISIBLE);
 
@@ -379,7 +378,7 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
 
         String valueString = null;
         if (value != null) {
-            if (dataFormat == 1) {
+            if (dataFormat == 0) {
                 valueString = new String(value);
             } else {
                 String hexString = BleUtils.bytesToHex(value);
