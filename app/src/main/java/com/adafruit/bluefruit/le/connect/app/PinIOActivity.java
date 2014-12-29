@@ -385,24 +385,6 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
         sendHexData(bytes);
     }
 
-    /*
-    private void setDigitalStateReportingForPort(byte port, boolean enabled) {
-
-        //Enable input/output for a digital pin
-
-        //Enable by port
-        byte data0 = (byte) (0xd0 + port);  //start port 0 digital reporting (207 + port#)
-        byte data1 = 0; //Enable
-        if (enabled) {
-            data1 = 1;
-        }
-
-        // send data
-        byte bytes[] = {data0, data1};
-        sendHexData(bytes);
-    }
-    */
-
     private void sendHexData(byte[] data) {
         if (BuildConfig.DEBUG) {
             String hexRepresentation = BleUtils.bytesToHexWithSpaces(data);
@@ -564,7 +546,7 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
 
             // pwm visibility
             int digitalPinId = groupPosition + FIRST_DIGITAL_PIN;
-            boolean isPwmVisible = ((digitalPinId == 3) || (digitalPinId == 5) || (digitalPinId == 6));
+            boolean isPwmVisible = mIsDigital && ((digitalPinId == 3) || (digitalPinId == 5) || (digitalPinId == 6));
             pwmRadioButton.setVisibility(isPwmVisible ? View.VISIBLE : View.GONE);
 
             // analog visibility
@@ -605,7 +587,7 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
             final boolean isSpacer2Visible = isPwmVisible || !mIsDigital;
             View spacer2View = convertView.findViewById(R.id.spacer2View);
             spacer2View.setVisibility(isSpacer2Visible?View.VISIBLE:View.GONE);
-            final boolean isSpacer3Visible = isSpacer2Visible;
+            final boolean isSpacer3Visible = isSpacer2Visible || (!isPwmVisible && mIsDigital);
             View spacer3View = convertView.findViewById(R.id.spacer3View);
             spacer3View.setVisibility(isSpacer3Visible?View.VISIBLE:View.GONE);
 

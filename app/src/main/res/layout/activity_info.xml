@@ -24,16 +24,15 @@
     <TextView
         android:id="@+id/addressTextView"
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
-        android:textColor="@drawable/default_textcolor"
-        android:layout_height="wrap_content" />
+        android:textColor="@drawable/default_textcolor" />
 
     <ExpandableListView
         android:id="@+id/infoListView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#ffffff"
-        android:childDivider="#00000000"
         android:groupIndicator="@null" />
 
 </LinearLayout>

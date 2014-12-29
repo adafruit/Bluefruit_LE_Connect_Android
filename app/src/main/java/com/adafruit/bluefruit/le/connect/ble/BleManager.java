@@ -95,7 +95,6 @@ public class BleManager implements BleExecutorListener {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         final boolean reuseExistingConnection = sharedPreferences.getBoolean("pref_recycleconnection", false);
 
-
         if (reuseExistingConnection) {
             // Previously connected device.  Try to reconnect.
             if (mDeviceAddress != null && address.equalsIgnoreCase(mDeviceAddress) && mGatt != null) {

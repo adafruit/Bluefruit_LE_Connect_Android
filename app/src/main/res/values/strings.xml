@@ -13,7 +13,7 @@
 
     <!-- Scan Activity -->
     <string name="scan_scanbutton_scan">Scan for peripherals</string>
-    <string name="scan_scanbutton_scanning">Scanning</string>
+    <string name="scan_scanbutton_scanning">Scanning...</string>
     <string name="scan_devicesheadertitle">PERIPHERALS</string>
     <string name="scan_nodevicesfound">No peripherals found</string>
     <string name="scan_device_localname">Local Name</string>
