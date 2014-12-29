@@ -122,7 +122,7 @@ public class BleManager implements BleExecutorListener {
             return false;
         }
 
-        final boolean gattAutoconnect = sharedPreferences.getBoolean("pref_gattautoconnect", true);
+        final boolean gattAutoconnect = sharedPreferences.getBoolean("pref_gattautoconnect", false);
 
         mGatt = mDevice.connectGatt(mContext, gattAutoconnect, mExecutor);
         Log.d(TAG, "Trying to create a new connection.");
