@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/rootLayout"
     android:background="@drawable/default_background"
     android:orientation="vertical"
     android:paddingBottom="@dimen/activity_vertical_margin"
@@ -10,64 +11,14 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.adafruit.bluefruit.le.connect.app.UartActivity">
 
+
     <LinearLayout
         android:id="@+id/headerLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/uart_echo"
-            android:textColor="@drawable/default_textcolor" />
-
-        <Switch
-            android:id="@+id/echoSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp" />
-
-        <TextView
-            android:layout_marginLeft="20dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/uart_eol"
-            android:textColor="@drawable/default_textcolor" />
-
-        <Switch
-            android:id="@+id/eolSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp" />
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"/>
-
-        <RadioGroup
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <RadioButton
-                android:id="@+id/asciiFormatRadioButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:onClick="onClickFormatAscii"
-                android:text="@string/uart_format_ascii"
-                android:textColor="@drawable/default_textcolor" />
-
-            <RadioButton
-                android:id="@+id/hexFormatRadioButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="onClickFormatHex"
-                android:text="@string/uart_format_hex"
-                android:textColor="@drawable/default_textcolor" />
-        </RadioGroup>
+   <!--     <include layout="@layout/layout_uart_singleline_controls"/> -->
     </LinearLayout>
 
     <LinearLayout
@@ -81,10 +32,9 @@
         <EditText
             android:id="@+id/sendEditText"
             android:layout_width="0dp"
-            android:singleLine = "false"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-           />
+            android:singleLine="false" />
 
         <Button
             android:layout_width="wrap_content"

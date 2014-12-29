@@ -6,17 +6,21 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -40,8 +44,8 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
     // Data
     private boolean mShowDataInHexFormat = false;
 
-    private SpannableStringBuilder mSpanBuffer = new SpannableStringBuilder();
-
+    private SpannableStringBuilder mAsciiSpanBuffer = new SpannableStringBuilder();
+    private SpannableStringBuilder mHexSpanBuffer = new SpannableStringBuilder();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +53,28 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
         setContentView(R.layout.activity_uart);
 
         mBleManager = BleManager.getInstance(this);
+
+        // Choose UI controls component based on available width
+        {
+            LinearLayout headerLayout = (LinearLayout) findViewById(R.id.headerLayout);
+            ViewGroup controlsLayout = (ViewGroup) getLayoutInflater().inflate(R.layout.layout_uart_singleline_controls, headerLayout, false);
+            controlsLayout.measure(0, 0);
+            int controlWidth = controlsLayout.getMeasuredWidth();
+
+            Display display = getWindowManager().getDefaultDisplay();
+            Point size = new Point();
+            display.getSize(size);
+            int rootWidth = size.x;
+
+            if (controlWidth > rootWidth)       // control too big, use a smaller version
+            {
+                controlsLayout = (ViewGroup) getLayoutInflater().inflate(R.layout.layout_uart_multiline_controls, headerLayout, false);
+
+            }
+            Log.d(TAG, "width: " + controlWidth + " baseWidth: " + rootWidth);
+
+            headerLayout.addView(controlsLayout);
+        }
 
         // UI
         mEchoSwitch = (Switch) findViewById(R.id.echoSwitch);
@@ -69,6 +95,8 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
         mBufferTextView = (EditText) findViewById(R.id.bufferTextView);
         mBufferTextView.setKeyListener(null);     // make it not editable
 
+
+        // Continue
         onServicesDiscovered();
     }
 
@@ -82,27 +110,24 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
             data += "\n";
         }
 
-        if (mEchoSwitch.isChecked()) {
-            // Add send data to visible buffer if checked
-            int from = mSpanBuffer.length();
-            mSpanBuffer.append(data);
-            mSpanBuffer.setSpan(new ForegroundColorSpan(Color.BLUE), from, from + data.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-//            mTextBuffer += data;
+        if (mEchoSwitch.isChecked()) {      // Add send data to visible buffer if checked
+            addTextToSpanBuffer(mAsciiSpanBuffer, data, Color.BLUE);
+            addTextToSpanBuffer(mHexSpanBuffer, asciiToHex(data), Color.BLUE);
         }
-
 
         updateUI();
     }
 
     public void onClickCopy(View view) {
+        String text = mShowDataInHexFormat?mHexSpanBuffer.toString():mAsciiSpanBuffer.toString();
         ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText("UART", mSpanBuffer.toString());
+        ClipData clip = ClipData.newPlainText("UART", text);
         clipboard.setPrimaryClip(clip);
     }
 
     public void onClickClear(View view) {
-        mSpanBuffer.clear();
+        mAsciiSpanBuffer.clear();
+        mHexSpanBuffer.clear();
         updateUI();
     }
 
@@ -186,11 +211,8 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
             if (characteristic.getUuid().toString().equalsIgnoreCase(UUID_RX)) {
                 String data = new String(characteristic.getValue(), Charset.forName("UTF-8"));
 
-                //mTextBuffer += data;
-                int from = mSpanBuffer.length();
-                mSpanBuffer.append(data);
-                // Log.d(TAG, "from: " + from + " data:" + data + " total: " + mSpanBuffer.length());
-                mSpanBuffer.setSpan(new ForegroundColorSpan(Color.RED), from, from + data.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                addTextToSpanBuffer(mAsciiSpanBuffer, data, Color.RED);
+                addTextToSpanBuffer(mHexSpanBuffer, asciiToHex(data), Color.RED);
 
                 runOnUiThread(new Runnable() {
                     @Override
@@ -209,26 +231,27 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
 
     // endregion
 
+    private void addTextToSpanBuffer(SpannableStringBuilder spanBuffer, String text, int color) {
+        final int from = spanBuffer.length();
+        spanBuffer.append(text);
+        spanBuffer.setSpan(new ForegroundColorSpan(color), from, from + text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+    }
+
+
     private void updateUI() {
 
-        SpannableStringBuilder finalSpanBuffer;
-        if (mShowDataInHexFormat) {
-            finalSpanBuffer = new SpannableStringBuilder();
-            String text = mSpanBuffer.toString();
- //           ForegroundColorSpan[] colorSpans = mSpanBuffer.getSpans(0, text.length(), ForegroundColorSpan.class);
-
-            for (int i = 0; i < text.length(); i++) {
-                String charString = String.format("0x%02X", (byte) text.charAt(i));
-
-                finalSpanBuffer.append(charString + " ");
-//                finalSpanBuffer.setSpan(new ForegroundColorSpan(Color.BLUE), from, from+data.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-            }
-        } else {
-            finalSpanBuffer = mSpanBuffer;
-        }
-
-        mBufferTextView.setText(finalSpanBuffer);
+        mBufferTextView.setText(mShowDataInHexFormat?mHexSpanBuffer:mAsciiSpanBuffer);
         mBufferTextView.setSelection(0, mBufferTextView.getText().length());        // to automatically scroll to the end
+    }
+
+    private String asciiToHex(String text)
+    {
+        StringBuffer stringBuffer = new StringBuffer();
+        for (int i = 0; i < text.length(); i++) {
+            String charString = String.format("0x%02X", (byte) text.charAt(i));
+
+            stringBuffer.append(charString + " ");
+        }
+        return stringBuffer.toString();
     }
 }

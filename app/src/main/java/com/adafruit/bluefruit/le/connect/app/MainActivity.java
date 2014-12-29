@@ -60,6 +60,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     private AlertDialog mConnectingDialog;
 
     // Data
+
     private BleDevicesScanner mScanner;
     private ArrayList<BluetoothDeviceData> mScannedDevices;
     private boolean mIsScanPaused;
@@ -68,7 +69,6 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     private BleManager mBleManager;
 
     private boolean mShouldEnableWifiOnQuit = false;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -217,8 +217,8 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
 
     private void resumeScanning() {
         if (mIsScanPaused) {
-            mIsScanPaused = false;
             startScan(null, null);
+            mIsScanPaused = mScanner == null;
         }
     }
 
