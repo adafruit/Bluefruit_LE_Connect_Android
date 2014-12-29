@@ -22,6 +22,7 @@ import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ble.BleServiceListener;
 import com.adafruit.bluefruit.le.connect.ble.BleUtils;
+import com.adafruit.bluefruit.le.connect.ui.ExpandableHeightExpandableListView;
 
 public class PinIOActivity extends UartInterfaceActivity implements BleServiceListener {
     // Log

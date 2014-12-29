@@ -56,7 +56,7 @@
                 android:text="@string/scan_devicesheadertitle"
                 android:textColor="@drawable/default_textcolor" />
 
-            <com.adafruit.bluefruit.le.connect.app.ExpandableHeightExpandableListView
+            <com.adafruit.bluefruit.le.connect.ui.ExpandableHeightExpandableListView
                 android:id="@+id/scannedDevicesListView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

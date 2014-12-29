@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:key="pref_key_storage_settings"
+        android:title="@string/settings_category_connectivity">
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_disableWifi"
+            android:summary="@string/settings_disablewifi_summary"
+            android:title="@string/settings_disablewifi_title" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_resetble"
+            android:summary="@string/settings_resetble_summary"
+            android:title="@string/settings_resetble_title" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="pref_key_storage_settings"
+        android:title="@string/settings_category_bleinternal">
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_recycleconnection"
+            android:summary="@string/settings_recyclebleconnection_summary"
+            android:title="@string/settings_recyclebleconnection_title" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pref_forcecloseconnection"
+            android:summary="@string/settings_forcecloseconnection_summary"
+            android:title="@string/settings_forcecloseconnection_title" />
+
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pref_gattautoconnect"
+            android:summary="@string/settings_gattautoconnect_summary"
+            android:title="@string/settings_gattautoconnect_title" />
+
+
+    </PreferenceCategory>
+
+
+</PreferenceScreen>

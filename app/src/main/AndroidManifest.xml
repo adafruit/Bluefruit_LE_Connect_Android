@@ -10,6 +10,11 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
+    <!-- Wifi permissions are only needed if the app needs to turn off wifi to improve ble connections -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -88,6 +93,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.adafruit.bluefruit.le.connect.app.MainActivity" />
         </activity>
+        <activity
+            android:name=".app.settings.SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName="com.adafruit.bluefruit.le.connect.app.MainActivity" />
     </application>
 
 </manifest>

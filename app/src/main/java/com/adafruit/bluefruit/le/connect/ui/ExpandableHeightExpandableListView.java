@@ -1,6 +1,6 @@
 // ExpandedHeightGridView from http://stackoverflow.com/questions/8481844/gridview-height-gets-cut
 
-package com.adafruit.bluefruit.le.connect.app;
+package com.adafruit.bluefruit.le.connect.ui;
 
 import android.content.Context;
 import android.util.AttributeSet;

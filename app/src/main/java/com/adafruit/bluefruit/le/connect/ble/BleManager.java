@@ -10,6 +10,8 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.util.List;
@@ -18,11 +20,6 @@ import java.util.UUID;
 public class BleManager implements BleExecutorListener {
     // Log
     private final static String TAG = BleManager.class.getSimpleName();
-
-    // Configuration
-    private final static boolean kForceCloseBeforeNewConnection = true;// false;
-    private final static boolean reuseExistingConnection = false;// true;
-    private final static boolean gattAutoconnect = true;
 
     // Enumerations
     public static final int STATE_DISCONNECTED = 0;
@@ -88,11 +85,16 @@ public class BleManager implements BleExecutorListener {
      * @param address The device address of the destination device.
      * @return Return true if the connection is initiated successfully. The connection result is reported asynchronously through the {@code BluetoothGattCallback#onConnectionStateChange(android.bluetooth.BluetoothGatt, int, int)} callback.
      */
-    public boolean connect(String address) {
+    public boolean connect(Context context, String address) {
         if (mAdapter == null || address == null) {
             Log.w(TAG, "connect: BluetoothAdapter not initialized or unspecified address.");
             return false;
         }
+
+        // Get preferences
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        final boolean reuseExistingConnection = sharedPreferences.getBoolean("pref_recycleconnection", false);
+
 
         if (reuseExistingConnection) {
             // Previously connected device.  Try to reconnect.
@@ -108,7 +110,9 @@ public class BleManager implements BleExecutorListener {
                 }
             }
         } else {
-            if (kForceCloseBeforeNewConnection) {
+            final boolean forceCloseBeforeNewConnection = sharedPreferences.getBoolean("pref_forcecloseconnection", true);
+
+            if (forceCloseBeforeNewConnection) {
                 close();
             }
         }
@@ -119,6 +123,7 @@ public class BleManager implements BleExecutorListener {
             return false;
         }
 
+        final boolean gattAutoconnect = sharedPreferences.getBoolean("pref_gattautoconnect", true);
 
         mGatt = mDevice.connectGatt(mContext, gattAutoconnect, mExecutor);
         Log.d(TAG, "Trying to create a new connection.");

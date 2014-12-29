@@ -8,8 +8,10 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -23,10 +25,12 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.adafruit.bluefruit.le.connect.R;
+import com.adafruit.bluefruit.le.connect.app.settings.SettingsActivity;
 import com.adafruit.bluefruit.le.connect.ble.BleDevicesScanner;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ble.BleServiceListener;
 import com.adafruit.bluefruit.le.connect.ble.BleUtils;
+import com.adafruit.bluefruit.le.connect.ui.ExpandableHeightExpandableListView;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -35,7 +39,7 @@ import java.util.Arrays;
 import java.util.UUID;
 
 
-public class MainActivity extends ActionBarActivity implements BleServiceListener {
+public class MainActivity extends ActionBarActivity implements BleServiceListener, BleUtils.ResetBluetoothAdapterListener {
     // Log
     private final static String TAG = MainActivity.class.getSimpleName();
     private final static long kMinDelayToUpdateUI = 800;    // in milliseconds
@@ -63,6 +67,8 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     private Class<?> mComponentToStartWhenConnected;
     private BleManager mBleManager;
 
+    private boolean mShouldEnableWifiOnQuit = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,9 +93,29 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
         mDevicesScrollView = (ScrollView) findViewById(R.id.devicesScrollView);
         mDevicesScrollView.setVisibility(View.GONE);
 
+
         if (savedInstanceState == null) {
+            // Read preferences
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            boolean autoResetBluetoothOnStart = sharedPreferences.getBoolean("pref_resetble", false);
+            boolean disableWifi = sharedPreferences.getBoolean("pref_disableWifi", false);
+
+            // Turn off wifi
+            if (disableWifi) {
+                final boolean isWifiEnabled = BleUtils.isWifiEnabled(this);
+                if (isWifiEnabled) {
+                    BleUtils.enableWifi(false, this);
+                    mShouldEnableWifiOnQuit = true;
+                }
+            }
+
             // Check if bluetooth adapter is available
-            final boolean isBluetoothAvailable = manageBluetoothAvailability();
+            final boolean wasBluetoothEnabled = manageBluetoothAvailability();
+
+            // Reset bluetooth
+            if (autoResetBluetoothOnStart && wasBluetoothEnabled) {
+                BleUtils.resetBluetoothAdapter(this, this);
+            }
         }
     }
 
@@ -111,8 +137,12 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
         if (id == R.id.action_help) {
             startHelp();
             return true;
+        } else if (id == R.id.action_settings) {
+            Intent intent = new Intent();
+            intent.setClass(MainActivity.this, SettingsActivity.class);
+            startActivityForResult(intent, kActivityRequestCode_Settings);
+            return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -129,15 +159,13 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
             mBleManager.disconnect();
 
             // Resume scanning if was active previously
-            if (mIsScanPaused) {
-                mIsScanPaused = false;
-                startScan(null, null);
-            }
+            resumeScanning();
         }
 
         // Update UI
         updateUI();
     }
+
 
     @Override
     public void onPause() {
@@ -149,6 +177,51 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
 
         super.onPause();
     }
+
+    @Override
+    public void onBackPressed() {
+        if (mShouldEnableWifiOnQuit) {
+            mShouldEnableWifiOnQuit = false;
+            new AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.settingsaction_confirmenablewifi_title))
+                    .setMessage(getString(R.string.settingsaction_confirmenablewifi_message))
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Log.d(TAG, "enable wifi");
+                            BleUtils.enableWifi(true, MainActivity.this);
+                            MainActivity.super.onBackPressed();
+                        }
+
+                    })
+                    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            MainActivity.super.onBackPressed();
+                        }
+
+                    })
+                    .show();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        // Stop ble adapter reset if in progress
+        BleUtils.cancelBluetoothAdapterReset();
+
+        super.onDestroy();
+    }
+
+    private void resumeScanning() {
+        if (mIsScanPaused) {
+            mIsScanPaused = false;
+            startScan(null, null);
+        }
+    }
+
 
     private void showChooseDeviceServiceDialog(final BluetoothDevice device) {
         // Prepare dialog
@@ -189,7 +262,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     }
 
     private boolean manageBluetoothAvailability() {
-        boolean isAvailable = true;
+        boolean isEnabled = true;
 
         // Check Bluetooth HW status
         int errorMessageId = 0;
@@ -197,16 +270,16 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
         switch (bleStatus) {
             case BleUtils.STATUS_BLE_NOT_AVAILABLE:
                 errorMessageId = R.string.dialog_error_no_ble;
-                isAvailable = false;
+                isEnabled = false;
                 break;
             case BleUtils.STATUS_BLUETOOTH_NOT_AVAILABLE: {
                 errorMessageId = R.string.dialog_error_no_bluetooth;
-                isAvailable = false;      // it was already off
+                isEnabled = false;      // it was already off
                 break;
             }
             case BleUtils.STATUS_BLUETOOTH_DISABLED: {
                 BluetoothAdapter bleAdapter = BleUtils.getBluetoothAdapter(this);
-                isAvailable = false;      // it was already off
+                isEnabled = false;      // it was already off
                 // if no enabled, launch settings dialog to enable it (user should always be prompted before automatically enabling bluetooth)
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, kActivityRequestCode_EnableBluetooth);
@@ -222,11 +295,11 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                     .show();
         }
 
-        return isAvailable;
+        return isEnabled;
     }
 
     private void connect(BluetoothDevice device) {
-        boolean isConnecting = mBleManager.connect(device.getAddress());
+        boolean isConnecting = mBleManager.connect(this, device.getAddress());
         if (isConnecting) {
             showConnectionStatus(true);
         }
@@ -250,23 +323,17 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                         .create()
                         .show();
             }
-        }
-        else if (requestCode == kActivityRequestCode_EnableBluetooth) {
+        } else if (requestCode == kActivityRequestCode_EnableBluetooth) {
             if (resultCode == Activity.RESULT_OK) {
                 // Bluetooth was enabled, resume scanning
-                if (mIsScanPaused) {
-                    mIsScanPaused = false;
-                    startScan(null, null);
-                }
-            }
-            else if (resultCode == Activity.RESULT_CANCELED) {
+                resumeScanning();
+            } else if (resultCode == Activity.RESULT_CANCELED) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setMessage(R.string.dialog_error_no_bluetooth)
                         .setPositiveButton(R.string.dialog_ok, null)
                         .show();
             }
-        }
-        else if (requestCode == kActivityRequestCode_Settings) {
+        } else if (requestCode == kActivityRequestCode_Settings) {
             // Return from activity settings. Update app behaviour if needed
         }
     }
@@ -317,8 +384,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
 
         if (deviceData.isUart()) {      // if is uart, show all the available activities
             showChooseDeviceServiceDialog(device);
-        }
-        else {                          // if no uart, then go directly to info
+        } else {                          // if no uart, then go directly to info
             mComponentToStartWhenConnected = InfoActivity.class;
             connect(device);
         }
@@ -345,9 +411,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
         BluetoothAdapter bluetoothAdapter = BleUtils.getBluetoothAdapter(getApplicationContext());
         if (BleUtils.getBleStatus(this) != BleUtils.STATUS_BLE_ENABLED) {
             Log.w(TAG, "startScan: BluetoothAdapter not initialized or unspecified address.");
-        }
-        else {
-
+        } else {
             mScanner = new BleDevicesScanner(bluetoothAdapter, servicesToScan, new BluetoothAdapter.LeScanCallback() {
                 @Override
                 public void onLeScan(final BluetoothDevice device, final int rssi, byte[] scanRecord) {
@@ -501,6 +565,14 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
 
     }
 
+    // region ResetBluetoothAdapterListener
+    @Override
+    public void resetBluetoothCompleted() {
+        Log.d(TAG, "Reset completed -> Resume scanning");
+        resumeScanning();
+    }
+    // endregion
+
     // region BleServiceListener
     @Override
     public void onConnected() {
@@ -540,6 +612,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     @Override
     public void onDataAvailable(BluetoothGattDescriptor descriptor) {
     }
+
 
     // endregion
 
