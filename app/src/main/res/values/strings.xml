@@ -7,6 +7,10 @@
     <string name="action_info">Info</string>
     <string name="action_settings">Settings</string>
 
+    <!-- Bluetooth Adapter -->
+    <string name="dialog_error_no_ble">Bluetooth Low Energy not supported</string>
+    <string name="dialog_error_no_bluetooth">Bluetooth not available</string>
+
     <!-- Scan Activity -->
     <string name="scan_scanbutton_scan">Scan for peripherals</string>
     <string name="scan_scanbutton_scanning">Scanning</string>

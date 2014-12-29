@@ -38,7 +38,12 @@ import java.util.UUID;
 public class MainActivity extends ActionBarActivity implements BleServiceListener {
     // Log
     private final static String TAG = MainActivity.class.getSimpleName();
-    private final static long kMinDelayToUpdateUI = 800;
+    private final static long kMinDelayToUpdateUI = 800;    // in milliseconds
+
+    // Activity request codes (used for onActivityResult)
+    private static final int kActivityRequestCode_ConnectedActivity = 0;
+    private static final int kActivityRequestCode_EnableBluetooth = 1;
+    private static final int kActivityRequestCode_Settings = 2;
 
     // UI
     private ExpandableHeightExpandableListView mScannedDevicesListView;
@@ -81,6 +86,11 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
         mNoDevicesTextView = (TextView) findViewById(R.id.nodevicesTextView);
         mDevicesScrollView = (ScrollView) findViewById(R.id.devicesScrollView);
         mDevicesScrollView.setVisibility(View.GONE);
+
+        if (savedInstanceState == null) {
+            // Check if bluetooth adapter is available
+            final boolean isBluetoothAvailable = manageBluetoothAvailability();
+        }
     }
 
     @Override
@@ -113,14 +123,20 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
         // Set listener
         mBleManager.setBleListener(this);
 
-        // If was connected, disconnect
-        mBleManager.disconnect();
+        // Autostart scan
+        if (BleUtils.getBleStatus(this) == BleUtils.STATUS_BLE_ENABLED) {
+            // If was connected, disconnect
+            mBleManager.disconnect();
 
-        // Resume scanning if was active previously
-        if (mIsScanPaused) {
-            mIsScanPaused = false;
-            startScan(null, null);
+            // Resume scanning if was active previously
+            if (mIsScanPaused) {
+                mIsScanPaused = false;
+                startScan(null, null);
+            }
         }
+
+        // Update UI
+        updateUI();
     }
 
     @Override
@@ -172,6 +188,42 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
         dialog.show();
     }
 
+    private boolean manageBluetoothAvailability() {
+        boolean isAvailable = true;
+
+        // Check Bluetooth HW status
+        int errorMessageId = 0;
+        final int bleStatus = BleUtils.getBleStatus(getBaseContext());
+        switch (bleStatus) {
+            case BleUtils.STATUS_BLE_NOT_AVAILABLE:
+                errorMessageId = R.string.dialog_error_no_ble;
+                isAvailable = false;
+                break;
+            case BleUtils.STATUS_BLUETOOTH_NOT_AVAILABLE: {
+                errorMessageId = R.string.dialog_error_no_bluetooth;
+                isAvailable = false;      // it was already off
+                break;
+            }
+            case BleUtils.STATUS_BLUETOOTH_DISABLED: {
+                BluetoothAdapter bleAdapter = BleUtils.getBluetoothAdapter(this);
+                isAvailable = false;      // it was already off
+                // if no enabled, launch settings dialog to enable it (user should always be prompted before automatically enabling bluetooth)
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, kActivityRequestCode_EnableBluetooth);
+                // execution will continue at onActivityResult()
+//                bleAdapter.enable();      // do not enable without asking user
+                break;
+            }
+        }
+        if (errorMessageId > 0) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(errorMessageId)
+                    .setPositiveButton(R.string.dialog_ok, null)
+                    .show();
+        }
+
+        return isAvailable;
+    }
 
     private void connect(BluetoothDevice device) {
         boolean isConnecting = mBleManager.connect(device.getAddress());
@@ -190,7 +242,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == 0) {
+        if (requestCode == kActivityRequestCode_ConnectedActivity) {
             if (resultCode < 0) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setMessage(getString(R.string.scan_unexpecteddisconnect))
@@ -198,6 +250,24 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                         .create()
                         .show();
             }
+        }
+        else if (requestCode == kActivityRequestCode_EnableBluetooth) {
+            if (resultCode == Activity.RESULT_OK) {
+                // Bluetooth was enabled, resume scanning
+                if (mIsScanPaused) {
+                    mIsScanPaused = false;
+                    startScan(null, null);
+                }
+            }
+            else if (resultCode == Activity.RESULT_CANCELED) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(R.string.dialog_error_no_bluetooth)
+                        .setPositiveButton(R.string.dialog_ok, null)
+                        .show();
+            }
+        }
+        else if (requestCode == kActivityRequestCode_Settings) {
+            // Return from activity settings. Update app behaviour if needed
         }
     }
 
@@ -242,8 +312,16 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
         stopScanning();
 
         int scannedDeviceIndex = (Integer) view.getTag();
-        BluetoothDevice device = mScannedDevices.get(scannedDeviceIndex).device;
-        showChooseDeviceServiceDialog(device);
+        BluetoothDeviceData deviceData = mScannedDevices.get(scannedDeviceIndex);
+        BluetoothDevice device = deviceData.device;
+
+        if (deviceData.isUart()) {      // if is uart, show all the available activities
+            showChooseDeviceServiceDialog(device);
+        }
+        else {                          // if no uart, then go directly to info
+            mComponentToStartWhenConnected = InfoActivity.class;
+            connect(device);
+        }
     }
 
     public void onClickScan(View view) {
@@ -259,63 +337,71 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     // region Scan
     private void startScan(final UUID[] servicesToScan, final String deviceNameToScanFor) {
         Log.d(TAG, "startScan");
+
+        // Stop current scanning (if needed)
         stopScanning();
 
         // Configure scanning
         BluetoothAdapter bluetoothAdapter = BleUtils.getBluetoothAdapter(getApplicationContext());
-        mScanner = new BleDevicesScanner(bluetoothAdapter, servicesToScan, new BluetoothAdapter.LeScanCallback() {
-            @Override
-            public void onLeScan(final BluetoothDevice device, final int rssi, byte[] scanRecord) {
-                final String deviceName = device.getName();
-                //Log.d(TAG, "Discovered device: " + (deviceName != null ? deviceName : "<unknown>"));
+        if (BleUtils.getBleStatus(this) != BleUtils.STATUS_BLE_ENABLED) {
+            Log.w(TAG, "startScan: BluetoothAdapter not initialized or unspecified address.");
+        }
+        else {
 
-                BluetoothDeviceData previouslyScannedDeviceData = null;
-                if (deviceNameToScanFor == null || (deviceName != null && deviceName.equalsIgnoreCase(deviceNameToScanFor))) {       // Workaround for bug in service discovery. Discovery filtered by service uuid is not working on Android 4.3, 4.4
-                    // Check that the device was not previously found
-                    for (BluetoothDeviceData deviceData : mScannedDevices) {
-                        if (deviceData.device.getAddress().equals(device.getAddress())) {
-                            previouslyScannedDeviceData = deviceData;
-                            break;
+            mScanner = new BleDevicesScanner(bluetoothAdapter, servicesToScan, new BluetoothAdapter.LeScanCallback() {
+                @Override
+                public void onLeScan(final BluetoothDevice device, final int rssi, byte[] scanRecord) {
+                    final String deviceName = device.getName();
+                    //Log.d(TAG, "Discovered device: " + (deviceName != null ? deviceName : "<unknown>"));
+
+                    BluetoothDeviceData previouslyScannedDeviceData = null;
+                    if (deviceNameToScanFor == null || (deviceName != null && deviceName.equalsIgnoreCase(deviceNameToScanFor))) {       // Workaround for bug in service discovery. Discovery filtered by service uuid is not working on Android 4.3, 4.4
+                        // Check that the device was not previously found
+                        for (BluetoothDeviceData deviceData : mScannedDevices) {
+                            if (deviceData.device.getAddress().equals(device.getAddress())) {
+                                previouslyScannedDeviceData = deviceData;
+                                break;
+                            }
+                        }
+
+                        BluetoothDeviceData deviceData;
+                        if (previouslyScannedDeviceData == null) {
+                            // Add it to the mScannedDevice list
+                            deviceData = new BluetoothDeviceData();
+                            mScannedDevices.add(deviceData);
+
+                            // Show list and hide "no devices" label
+                            mNoDevicesTextView.setVisibility(View.GONE);
+                            mDevicesScrollView.setVisibility(View.VISIBLE);
+                        } else {
+                            deviceData = previouslyScannedDeviceData;
+                        }
+
+                        deviceData.device = device;
+                        deviceData.rssi = rssi;
+                        deviceData.scanRecord = scanRecord;
+                        decodeScanRecords(deviceData);
+
+                        // Update device data
+                        long currentMillis = SystemClock.uptimeMillis();
+                        if (previouslyScannedDeviceData == null || currentMillis - mLastUpdateMillis > kMinDelayToUpdateUI) {          // Avoid updating when not a new device has been found and the time from the last update is really short to avoid updating UI so fast that it will become unresponsive
+                            mLastUpdateMillis = currentMillis;
+
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    // Notify adapter
+                                    mScannedDevicesAdapter.notifyDataSetChanged();
+                                }
+                            });
                         }
                     }
-
-                    BluetoothDeviceData deviceData;
-                    if (previouslyScannedDeviceData == null) {
-                        // Add it to the mScannedDevice list
-                        deviceData = new BluetoothDeviceData();
-                        mScannedDevices.add(deviceData);
-
-                        // Show list and hide "no devices" label
-                        mNoDevicesTextView.setVisibility(View.GONE);
-                        mDevicesScrollView.setVisibility(View.VISIBLE);
-                    } else {
-                        deviceData = previouslyScannedDeviceData;
-                    }
-
-                    deviceData.device = device;
-                    deviceData.rssi = rssi;
-                    deviceData.scanRecord = scanRecord;
-                    decodeScanRecords(deviceData);
-
-                    // Update device data
-                    long currentMillis = SystemClock.uptimeMillis();
-                    if (previouslyScannedDeviceData == null || currentMillis - mLastUpdateMillis > kMinDelayToUpdateUI) {          // Avoid updating when not a new device has been found and the time from the last update is really short to avoid updating UI so fast that it will become unresponsive
-                        mLastUpdateMillis = currentMillis;
-
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                // Notify adapter
-                                mScannedDevicesAdapter.notifyDataSetChanged();
-                            }
-                        });
-                    }
                 }
-            }
-        });
+            });
 
-        // Start scanning
-        mScanner.start();
+            // Start scanning
+            mScanner.start();
+        }
 
         // Update UI
         updateUI();
@@ -402,53 +488,11 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                     break;
                 }
             }
-
-            /*
-            if (type == 0x07) {                 // UUID
-
-
-                try {
-                    String decodedRecord = new String(data,"UTF-8");
-                    Log.d(TAG, "blah: "+decodedRecord);
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-
-                String hex = BleUtils.bytesToHex(data);
-                deviceData.uuidString = hex.substring(0, 0 + 8) + "-" + hex.substring(8, 8 + 4) + "-" + hex.substring(12, 12 + 4) + "-" + hex.substring(16, 16 + 4) + "-" + hex.substring(20, 20 + 12);
-            } else if (type == 0x09) {          // Device name
-                String name = "";
-                try {
-                    name = new String(data, "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-                Log.d(TAG, "name: " + name);
-            } else if (type == 0x0A) {          // TX Power
-
-                String dataBinary = toBinary(data);
-                short txPower = (short) Integer.parseInt(dataBinary, 2);
-                deviceData.txPower = txPower;
-                Log.d(TAG, "tx power: " + data[0] + ":" + dataBinary + ":" + txPower);
-            }
-
-            // Next
-            offset += length;
-            */
         }
 
 
         deviceData.uuids = uuids;
     }
-
-    /*
-    private String toBinary(byte[] bytes) {
-        StringBuilder sb = new StringBuilder(bytes.length * Byte.SIZE);
-        for (int i = 0; i < Byte.SIZE * bytes.length; i++)
-            sb.append((bytes[i / Byte.SIZE] << i % Byte.SIZE & 0x80) == 0 ? '0' : '1');
-        return sb.toString();
-    }
-    */
 
     private void updateUI() {
         // Scan button
@@ -470,7 +514,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                 // Launch activity
                 if (mComponentToStartWhenConnected != null) {
                     Intent intent = new Intent(MainActivity.this, mComponentToStartWhenConnected);
-                    startActivityForResult(intent, 0);
+                    startActivityForResult(intent, kActivityRequestCode_ConnectedActivity);
                 }
             }
         });
@@ -508,6 +552,17 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
         // Decoded scan record
         int txPower;
         ArrayList<UUID> uuids;
+
+        public boolean isUart() {
+            boolean isUart = false;
+            for (UUID uuid : uuids) {
+                if (uuid.toString().equalsIgnoreCase(UartInterfaceActivity.UUID_SERVICE)) {
+                    isUart = true;
+                    break;
+                }
+            }
+            return isUart;
+        }
     }
     //endregion
 
@@ -639,13 +694,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
             String deviceName = deviceData.device.getName();
             holder.nameTextView.setText(deviceName != null ? deviceName : deviceData.device.getAddress());
 
-            boolean isUart = false;
-            for (UUID uuid : deviceData.uuids) {
-                if (uuid.toString().equalsIgnoreCase(UartInterfaceActivity.UUID_SERVICE)) {
-                    isUart = true;
-                    break;
-                }
-            }
+            final boolean isUart = deviceData.isUart();
             holder.descriptionTextView.setVisibility(isUart ? View.VISIBLE : View.INVISIBLE);
             holder.rssiTextView.setText(deviceData.rssi == 127 ? getString(R.string.scan_device_rssi_notavailable) : String.valueOf(deviceData.rssi));
 
