@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -20,8 +21,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -40,6 +43,7 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
     private final static String kPreferences = "UartActivity_prefs";
     private final static String kPreferences_eol = "eol";
     private final static String kPreferences_echo = "echo";
+    private final static String kPreferences_asciiMode = "ascii";
 
     // UI
     private Switch mEchoSwitch;
@@ -48,7 +52,7 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
     private EditText mSendEditText;
 
     // Data
-    private boolean mShowDataInHexFormat = false;
+    private boolean mShowDataInHexFormat;
 
     private SpannableStringBuilder mAsciiSpanBuffer = new SpannableStringBuilder();
     private SpannableStringBuilder mHexSpanBuffer = new SpannableStringBuilder();
@@ -85,6 +89,7 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
         SharedPreferences preferences = getSharedPreferences(kPreferences, MODE_PRIVATE);
         final boolean echo = preferences.getBoolean(kPreferences_echo, true);
         final boolean eol = preferences.getBoolean(kPreferences_eol, true);
+        final boolean asciiMode = preferences.getBoolean(kPreferences_asciiMode, true);
 
         // UI
         mEchoSwitch = (Switch) findViewById(R.id.echoSwitch);
@@ -92,6 +97,11 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
         mEolSwitch = (Switch) findViewById(R.id.eolSwitch);
         mEolSwitch.setChecked(eol);
 
+        RadioButton asciiFormatRadioButton = (RadioButton)findViewById(R.id.asciiFormatRadioButton);
+        asciiFormatRadioButton.setChecked(asciiMode);
+        RadioButton hexFormatRadioButton = (RadioButton)findViewById(R.id.hexFormatRadioButton);
+        hexFormatRadioButton.setChecked(!asciiMode);
+        mShowDataInHexFormat = !asciiMode;
 
         mSendEditText = (EditText) findViewById(R.id.sendEditText);
         mSendEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -105,6 +115,16 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
                 return false;
             }
         });
+        mSendEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            public void onFocusChange(View view, boolean hasFocus) {
+                if (!hasFocus) {
+                    // Dismiss keyboard when sendEditText loses focus
+                    dismissKeyboard(view);
+                }
+            }
+        });
+
+
         mBufferTextView = (EditText) findViewById(R.id.bufferTextView);
         mBufferTextView.setKeyListener(null);     // make it not editable
 
@@ -122,8 +142,15 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean(kPreferences_echo, mEchoSwitch.isChecked());
         editor.putBoolean(kPreferences_eol, mEolSwitch.isChecked());
+        editor.putBoolean(kPreferences_asciiMode, !mShowDataInHexFormat);
+
         editor.commit();
 
+    }
+
+    public void dismissKeyboard(View view) {
+        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
     public void onClickSend(View view) {
