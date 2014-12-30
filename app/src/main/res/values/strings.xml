@@ -74,6 +74,8 @@
     <string name="controller_sectiontitle_stream">Stream Sensor Data</string>
     <string name="controller_sectiontitle_interface">Interface</string>
     <string name="controller_help_title">Controller Help</string>
+    <string name="controller_location_unknown">Waiting for location data...</string>
+    <string name="controller_location_disabled">Location is disabled. Go to settings and enable it to receive location data</string>
 
     <string name="controller_interface_controlpad">Control Pad</string>
 

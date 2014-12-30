@@ -1,10 +1,12 @@
 package com.adafruit.bluefruit.le.connect.app;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -13,6 +15,7 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,6 +29,7 @@ import android.widget.ToggleButton;
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ble.BleServiceListener;
+import com.adafruit.bluefruit.le.connect.ble.BleUtils;
 import com.adafruit.bluefruit.le.connect.ui.ExpandableHeightExpandableListView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -131,7 +135,7 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
         // Setup listeners
         mBleManager.setBleListener(this);
 
-        registerSensorListeners(true);
+        registerEnabledSensorListeners(true);
 
         // Setup send data task
         sendDataHandler.postDelayed(mPeriodicallySendData, kSendDataInterval);
@@ -140,7 +144,7 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
     @Override
     protected void onPause() {
         super.onPause();
-        registerSensorListeners(false);
+        registerEnabledSensorListeners(false);
 
         // Remove send data task
         sendDataHandler.removeCallbacksAndMessages(null);
@@ -149,7 +153,6 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
     private Runnable mPeriodicallySendData = new Runnable() {
         @Override
         public void run() {
-//            Log.d(TAG, "Send sensor data");
             final String[] prefixes = {"!Q", "!A", "!G", "!M", "!L"};     // same order that kSensorType
 
             for (int i = 0; i < mSensorData.length; i++) {
@@ -208,7 +211,7 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
     }
 
     @Override
-    protected void onActivityResult (int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == 0) {
@@ -225,18 +228,27 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
+    }
+
+    private boolean isLocationEnabled() {
+        int locationMode = 0;
+        try {
+            locationMode = Settings.Secure.getInt(getContentResolver(), Settings.Secure.LOCATION_MODE);
+
+        } catch (Settings.SettingNotFoundException e) {
+        }
+
+        return locationMode != Settings.Secure.LOCATION_MODE_OFF;
 
     }
 
-    private void registerSensorListeners(boolean register) {
+    private void registerEnabledSensorListeners(boolean register) {
 
         // Accelerometer
         if (register && (mSensorData[kSensorType_Accelerometer].enabled || mSensorData[kSensorType_Quaternion].enabled)) {
             mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         } else {
             mSensorManager.unregisterListener(this, mAccelerometer);
-//            mSensorData[kSensorType_Accelerometer].values = null;
-//            mSensorData[kSensorType_Quaternion].values = null;
         }
 
         // Gyroscope
@@ -244,7 +256,6 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
             mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_NORMAL);
         } else {
             mSensorManager.unregisterListener(this, mGyroscope);
-//            mSensorData[kSensorType_Gyroscope].values = null;
         }
 
         // Magnetometer
@@ -252,9 +263,6 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
             mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_NORMAL);
         } else {
             mSensorManager.unregisterListener(this, mMagnetometer);
-//            mSensorData[kSensorType_Magnetometer].values = null;
-//            mSensorData[kSensorType_Quaternion].values = null;
-
         }
 
         // Location
@@ -268,17 +276,31 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
                 LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest, this);
             } else {
                 LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-//                mSensorData[kSensorType_Location].values = null;
             }
         }
     }
 
     public void onClickToggle(View view) {
-        // Expand / Collapse
         boolean enabled = ((ToggleButton) view).isChecked();
         int groupPosition = (Integer) view.getTag();
+
+        // Special check for location data
+        if (groupPosition == kSensorType_Location) {
+            // Detect if location is enabled or warn user
+            final boolean isLocationEnabled = isLocationEnabled();
+            if (!isLocationEnabled) {
+                new AlertDialog.Builder(this)
+                        .setMessage(getString(R.string.controller_location_disabled))
+                        .setPositiveButton(android.R.string.ok, null)
+                        .show();
+            }
+        }
+
+        // Enable sensor
         mSensorData[groupPosition].enabled = enabled;
-        registerSensorListeners(true);
+        registerEnabledSensorListeners(true);
+
+        // Expand / Collapse
         if (enabled) {
             mControllerListView.expandGroup(groupPosition, true);
         } else {
@@ -431,6 +453,10 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
         public int getChildrenCount(int groupPosition) {
             switch (groupPosition) {
 //                case kSensorType_Quaternion: return 4;       // Quaternion (x, y, z, w)
+                case kSensorType_Location: {
+                    SensorData sensorData = mSensorData[groupPosition];
+                    return sensorData.values == null ? 1 : 3;
+                }
                 default:
                     return 3;
             }
@@ -482,8 +508,8 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
                 @Override
                 public boolean onTouch(View view, MotionEvent event) {
                     // Set onclick to action_down to avoid losing state because the button is recreated when notifiydatasetchanged is called and it could be really fast (before the user has time to generate a ACTION_UP event)
-                    if (event.getAction() == MotionEvent.ACTION_DOWN ) {
-                        ToggleButton button = (ToggleButton)view;
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        ToggleButton button = (ToggleButton) view;
                         button.setChecked(!button.isChecked());
                         onClickToggle(view);
                         return true;
@@ -513,6 +539,12 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
                 } else {
                     final String[] prefix = {"x:", "y:", "z:", "w:"};
                     valueString = prefix[childPosition] + " " + sensorData.values[childPosition];
+                }
+            } else {        // Invalid values
+                if (sensorData.sensorType == kSensorType_Location) {
+                    if (sensorData.values == null) {
+                        valueString = getString(R.string.controller_location_unknown);
+                    }
                 }
             }
             valueTextView.setText(valueString);
