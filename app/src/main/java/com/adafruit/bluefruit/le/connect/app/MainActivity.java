@@ -378,8 +378,9 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     public void onClickDeviceConnect(View view) {
         stopScanning();
 
-        int scannedDeviceIndex = (Integer) view.getTag();
+        final int scannedDeviceIndex = (Integer) view.getTag();
         BluetoothDeviceData deviceData = mScannedDevices.get(scannedDeviceIndex);
+//        Log.d(TAG, "button tag: "+scannedDeviceIndex+ " name:"+deviceData.device.getName());
         BluetoothDevice device = deviceData.device;
 
         if (deviceData.isUart()) {      // if is uart, show all the available activities
@@ -753,7 +754,6 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                 holder.rssiImageView = (ImageView) convertView.findViewById(R.id.rssiImageView);
                 holder.rssiTextView = (TextView) convertView.findViewById(R.id.rssiTextView);
                 holder.connectButton = (Button) convertView.findViewById(R.id.connectButton);
-                holder.connectButton.setTag(groupPosition);
 
                 convertView.setTag(holder);
 
@@ -762,6 +762,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
             }
 
             convertView.setTag(R.string.scan_tag_id, groupPosition);
+            holder.connectButton.setTag(groupPosition);
 
             BluetoothDeviceData deviceData = mBluetoothDevices.get(groupPosition);
             String deviceName = deviceData.device.getName();
