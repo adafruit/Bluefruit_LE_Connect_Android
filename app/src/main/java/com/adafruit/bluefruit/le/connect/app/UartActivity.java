@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -34,6 +35,11 @@ import java.nio.charset.Charset;
 public class UartActivity extends UartInterfaceActivity implements BleServiceListener {
     // Log
     private final static String TAG = UartActivity.class.getSimpleName();
+
+    // Constants
+    private final static String kPreferences = "UartActivity_prefs";
+    private final static String kPreferences_eol = "eol";
+    private final static String kPreferences_echo = "echo";
 
     // UI
     private Switch mEchoSwitch;
@@ -69,16 +75,23 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
             if (controlWidth > rootWidth)       // control too big, use a smaller version
             {
                 controlsLayout = (ViewGroup) getLayoutInflater().inflate(R.layout.layout_uart_multiline_controls, headerLayout, false);
-
             }
             Log.d(TAG, "width: " + controlWidth + " baseWidth: " + rootWidth);
 
             headerLayout.addView(controlsLayout);
         }
 
+        // Read preferences
+        SharedPreferences preferences = getSharedPreferences(kPreferences, MODE_PRIVATE);
+        final boolean echo = preferences.getBoolean(kPreferences_echo, true);
+        final boolean eol = preferences.getBoolean(kPreferences_eol, true);
+
         // UI
         mEchoSwitch = (Switch) findViewById(R.id.echoSwitch);
+        mEchoSwitch.setChecked(echo);
         mEolSwitch = (Switch) findViewById(R.id.eolSwitch);
+        mEolSwitch.setChecked(eol);
+
 
         mSendEditText = (EditText) findViewById(R.id.sendEditText);
         mSendEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -95,20 +108,33 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
         mBufferTextView = (EditText) findViewById(R.id.bufferTextView);
         mBufferTextView.setKeyListener(null);     // make it not editable
 
-
         // Continue
         onServicesDiscovered();
     }
 
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+
+        // Save preferences
+        SharedPreferences preferences = getSharedPreferences(kPreferences, MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean(kPreferences_echo, mEchoSwitch.isChecked());
+        editor.putBoolean(kPreferences_eol, mEolSwitch.isChecked());
+        editor.commit();
+
+    }
+
     public void onClickSend(View view) {
         String data = mSendEditText.getText().toString();
-        sendData(data);
         mSendEditText.setText("");       // Clear editText
 
         if (mEolSwitch.isChecked()) {
             // Add newline character if checked
             data += "\n";
         }
+        sendData(data);
 
         if (mEchoSwitch.isChecked()) {      // Add send data to visible buffer if checked
             addTextToSpanBuffer(mAsciiSpanBuffer, data, Color.BLUE);
