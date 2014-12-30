@@ -6,7 +6,6 @@ import android.app.Dialog;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -29,7 +28,6 @@ import android.widget.ToggleButton;
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ble.BleServiceListener;
-import com.adafruit.bluefruit.le.connect.ble.BleUtils;
 import com.adafruit.bluefruit.le.connect.ui.ExpandableHeightExpandableListView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -231,11 +229,12 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
     }
 
     private boolean isLocationEnabled() {
-        int locationMode = 0;
+        int locationMode;
         try {
             locationMode = Settings.Secure.getInt(getContentResolver(), Settings.Secure.LOCATION_MODE);
 
         } catch (Settings.SettingNotFoundException e) {
+            locationMode = Settings.Secure.LOCATION_MODE_OFF;
         }
 
         return locationMode != Settings.Secure.LOCATION_MODE_OFF;
@@ -344,9 +343,8 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
         float[] lastMagnetometer = mSensorData[kSensorType_Magnetometer].values;
         if (lastAccelerometer != null && lastMagnetometer != null) {
             SensorManager.getRotationMatrix(mRotation, null, lastAccelerometer, lastMagnetometer);
-            mSensorManager.getOrientation(mRotation, mOrientation);
+            SensorManager.getOrientation(mRotation, mOrientation);
             mSensorData[kSensorType_Quaternion].values = mOrientation;
-
         }
     }
 
