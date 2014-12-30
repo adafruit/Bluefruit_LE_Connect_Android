@@ -145,7 +145,6 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
         editor.putBoolean(kPreferences_asciiMode, !mShowDataInHexFormat);
 
         editor.commit();
-
     }
 
     public void dismissKeyboard(View view) {

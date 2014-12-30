@@ -14,6 +14,7 @@ import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -60,7 +61,6 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     private AlertDialog mConnectingDialog;
 
     // Data
-
     private BleDevicesScanner mScanner;
     private ArrayList<BluetoothDeviceData> mScannedDevices;
     private boolean mIsScanPaused;
@@ -341,20 +341,28 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     private void showConnectionStatus(boolean enable) {
         if (enable) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(getString(R.string.scan_connecting))
-                    .setCancelable(false);
+            builder.setMessage(getString(R.string.scan_connecting));
 
             // Show dialog
             mConnectingDialog = builder.create();
             mConnectingDialog.setCanceledOnTouchOutside(false);
+
+            mConnectingDialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                @Override
+                public boolean onKey(DialogInterface arg0, int keyCode, KeyEvent event) {
+                    if (keyCode == KeyEvent.KEYCODE_BACK) {
+                        mBleManager.disconnect();
+                        mConnectingDialog.cancel();
+                    }
+                    return true;
+                }
+            });
             mConnectingDialog.show();
         } else {
             if (mConnectingDialog != null) {
                 mConnectingDialog.cancel();
             }
         }
-
-        //mConnectionStatusLayout.setVisibility(enable ? View.VISIBLE : View.GONE);
     }
 
     // region Actions
@@ -380,7 +388,6 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
 
         final int scannedDeviceIndex = (Integer) view.getTag();
         BluetoothDeviceData deviceData = mScannedDevices.get(scannedDeviceIndex);
-//        Log.d(TAG, "button tag: "+scannedDeviceIndex+ " name:"+deviceData.device.getName());
         BluetoothDevice device = deviceData.device;
 
         if (deviceData.isUart()) {      // if is uart, show all the available activities
@@ -540,11 +547,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
 
                 case 0x0A: {   // TX Power
                     int low = advertisedData[offset++] & 0xFF;
-
-//                    String dataBinary = toBinary(value);
-//                    short txPower = (short) Integer.parseInt(dataBinary, 2);
                     deviceData.txPower = low;
-                    // Log.d(TAG, "tx power: " + data[0] + ":" + dataBinary + ":" + txPower);
                     break;
                 }
 
@@ -698,14 +701,6 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                 }
                 case kChild_Services: {
                     StringBuilder text = new StringBuilder();
-                    /*
-                    ParcelUuid[] uuids = deviceData.device.getUuids();
-                    if (uuids != null) {
-                        for (ParcelUuid uuid : uuids) {
-                            text.append(uuid);
-                        }
-                    }
-                    */
                     if (deviceData.uuids != null) {
                         int i = 0;
                         for (UUID uuid : deviceData.uuids) {
@@ -815,6 +810,6 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
             return false;
         }
     }
-    //endredgion
+    //endregion
 
 }
