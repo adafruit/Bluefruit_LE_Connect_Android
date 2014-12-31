@@ -26,7 +26,6 @@
 
         <activity
             android:name=".app.MainActivity"
-            android:screenOrientation="portrait"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -36,7 +35,6 @@
         </activity>
         <activity
             android:name=".app.MainHelpActivity"
-            android:screenOrientation="portrait"
             android:label="@string/title_activity_mainhelp"
             android:parentActivityName=".app.MainActivity" >
             <meta-data
@@ -45,7 +43,6 @@
         </activity>
         <activity
             android:name=".app.InfoActivity"
-            android:screenOrientation="portrait"
             android:label="@string/title_activity_info"
             android:parentActivityName=".app.MainActivity" >
             <meta-data
@@ -54,7 +51,6 @@
         </activity>
         <activity
             android:name=".app.CommonHelpActivity"
-            android:screenOrientation="portrait"
             android:parentActivityName=".app.InfoActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -62,7 +58,6 @@
         </activity>
         <activity
             android:name=".app.UartActivity"
-            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize"
             android:label="@string/title_activity_uart" >
             <meta-data
@@ -78,7 +73,6 @@
         </activity>
         <activity
             android:name=".app.ControllerActivity"
-            android:screenOrientation="portrait"
             android:label="@string/title_activity_controller"
             android:parentActivityName=".app.MainActivity" >
             <meta-data
@@ -87,7 +81,6 @@
         </activity>
         <activity
             android:name=".app.PadActivity"
-            android:screenOrientation="landscape"
             android:label="@string/title_activity_pad" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

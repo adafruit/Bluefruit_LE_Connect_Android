@@ -8,15 +8,19 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ble.BleServiceListener;
 
-public class PadActivity extends UartInterfaceActivity implements BleServiceListener{
+public class PadActivity extends UartInterfaceActivity implements BleServiceListener {
     // Log
     private final static String TAG = PadActivity.class.getSimpleName();
+
+    // Constants
+    private final static float kMinAspectRatio = 1.5f;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,40 +29,59 @@ public class PadActivity extends UartInterfaceActivity implements BleServiceList
 
         mBleManager = BleManager.getInstance(this);
 
-
         // UI
-        ImageButton upArrowImageButton = (ImageButton)findViewById(R.id.upArrowImageButton);
+        ImageButton upArrowImageButton = (ImageButton) findViewById(R.id.upArrowImageButton);
         upArrowImageButton.setOnTouchListener(mPadButtonTouchListener);
-        ImageButton leftArrowImageButton = (ImageButton)findViewById(R.id.leftArrowImageButton);
+        ImageButton leftArrowImageButton = (ImageButton) findViewById(R.id.leftArrowImageButton);
         leftArrowImageButton.setOnTouchListener(mPadButtonTouchListener);
-        ImageButton rightArrowImageButton = (ImageButton)findViewById(R.id.rightArrowImageButton);
+        ImageButton rightArrowImageButton = (ImageButton) findViewById(R.id.rightArrowImageButton);
         rightArrowImageButton.setOnTouchListener(mPadButtonTouchListener);
-        ImageButton bottomArrowImageButton = (ImageButton)findViewById(R.id.bottomArrowImageButton);
+        ImageButton bottomArrowImageButton = (ImageButton) findViewById(R.id.bottomArrowImageButton);
         bottomArrowImageButton.setOnTouchListener(mPadButtonTouchListener);
 
-        ImageButton button1ImageButton = (ImageButton)findViewById(R.id.button1ImageButton);
+        ImageButton button1ImageButton = (ImageButton) findViewById(R.id.button1ImageButton);
         button1ImageButton.setOnTouchListener(mPadButtonTouchListener);
-        ImageButton button2ImageButton = (ImageButton)findViewById(R.id.button2ImageButton);
+        ImageButton button2ImageButton = (ImageButton) findViewById(R.id.button2ImageButton);
         button2ImageButton.setOnTouchListener(mPadButtonTouchListener);
-        ImageButton button3ImageButton = (ImageButton)findViewById(R.id.button3ImageButton);
+        ImageButton button3ImageButton = (ImageButton) findViewById(R.id.button3ImageButton);
         button3ImageButton.setOnTouchListener(mPadButtonTouchListener);
-        ImageButton button4ImageButton = (ImageButton)findViewById(R.id.button4ImageButton);
+        ImageButton button4ImageButton = (ImageButton) findViewById(R.id.button4ImageButton);
         button4ImageButton.setOnTouchListener(mPadButtonTouchListener);
+
+        // Adjust aspect ratio
 
         // Start services
         onServicesDiscovered();
     }
 
-    View.OnTouchListener mPadButtonTouchListener =  new View.OnTouchListener() {
+
+    private void adjustAspectRatio() {
+        ViewGroup rootLayout = (ViewGroup) findViewById(R.id.rootLayout);
+        int mainWidth = rootLayout.getWidth();
+        int mainHeight = rootLayout.getHeight();
+        if (mainWidth > 0 && mainHeight > 0) {
+            // Add black bars if aspect ratio is below min
+            float aspectRatio = mainWidth / (float)mainHeight;
+            if (aspectRatio < kMinAspectRatio) {
+                final int spacerHeight =  Math.round(mainHeight * (kMinAspectRatio - aspectRatio));
+
+                View topSpacerView = findViewById(R.id.topSpacerView);
+                topSpacerView.getLayoutParams().height = spacerHeight / 2;
+                View bottomSpacerView = findViewById(R.id.bottomSpacerView);
+                bottomSpacerView.getLayoutParams().height = spacerHeight / 2;
+            }
+        }
+    }
+
+    View.OnTouchListener mPadButtonTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent event) {
-            final int tag = new Integer((String)view.getTag());
-            if (event.getAction() == MotionEvent.ACTION_DOWN ) {
+            final int tag = new Integer((String) view.getTag());
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
                 view.setPressed(true);
                 sendTouchEvent(tag, true);
                 return true;
-            }
-            else if (event.getAction() == MotionEvent.ACTION_UP ) {
+            } else if (event.getAction() == MotionEvent.ACTION_UP) {
                 view.setPressed(false);
                 sendTouchEvent(tag, false);
                 return true;
@@ -68,7 +91,7 @@ public class PadActivity extends UartInterfaceActivity implements BleServiceList
     };
 
     private void sendTouchEvent(int tag, boolean pressed) {
-        String data = "!B"+tag+(pressed?"1":"0");
+        String data = "!B" + tag + (pressed ? "1" : "0");
         sendData(data.getBytes());
     }
 
@@ -106,23 +129,15 @@ public class PadActivity extends UartInterfaceActivity implements BleServiceList
                             | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                             | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                             | View.SYSTEM_UI_FLAG_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);}
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        }
+
+        adjustAspectRatio();
     }
 
-/*
-    public void onClickArrow(View view) {
-        int tag = new Integer((String)view.getTag());
-
-    }
-
-    public void onClickPadButton(View view) {
-        int tag = new Integer((String)view.getTag());
-    }
-*/
     public void onClickExit(View view) {
         finish();
     }
-
 
     @Override
     public void onConnected() {
@@ -153,6 +168,5 @@ public class PadActivity extends UartInterfaceActivity implements BleServiceList
 
     @Override
     public void onDataAvailable(BluetoothGattDescriptor descriptor) {
-
     }
 }

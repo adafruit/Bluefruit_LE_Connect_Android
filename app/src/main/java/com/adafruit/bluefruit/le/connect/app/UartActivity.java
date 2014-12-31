@@ -1,5 +1,7 @@
 package com.adafruit.bluefruit.le.connect.app;
 
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.content.ClipData;
@@ -33,6 +35,7 @@ import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ble.BleServiceListener;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 
 
 public class UartActivity extends UartInterfaceActivity implements BleServiceListener {
@@ -54,8 +57,11 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
     // Data
     private boolean mShowDataInHexFormat;
 
-    private SpannableStringBuilder mAsciiSpanBuffer = new SpannableStringBuilder();
-    private SpannableStringBuilder mHexSpanBuffer = new SpannableStringBuilder();
+    private SpannableStringBuilder mAsciiSpanBuffer;
+    private SpannableStringBuilder mHexSpanBuffer;
+
+    private DataFragment mRetainedDataFragment;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +69,7 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
         setContentView(R.layout.activity_uart);
 
         mBleManager = BleManager.getInstance(this);
+        restoreRetainedDataFragment();
 
         // Choose UI controls component based on available width
         {
@@ -145,6 +152,15 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
         editor.putBoolean(kPreferences_asciiMode, !mShowDataInHexFormat);
 
         editor.commit();
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        // Retain data
+        saveRetainedDataFragment();
+
+        super.onDestroy();
     }
 
     public void dismissKeyboard(View view) {
@@ -306,4 +322,46 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
         }
         return stringBuffer.toString();
     }
+
+
+
+    // region DataFragment
+    public static class DataFragment extends Fragment {
+        private boolean mShowDataInHexFormat;
+        private SpannableStringBuilder mAsciiSpanBuffer;
+        private SpannableStringBuilder mHexSpanBuffer;
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setRetainInstance(true);
+        }
+    }
+
+    private void restoreRetainedDataFragment() {
+        // find the retained fragment
+        FragmentManager fm = getFragmentManager();
+        mRetainedDataFragment = (DataFragment) fm.findFragmentByTag(TAG);
+
+        if (mRetainedDataFragment == null) {
+            // Create
+            mRetainedDataFragment = new DataFragment();
+            fm.beginTransaction().add(mRetainedDataFragment, TAG).commit();
+
+            mAsciiSpanBuffer = new SpannableStringBuilder();
+            mHexSpanBuffer = new SpannableStringBuilder();
+        } else {
+            // Restore status
+            mShowDataInHexFormat = mRetainedDataFragment.mShowDataInHexFormat;
+            mAsciiSpanBuffer = mRetainedDataFragment.mAsciiSpanBuffer;
+            mHexSpanBuffer = mRetainedDataFragment.mHexSpanBuffer;
+        }
+    }
+
+    private void saveRetainedDataFragment() {
+        mRetainedDataFragment.mShowDataInHexFormat = mShowDataInHexFormat;
+        mRetainedDataFragment.mAsciiSpanBuffer = mAsciiSpanBuffer;
+        mRetainedDataFragment.mHexSpanBuffer = mHexSpanBuffer;
+    }
+    // endregion
 }

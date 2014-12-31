@@ -1,6 +1,8 @@
 package com.adafruit.bluefruit.le.connect.app;
 
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.content.Intent;
@@ -41,9 +43,13 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
     private ExpandableListAdapter mAnalogListAdapter;
 
     // Data
+    private boolean mIsActivityFirstRun;
     private PinData[] mDigitalPins;
     private PinData[] mAnalogPins;
-    private byte[] portMasks = new byte[3];           // initialized to 0 values
+    private byte[] portMasks;
+
+    private DataFragment mRetainedDataFragment;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,26 +57,7 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
         setContentView(R.layout.activity_pin_io);
 
         mBleManager = BleManager.getInstance(this);
-
-        // Init variables
-        mDigitalPins = new PinData[LAST_DIGITAL_PIN - FIRST_DIGITAL_PIN + 1];
-        for (int i = 0; i < mDigitalPins.length; i++) {
-            PinData pinData = new PinData();
-            pinData.isDigital = true;
-            pinData.pinNumber = (byte)i;
-            pinData.pinId = (byte) (i + FIRST_DIGITAL_PIN);
-            pinData.mode = PinData.kMode_Input;
-            mDigitalPins[i] = pinData;
-        }
-        mAnalogPins = new PinData[LAST_ANALOG_PIN - FIRST_ANALOG_PIN + 1];
-        for (int i = 0; i < mAnalogPins.length; i++) {
-            PinData pinData = new PinData();
-            pinData.isDigital = false;
-            pinData.pinNumber = (byte)i;
-            pinData.pinId = (byte) (i + FIRST_ANALOG_PIN);
-            pinData.mode = i == 5 ? PinData.kMode_Analog : PinData.kMode_Input;
-            mAnalogPins[i] = pinData;
-        }
+        restoreRetainedDataFragment();
 
         // UI
         mDigitalListView = (ExpandableHeightExpandableListView) findViewById(R.id.digitalPinListView);
@@ -83,10 +70,11 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
         mAnalogListView.setAdapter(mAnalogListAdapter);
         mAnalogListView.setExpanded(true);
 
+        mIsActivityFirstRun = savedInstanceState == null;
+
         // Start services
         onServicesDiscovered();
     }
-
 
     @Override
     public void onResume() {
@@ -94,6 +82,14 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
 
         // Setup listeners
         mBleManager.setBleListener(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        // Retain data
+        saveRetainedDataFragment();
+
+        super.onDestroy();
     }
 
     @Override
@@ -150,7 +146,6 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
 
     public void onClickMode(View view) {
         PinData pinData = (PinData) view.getTag();
-//        boolean checked = ((RadioButton) view).isChecked();
 
         int newMode = PinData.kMode_Unknown;
         switch (view.getId()) {
@@ -178,7 +173,6 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
 
     public void onClickOutputType(View view) {
         PinData pinData = (PinData) view.getTag();
-        //       boolean checked = ((RadioButton) view).isChecked();
 
         int newState = PinData.kState_Low;
         switch (view.getId()) {
@@ -220,7 +214,9 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
         mUartService = mBleManager.getGattService(UUID_SERVICE);
 
         // PinIo init
-        enableReadReports();
+        if (mIsActivityFirstRun) {
+            enableReadReports();
+        }
     }
 
     @Override
@@ -320,25 +316,25 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
     }
 
     private void writePinState(int newState, byte pin) {
-        byte port = (byte)(pin/8);
+        byte port = (byte) (pin / 8);
 
         //Status byte == 144 + port#
-        byte data0 = (byte)(0x90 + port);       //Status
+        byte data0 = (byte) (0x90 + port);       //Status
         byte data1;                             //LSB of bitmask
         byte data2;                             //MSB of bitmask
 
         //Data1 == pin0State + 2*pin1State + 4*pin2State + 8*pin3State + 16*pin4State + 32*pin5State
-        byte pinIndex = (byte)(pin - (port*8));
-        byte newMask = (byte)(newState * (int)(Math.pow(2, pinIndex)));
+        byte pinIndex = (byte) (pin - (port * 8));
+        byte newMask = (byte) (newState * (int) (Math.pow(2, pinIndex)));
 
         if (port == 0) {
             portMasks[port] &= ~(1 << pinIndex); //prep the saved mask by zeroing this pin's corresponding bit
             newMask |= portMasks[port]; //merge with saved port state
             portMasks[port] = newMask;
-            data1 = (byte)(newMask<<1); data1 >>= 1;  //remove MSB
-            data2 = (byte)(newMask >> 7); //use data1's MSB as data2's LSB
-        }
-        else {
+            data1 = (byte) (newMask << 1);
+            data1 >>= 1;  //remove MSB
+            data2 = (byte) (newMask >> 7); //use data1's MSB as data2's LSB
+        } else {
             portMasks[port] &= ~(1 << pinIndex); //prep the saved mask by zeroing this pin's corresponding bit
             newMask |= portMasks[port]; //merge with saved port state
             portMasks[port] = newMask;
@@ -347,8 +343,8 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
 
             //Hack for firmata pin15 reporting bug?
             if (port == 1) {
-                data2 = (byte)(newMask>>7);
-                data1 &= ~(1<<7);
+                data2 = (byte) (newMask >> 7);
+                data1 &= ~(1 << 7);
             }
         }
 
@@ -356,7 +352,6 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
         byte bytes[] = {data0, data1, data2};
         sendHexData(bytes);
     }
-
 
 
     private void valueControlChanged(byte value, byte pin) {
@@ -367,9 +362,9 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
 
         //Set an PWM output pin's value
 
-        byte data0 = (byte)(0xe0 + pin);       //Status
-        byte data1 = (byte)(value & 0x7F);     //LSB of bitmask
-        byte data2 = (byte)(value >> 7);       //MSB of bitmask
+        byte data0 = (byte) (0xe0 + pin);       //Status
+        byte data1 = (byte) (value & 0x7F);     //LSB of bitmask
+        byte data2 = (byte) (value >> 7);       //MSB of bitmask
 
         // send data
         byte bytes[] = {data0, data1, data2};
@@ -378,7 +373,7 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
 
     private void setAnalogValueReportingforPin(byte pin, boolean enabled) {
         byte data0 = (byte) (0xc0 + pin);       // start analog reporting for pin (192 + pin#)
-        byte data1 = (byte)(enabled?1:0);       // enable
+        byte data1 = (byte) (enabled ? 1 : 0);       // enable
 
         // send data
         byte bytes[] = {data0, data1};
@@ -561,22 +556,22 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
             boolean isPwmBarVisible = pinData.mode == PinData.kMode_PWM;
             SeekBar pmwSeekBar = (SeekBar) convertView.findViewById(R.id.pmwSeekBar);
             pmwSeekBar.setVisibility(isPwmBarVisible ? View.VISIBLE : View.GONE);
+            pmwSeekBar.setProgress(pinData.pwm);
             pmwSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    //Log.d(TAG, "seek: "+progress);
-                    pinData.pwm = progress;
-
+                    if (fromUser) {
+                        pinData.pwm = progress;
+                    }
                 }
 
                 @Override
                 public void onStartTrackingTouch(SeekBar seekBar) {
-
                 }
 
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    valueControlChanged((byte)pinData.pwm, pinData.pinId);
+                    valueControlChanged((byte) pinData.pwm, pinData.pinId);
 
                     ExpandableListAdapter listAdapter = pinData.isDigital ? mDigitalListAdapter : mAnalogListAdapter;
                     listAdapter.notifyDataSetChanged();
@@ -586,10 +581,10 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
             // spacer visibility (spacers are shown if pwm or analog are visible)
             final boolean isSpacer2Visible = isPwmVisible || !mIsDigital;
             View spacer2View = convertView.findViewById(R.id.spacer2View);
-            spacer2View.setVisibility(isSpacer2Visible?View.VISIBLE:View.GONE);
+            spacer2View.setVisibility(isSpacer2Visible ? View.VISIBLE : View.GONE);
             final boolean isSpacer3Visible = isSpacer2Visible || (!isPwmVisible && mIsDigital);
             View spacer3View = convertView.findViewById(R.id.spacer3View);
-            spacer3View.setVisibility(isSpacer3Visible?View.VISIBLE:View.GONE);
+            spacer3View.setVisibility(isSpacer3Visible ? View.VISIBLE : View.GONE);
 
             return convertView;
         }
@@ -599,4 +594,63 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
             return false;
         }
     }
+
+    // region DataFragment
+    public static class DataFragment extends Fragment {
+        private PinData[] mDigitalPins;
+        private PinData[] mAnalogPins;
+        private byte[] portMasks;
+
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setRetainInstance(true);
+        }
+    }
+
+    private void restoreRetainedDataFragment() {
+        // find the retained fragment
+        FragmentManager fm = getFragmentManager();
+        mRetainedDataFragment = (DataFragment) fm.findFragmentByTag(TAG);
+
+        if (mRetainedDataFragment == null) {
+            // Create
+            mRetainedDataFragment = new DataFragment();
+            fm.beginTransaction().add(mRetainedDataFragment, TAG).commit();
+
+            // Init variables
+            portMasks = new byte[3];           // initialized to 0 values
+            mDigitalPins = new PinData[LAST_DIGITAL_PIN - FIRST_DIGITAL_PIN + 1];
+            for (int i = 0; i < mDigitalPins.length; i++) {
+                PinData pinData = new PinData();
+                pinData.isDigital = true;
+                pinData.pinNumber = (byte) i;
+                pinData.pinId = (byte) (i + FIRST_DIGITAL_PIN);
+                pinData.mode = PinData.kMode_Input;
+                mDigitalPins[i] = pinData;
+            }
+            mAnalogPins = new PinData[LAST_ANALOG_PIN - FIRST_ANALOG_PIN + 1];
+            for (int i = 0; i < mAnalogPins.length; i++) {
+                PinData pinData = new PinData();
+                pinData.isDigital = false;
+                pinData.pinNumber = (byte) i;
+                pinData.pinId = (byte) (i + FIRST_ANALOG_PIN);
+                pinData.mode = i == 5 ? PinData.kMode_Analog : PinData.kMode_Input;
+                mAnalogPins[i] = pinData;
+            }
+        } else {
+            // Restore status
+            mDigitalPins = mRetainedDataFragment.mDigitalPins;
+            mAnalogPins = mRetainedDataFragment.mAnalogPins;
+            portMasks = mRetainedDataFragment.portMasks;
+        }
+    }
+
+    private void saveRetainedDataFragment() {
+        mRetainedDataFragment.mDigitalPins = mDigitalPins;
+        mRetainedDataFragment.mAnalogPins = mAnalogPins;
+        mRetainedDataFragment.portMasks = portMasks;
+    }
+    // endregion
 }

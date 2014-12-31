@@ -5,6 +5,7 @@
     android:padding="10dp">
 
     <TextView
+        android:layout_marginLeft="20dp"
         android:id="@+id/valueTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

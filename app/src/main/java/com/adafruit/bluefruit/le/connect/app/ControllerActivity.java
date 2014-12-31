@@ -3,6 +3,8 @@ package com.adafruit.bluefruit.le.connect.app;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.content.Context;
@@ -69,19 +71,16 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
     private float[] mRotation = new float[9];
     private float[] mOrientation = new float[3];
 
+    private DataFragment mRetainedDataFragment;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_controller);
 
         mBleManager = BleManager.getInstance(this);
-        mSensorData = new SensorData[kNumSensorTypes];
-        for (int i = 0; i < kNumSensorTypes; i++) {
-            SensorData sensorData = new SensorData();
-            sensorData.sensorType = i;
-            sensorData.enabled = false;
-            mSensorData[i] = sensorData;
-        }
+        restoreRetainedDataFragment();
 
         // UI
         mControllerListView = (ExpandableHeightExpandableListView) findViewById(R.id.controllerListView);
@@ -146,6 +145,14 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
 
         // Remove send data task
         sendDataHandler.removeCallbacksAndMessages(null);
+    }
+
+    @Override
+    public void onDestroy() {
+        // Retain data
+        saveRetainedDataFragment();
+
+        super.onDestroy();
     }
 
     private Runnable mPeriodicallySendData = new Runnable() {
@@ -555,4 +562,46 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
             return false;
         }
     }
+
+    // region DataFragment
+    public static class DataFragment extends Fragment {
+        private SensorData[] mSensorData;
+        private GoogleApiClient mGoogleApiClient;
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setRetainInstance(true);
+        }
+    }
+
+    private void restoreRetainedDataFragment() {
+        // find the retained fragment
+        FragmentManager fm = getFragmentManager();
+        mRetainedDataFragment = (DataFragment) fm.findFragmentByTag(TAG);
+
+        if (mRetainedDataFragment == null) {
+            // Create
+            mRetainedDataFragment = new DataFragment();
+            fm.beginTransaction().add(mRetainedDataFragment, TAG).commit();
+
+            // Init
+            mSensorData = new SensorData[kNumSensorTypes];
+            for (int i = 0; i < kNumSensorTypes; i++) {
+                SensorData sensorData = new SensorData();
+                sensorData.sensorType = i;
+                sensorData.enabled = false;
+                mSensorData[i] = sensorData;
+            }
+
+        } else {
+            // Restore status
+            mSensorData = mRetainedDataFragment.mSensorData;
+        }
+    }
+
+    private void saveRetainedDataFragment() {
+        mRetainedDataFragment.mSensorData = mSensorData;
+    }
+    // endregion
 }
