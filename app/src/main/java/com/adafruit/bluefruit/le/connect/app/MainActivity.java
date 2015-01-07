@@ -256,11 +256,12 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                                 mComponentToStartWhenConnected = UartActivity.class;
                                 break;
                             }
+                            /*
                             case 2: { // PinIO
                                 mComponentToStartWhenConnected = PinIOActivity.class;
                                 break;
-                            }
-                            case 3: { // Controller
+                            }*/
+                            case 2/*3*/: { // Controller
                                 mComponentToStartWhenConnected = ControllerActivity.class;
                                 break;
                             }

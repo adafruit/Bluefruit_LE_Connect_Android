@@ -1,6 +1,8 @@
 package com.adafruit.bluefruit.le.connect.app;
 
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
@@ -14,8 +16,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.adafruit.bluefruit.le.connect.R;
@@ -23,6 +27,7 @@ import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ble.BleServiceListener;
 import com.adafruit.bluefruit.le.connect.ble.BleUtils;
 import com.adafruit.bluefruit.le.connect.ble.KnownUUIDs;
+import com.adafruit.bluefruit.le.connect.ui.ExpandableHeightListView;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -33,6 +38,9 @@ import java.util.Map;
 public class InfoActivity extends ActionBarActivity implements BleServiceListener {
     // Log
     private final static String TAG = InfoActivity.class.getSimpleName();
+
+    // Constants
+    private final static int kDataFormatCount = 2;
 
     // UI
     private ExpandableListView mInfoListView;
@@ -45,6 +53,9 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
     private Map<String, List<ElementPath>> mDescriptorsMap;              // Map with descriptors for characteristic keys
     private Map<String, byte[]> mValuesMap;                              // Map with values for characteristic and descriptor keys¡
 
+    private DataFragment mRetainedDataFragment;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,10 +64,7 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
         mBleManager = BleManager.getInstance(this);
 
         // Init variables
-        mServicesList = new ArrayList<>();
-        mCharacteristicsMap = new LinkedHashMap<>();
-        mDescriptorsMap = new LinkedHashMap<>();
-        mValuesMap = new LinkedHashMap<>();
+        restoreRetainedDataFragment();
 
         // UI
         mInfoListView = (ExpandableListView) findViewById(R.id.infoListView);
@@ -68,7 +76,7 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
             TextView nameTextView = (TextView) findViewById(R.id.nameTextView);
             boolean isNameDefined = device.getName() != null;
             nameTextView.setText(device.getName());
-            nameTextView.setVisibility(isNameDefined?View.VISIBLE: View.GONE);
+            nameTextView.setVisibility(isNameDefined ? View.VISIBLE : View.GONE);
 
             TextView addressTextView = (TextView) findViewById(R.id.addressTextView);
             addressTextView.setText(getString(R.string.scan_device_address) + ": " + device.getAddress());
@@ -85,6 +93,14 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
 
         // Setup listeners
         mBleManager.setBleListener(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        // Retain data
+        saveRetainedDataFragment();
+
+        super.onDestroy();
     }
 
     @Override
@@ -109,6 +125,7 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
 
         return super.onOptionsItemSelected(item);
     }
+
 
     private void startHelp() {
         // Launch app hep activity
@@ -193,7 +210,7 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
 
                 // Descriptors
                 List<BluetoothGattDescriptor> descriptors = characteristic.getDescriptors();
-                List<ElementPath> descriptorNamesList = new ArrayList<ElementPath>(descriptors.size());
+                List<ElementPath> descriptorNamesList = new ArrayList<>(descriptors.size());
                 for (BluetoothGattDescriptor descriptor : descriptors) {
                     String descriptorUuid = descriptor.getUuid().toString();
                     String descriptorName = KnownUUIDs.getDescriptorName(descriptorUuid);
@@ -235,6 +252,18 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
 
     @Override
     public void onDataAvailable(BluetoothGattDescriptor descriptor) {
+        BluetoothGattCharacteristic characteristic = descriptor.getCharacteristic();
+        BluetoothGattService service = characteristic.getService();
+        String key = new ElementPath(service.getUuid().toString(), service.getInstanceId(), characteristic.getUuid().toString(), descriptor.toString(), null, null).getKey();
+        mValuesMap.put(key, descriptor.getValue());
+
+        // Update UI
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mInfoListAdapter.notifyDataSetChanged();
+            }
+        });
 
     }
 
@@ -349,6 +378,9 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
                 convertView = mActivity.getLayoutInflater().inflate(R.layout.layout_info_item_characteristic, parent, false);
             }
 
+            BluetoothGattService service = mBleManager.getGattService(elementPath.serviceUUID, elementPath.serviceInstance);
+            boolean isReadable = elementPath.characteristicUUID != null && mBleManager.isCharacteristicReadable(service, elementPath.characteristicUUID);
+
             // Tag
             convertView.setTag(elementPath);
 
@@ -363,12 +395,71 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
             valueTextView.setText(valueString);
             valueTextView.setVisibility(valueString == null ? View.GONE : View.VISIBLE);
 
+            // Update button
+            ImageButton updateButton = (ImageButton) convertView.findViewById(R.id.updateButton);
+            updateButton.setVisibility(isReadable ? View.VISIBLE : View.GONE);
+            updateButton.setTag(elementPath);
+
+            // Notify button
+            ImageButton notifyButton = (ImageButton) convertView.findViewById(R.id.notifyButton);
+            boolean isNotifiable = elementPath.characteristicUUID != null && elementPath.descriptorUUID == null && mBleManager.isCharacteristicNotifiable(service, elementPath.characteristicUUID);
+            notifyButton.setVisibility(isNotifiable ? View.VISIBLE : View.GONE);
+            notifyButton.setTag(elementPath);
+
+            // List setup
+            ExpandableHeightListView listView = (ExpandableHeightListView) convertView.findViewById(R.id.descriptorsListView);
+            listView.setExpanded(true);
+
+            // Descriptors
+            List<ElementPath> descriptorNamesList = mDescriptors.get(elementPath.getKey());
+            DescriptorAdapter adapter = new DescriptorAdapter(mActivity, R.layout.layout_info_item_descriptor, descriptorNamesList);
+            listView.setAdapter(adapter);
+
+
             return convertView;
         }
 
         @Override
         public boolean isChildSelectable(int groupPosition, int childPosition) {
             return false;
+        }
+    }
+
+    private class DescriptorAdapter extends ArrayAdapter<ElementPath> {
+        Activity mActivity;
+
+        public DescriptorAdapter(Activity activity, int resource, List<ElementPath> items) {
+            super(activity, resource, items);
+
+            mActivity = activity;
+        }
+
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ElementPath elementPath = getItem(position);
+
+            if (convertView == null) {
+                convertView = mActivity.getLayoutInflater().inflate(R.layout.layout_info_item_descriptor, parent, false);
+            }
+
+            // Tag
+            convertView.setTag(elementPath);
+
+            // Name
+            TextView nameTextView = (TextView) convertView.findViewById(R.id.nameTextView);
+            nameTextView.setText(elementPath.isShowingName ? elementPath.name : elementPath.uuid);
+
+            // Value
+            TextView valueTextView = (TextView) convertView.findViewById(R.id.valueTextView);
+            byte[] value = mValuesMap.get(elementPath.getKey());
+            String valueString = getValueFormatted(value, elementPath.dataFormat);
+            valueTextView.setText(valueString);
+            valueTextView.setVisibility(valueString == null ? View.GONE : View.VISIBLE);
+
+            // Update button
+            ImageButton updateButton = (ImageButton) convertView.findViewById(R.id.updateButton);
+            updateButton.setTag(elementPath);
+
+            return convertView;
         }
     }
     //endregion
@@ -407,6 +498,113 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
         return result;
     }
     //endregion
+
+    //region Actions
+    public void onClickCharacteristic(View view) {
+        ElementPath elementPath = (ElementPath) view.getTag();
+
+        if (elementPath != null) {
+            // Check if is a characteristic
+            if (elementPath.characteristicUUID != null && elementPath.descriptorUUID == null) {
+                BluetoothGattService service = mBleManager.getGattService(elementPath.serviceUUID, elementPath.serviceInstance);
+
+                if (mBleManager.isCharacteristicReadable(service, elementPath.characteristicUUID)) {
+                    Log.d(TAG, "Read char");
+                    mBleManager.readCharacteristic(service, elementPath.characteristicUUID);
+                }
+            }
+        }
+    }
+
+    public void onClickNotifyCharacteristic(View view) {
+        ElementPath elementPath = (ElementPath) view.getTag();
+
+        if (elementPath != null) {
+            // Check if is a characteristic
+            if (elementPath.characteristicUUID != null && elementPath.descriptorUUID == null) {
+                BluetoothGattService service = mBleManager.getGattService(elementPath.serviceUUID, elementPath.serviceInstance);
+                if (mBleManager.isCharacteristicNotifiable(service, elementPath.characteristicUUID)) {
+                    Log.d(TAG, "Notify char");
+                    ImageButton imageButton = (ImageButton) view;
+                    final boolean selected = !imageButton.isSelected();
+                    imageButton.setSelected(selected);
+                    mBleManager.enableService(service, elementPath.characteristicUUID, selected);
+
+                    // Button color effect when pressed
+                    imageButton.setImageResource(selected ? R.drawable.ic_sync_white_24dp : R.drawable.ic_sync_black_24dp);
+                }
+            }
+        }
+    }
+
+    public void onClickDescriptor(View view) {
+        ElementPath elementPath = (ElementPath) view.getTag();
+
+        if (elementPath != null) {
+            // Check if is a descriptor
+            if (elementPath.characteristicUUID != null && elementPath.descriptorUUID != null) {
+                BluetoothGattService service = mBleManager.getGattService(elementPath.serviceUUID, elementPath.serviceInstance);
+                Log.d(TAG, "Read desc");
+                mBleManager.readDescriptor(service, elementPath.characteristicUUID, elementPath.descriptorUUID);
+            }
+        }
+    }
+
+    public void onClickDataFormat(View view) {
+        ElementPath elementPath = (ElementPath) view.getTag();
+
+        if (elementPath != null) {
+            Log.d(TAG, "Toggle data format");
+            elementPath.dataFormat = (elementPath.dataFormat + 1) % kDataFormatCount;
+
+            mInfoListAdapter.notifyDataSetChanged();
+        }
+    }
+
+    // endregion
+
+    // region DataFragment
+    public static class DataFragment extends Fragment {
+        private List<ElementPath> mServicesList;
+        private Map<String, List<ElementPath>> mCharacteristicsMap;
+        private Map<String, List<ElementPath>> mDescriptorsMap;
+        private Map<String, byte[]> mValuesMap;
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setRetainInstance(true);
+        }
+    }
+
+    private void restoreRetainedDataFragment() {
+        // find the retained fragment
+        FragmentManager fm = getFragmentManager();
+        mRetainedDataFragment = (DataFragment) fm.findFragmentByTag(TAG);
+
+        if (mRetainedDataFragment == null) {
+            // Create
+            mRetainedDataFragment = new DataFragment();
+            fm.beginTransaction().add(mRetainedDataFragment, TAG).commit();
+
+            mServicesList = new ArrayList<>();
+            mCharacteristicsMap = new LinkedHashMap<>();
+            mDescriptorsMap = new LinkedHashMap<>();
+            mValuesMap = new LinkedHashMap<>();
+        } else {
+            // Restore status
+            mServicesList = mRetainedDataFragment.mServicesList;
+            mCharacteristicsMap = mRetainedDataFragment.mCharacteristicsMap;
+            mDescriptorsMap = mRetainedDataFragment.mDescriptorsMap;
+            mValuesMap = mRetainedDataFragment.mValuesMap;
+        }
+    }
+
+    private void saveRetainedDataFragment() {
+        mRetainedDataFragment.mServicesList = mServicesList;
+        mRetainedDataFragment.mCharacteristicsMap = mCharacteristicsMap;
+        mRetainedDataFragment.mDescriptorsMap = mDescriptorsMap;
+        mRetainedDataFragment.mValuesMap = mValuesMap;
+    }
+    // endregion
 }
-
-

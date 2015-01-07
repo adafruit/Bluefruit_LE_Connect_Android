@@ -33,7 +33,7 @@
     <string-array name="scan_connectservice_items">
         <item>Info</item>
         <item>UART</item>
-        <item>Pin I/O</item>
+<!--        <item>Pin I/O</item> -->
         <item>Controller</item>
     </string-array>
 

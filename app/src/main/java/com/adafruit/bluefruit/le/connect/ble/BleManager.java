@@ -280,6 +280,33 @@ public class BleManager implements BleExecutorListener {
         }
     }
 
+    public BluetoothGattService getGattService(String uuid, int instanceId) {
+        if (mGatt != null) {
+            List<BluetoothGattService> services = getSupportedGattServices();
+            boolean found = false;
+            int i=0;
+            while (i<services.size() && !found) {
+                BluetoothGattService service = services.get(i);
+                if (service.getUuid().toString().equalsIgnoreCase(uuid) && service.getInstanceId() == instanceId)
+                {
+                    found = true;
+                }
+                else {
+                    i++;
+                }
+            }
+
+            if (found) {
+                return services.get(i);
+            }
+            else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
     @Override
     public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
         if (newState == BluetoothProfile.STATE_CONNECTED) {
