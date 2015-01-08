@@ -164,7 +164,7 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
                 SensorData sensorData = mSensorData[i];
 
                 if (sensorData.enabled && sensorData.values != null) {
-                    ByteBuffer buffer = ByteBuffer.allocate(3 * 4 * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+                    ByteBuffer buffer = ByteBuffer.allocate(2 + 3 * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
 
                     // prefix
                     String prefix = prefixes[sensorData.sensorType];
