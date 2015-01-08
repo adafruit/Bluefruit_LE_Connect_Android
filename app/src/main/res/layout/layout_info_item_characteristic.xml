@@ -59,6 +59,7 @@
     <com.adafruit.bluefruit.le.connect.ui.ExpandableHeightListView
         android:id="@+id/descriptorsListView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:divider="@null"/>
 
 </LinearLayout>

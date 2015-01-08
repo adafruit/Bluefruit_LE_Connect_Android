@@ -45,6 +45,7 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
     // UI
     private ExpandableListView mInfoListView;
     private ExpandableListAdapter mInfoListAdapter;
+    private View mWaitView;
 
     // Data
     private BleManager mBleManager;
@@ -54,7 +55,6 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
     private Map<String, byte[]> mValuesMap;                              // Map with values for characteristic and descriptor keys¡
 
     private DataFragment mRetainedDataFragment;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +67,8 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
         restoreRetainedDataFragment();
 
         // UI
+        mWaitView = findViewById(R.id.waitView);
+
         mInfoListView = (ExpandableListView) findViewById(R.id.infoListView);
         mInfoListAdapter = new ExpandableListAdapter(this, mServicesList, mCharacteristicsMap, mDescriptorsMap, mValuesMap);
         mInfoListView.setAdapter(mInfoListAdapter);
@@ -125,7 +127,6 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
 
         return super.onOptionsItemSelected(item);
     }
-
 
     private void startHelp() {
         // Launch app hep activity
@@ -230,7 +231,8 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mInfoListAdapter.notifyDataSetChanged();
+                updateUI();
+
             }
         });
     }
@@ -245,7 +247,8 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mInfoListAdapter.notifyDataSetChanged();
+                updateUI();
+
             }
         });
     }
@@ -261,10 +264,18 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mInfoListAdapter.notifyDataSetChanged();
+                updateUI();
             }
         });
 
+    }
+
+    private void updateUI() {
+        mInfoListAdapter.notifyDataSetChanged();
+
+        // Show progress view if data is not ready yet
+        final boolean isDataEmpty = mInfoListView.getChildCount()==0;
+        mWaitView.setVisibility(isDataEmpty?View.VISIBLE:View.GONE);
     }
 
     // region adapters
@@ -414,7 +425,6 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
             List<ElementPath> descriptorNamesList = mDescriptors.get(elementPath.getKey());
             DescriptorAdapter adapter = new DescriptorAdapter(mActivity, R.layout.layout_info_item_descriptor, descriptorNamesList);
             listView.setAdapter(adapter);
-
 
             return convertView;
         }
