@@ -1,15 +1,17 @@
-// ExpandedHeightGridView from http://stackoverflow.com/questions/8481844/gridview-height-gets-cut
+// Based on ExpandedHeightGridView from http://stackoverflow.com/questions/8481844/gridview-height-gets-cut
 
 package com.adafruit.bluefruit.le.connect.ui;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.ScrollView;
 
 public class ExpandableHeightListView extends ListView {
 
-    boolean expanded = false;
+    boolean mExpanded = false;
 
     public ExpandableHeightListView(Context context) {
         super(context);
@@ -24,7 +26,7 @@ public class ExpandableHeightListView extends ListView {
     }
 
     public boolean isExpanded() {
-        return expanded;
+        return mExpanded;
     }
 
     @Override
@@ -44,6 +46,7 @@ public class ExpandableHeightListView extends ListView {
     }
 
     public void setExpanded(boolean expanded) {
-        this.expanded = expanded;
+        mExpanded = expanded;
     }
+
 }

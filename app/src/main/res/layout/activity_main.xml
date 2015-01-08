@@ -1,15 +1,15 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/default_background"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/default_background"
 
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
+                android:paddingBottom="@dimen/activity_vertical_margin"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:paddingTop="@dimen/activity_vertical_margin"
 
-    tools:context=".MainActivity">
+                tools:context=".MainActivity">
 
     <ImageView
         android:layout_width="wrap_content"
@@ -17,7 +17,7 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="90dp"
-        android:src="@drawable/adaflower" />
+        android:src="@drawable/adaflower"/>
 
     <Button
         android:id="@+id/scanButton"
@@ -26,7 +26,7 @@
         android:layout_alignParentBottom="true"
         android:background="#000000"
         android:onClick="onClickScan"
-        android:textColor="#ffffff" />
+        android:textColor="#ffffff"/>
 
     <TextView
         android:id="@+id/nodevicesTextView"
@@ -35,35 +35,41 @@
         android:layout_marginTop="60dp"
         android:gravity="center_horizontal"
         android:text="@string/scan_nodevicesfound"
-        android:textColor="@drawable/default_textcolor" />
+        android:textColor="@drawable/default_textcolor"/>
 
-    <ScrollView
-        android:id="@+id/devicesScrollView"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
         android:layout_above="@id/scanButton"
-        android:layout_alignParentTop="true">
+        android:layout_height="wrap_content">
 
-        <LinearLayout
+        <ScrollView
+            android:id="@+id/devicesScrollView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="match_parent">
 
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
-                android:text="@string/scan_devicesheadertitle"
-                android:textColor="@drawable/default_textcolor" />
+                android:orientation="vertical">
 
-            <com.adafruit.bluefruit.le.connect.ui.ExpandableHeightExpandableListView
-                android:id="@+id/scannedDevicesListView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="#ffffff"
-                android:childDivider="#00000000"
-                android:groupIndicator="@null" />
-        </LinearLayout>
-    </ScrollView>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:text="@string/scan_devicesheadertitle"
+                    android:textColor="@drawable/default_textcolor"/>
 
+                <com.adafruit.bluefruit.le.connect.ui.ExpandableHeightExpandableListView
+                    android:id="@+id/scannedDevicesListView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#ffffff"
+                    android:childDivider="#00000000"
+                    android:groupIndicator="@null"/>
+            </LinearLayout>
+        </ScrollView>
+
+    </android.support.v4.widget.SwipeRefreshLayout>
 </RelativeLayout>

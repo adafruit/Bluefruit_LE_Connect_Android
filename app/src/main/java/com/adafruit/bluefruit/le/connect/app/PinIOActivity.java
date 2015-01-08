@@ -16,6 +16,7 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -41,6 +42,7 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
     private ExpandableListAdapter mDigitalListAdapter;
     private ExpandableHeightExpandableListView mAnalogListView;
     private ExpandableListAdapter mAnalogListAdapter;
+    private ScrollView mPinScrollView;
 
     // Data
     private boolean mIsActivityFirstRun;
@@ -69,6 +71,8 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
         mAnalogListAdapter = new ExpandableListAdapter(this, false, mAnalogPins);
         mAnalogListView.setAdapter(mAnalogListAdapter);
         mAnalogListView.setExpanded(true);
+
+        mPinScrollView = (ScrollView) findViewById(R.id.pinScrollView);
 
         mIsActivityFirstRun = savedInstanceState == null;
 
@@ -123,12 +127,12 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
         startActivity(intent);
     }
 
-    public void onClickPinIOTitle(View view) {
+    public void onClickPinIOTitle(final View view) {
         boolean isDigital = (Boolean) view.getTag(R.string.pinio_tag_mode);
-        ExpandableListView listView = isDigital ? mDigitalListView : mAnalogListView;
+        final ExpandableHeightExpandableListView listView = isDigital ? mDigitalListView : mAnalogListView;
         ExpandableListAdapter listAdapter = isDigital ? mDigitalListAdapter : mAnalogListAdapter;
 
-        int groupPosition = (Integer) view.getTag();
+        final int groupPosition = (Integer) view.getTag();
         if (listView.isGroupExpanded(groupPosition)) {
             listView.collapseGroup(groupPosition);
         } else {
@@ -141,6 +145,15 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
             }
 
             listView.expandGroup(groupPosition, true);
+
+            // Force scrolling to view the children
+            mPinScrollView.post(new Runnable() {
+                @Override
+                public void run() {
+                    listView.scrollToGroup(groupPosition, view, mPinScrollView);
+                }
+            });
+
         }
     }
 

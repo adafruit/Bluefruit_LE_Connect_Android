@@ -1,16 +1,17 @@
-// ExpandedHeightGridView from http://stackoverflow.com/questions/8481844/gridview-height-gets-cut
+// Based on ExpandedHeightGridView from http://stackoverflow.com/questions/8481844/gridview-height-gets-cut
 
 package com.adafruit.bluefruit.le.connect.ui;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
-import android.widget.GridView;
+import android.widget.ScrollView;
 
 public class ExpandableHeightExpandableListView extends ExpandableListView {
 
-    boolean expanded = false;
+    private boolean mExpanded = false;
 
     public ExpandableHeightExpandableListView(Context context) {
         super(context);
@@ -25,7 +26,7 @@ public class ExpandableHeightExpandableListView extends ExpandableListView {
     }
 
     public boolean isExpanded() {
-        return expanded;
+        return mExpanded;
     }
 
     @Override
@@ -45,6 +46,27 @@ public class ExpandableHeightExpandableListView extends ExpandableListView {
     }
 
     public void setExpanded(boolean expanded) {
-        this.expanded = expanded;
+        mExpanded = expanded;
+    }
+
+
+    public void scrollToGroup(int groupPosition, View view, ScrollView parentScrollView){
+        final float baseY = getY();
+        final float currentGroupPosY = baseY + view.getY();
+        final int currentScrollY = parentScrollView.getScrollY();
+        final View nextGroupView = findViewWithTag(groupPosition+1);
+
+        if (currentScrollY > currentGroupPosY) {
+            parentScrollView.smoothScrollTo(parentScrollView.getScrollX(),  view.getTop());
+        }
+        else if (nextGroupView != null) {
+            final float nextGroupPosY = baseY + nextGroupView.getY();
+            if (currentScrollY + parentScrollView.getHeight() < nextGroupPosY) {
+                parentScrollView.smoothScrollTo(0,  nextGroupView.getBottom());
+            }
+        }
+        else {
+            parentScrollView.smoothScrollTo(parentScrollView.getScrollX(), getBottom()-parentScrollView.getHeight());
+        }
     }
 }

@@ -14,6 +14,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -23,6 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.Button;
+import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -40,6 +42,8 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
+
+import static android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 
 
 public class MainActivity extends ActionBarActivity implements BleServiceListener, BleUtils.ResetBluetoothAdapterListener {
@@ -59,6 +63,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     private long mLastUpdateMillis;
     private TextView mNoDevicesTextView;
     private ScrollView mDevicesScrollView;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     private AlertDialog mConnectingDialog;
 
@@ -90,11 +95,33 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
         mScannedDevicesListView.setAdapter(mScannedDevicesAdapter);
         mScannedDevicesListView.setExpanded(true);
 
+        mScannedDevicesListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
+            @Override
+            public void onGroupExpand(int groupPosition) {
+            }
+        });
+
         mScanButton = (Button) findViewById(R.id.scanButton);
 
         mNoDevicesTextView = (TextView) findViewById(R.id.nodevicesTextView);
         mDevicesScrollView = (ScrollView) findViewById(R.id.devicesScrollView);
         mDevicesScrollView.setVisibility(View.GONE);
+
+        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
+        mSwipeRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                mScannedDevices.clear();
+                startScan(null, null);
+
+                mSwipeRefreshLayout.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mSwipeRefreshLayout.setRefreshing(false);
+                    }
+                }, 500);
+            }
+        });
 
         // Setup when activity is created for the first time
         if (savedInstanceState == null) {
@@ -225,7 +252,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
         saveRetainedDataFragment();
 
         // Clean
-        if (mConnectingDialog != null)  {
+        if (mConnectingDialog != null) {
             mConnectingDialog.cancel();
         }
 
@@ -256,12 +283,13 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                                 mComponentToStartWhenConnected = UartActivity.class;
                                 break;
                             }
-                            /*
+/*
                             case 2: { // PinIO
                                 mComponentToStartWhenConnected = PinIOActivity.class;
                                 break;
-                            }*/
-                            case 2/*3*/: { // Controller
+                            }
+                            */
+                            case 2: { // Controller
                                 mComponentToStartWhenConnected = ControllerActivity.class;
                                 break;
                             }
@@ -381,20 +409,21 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     }
 
     // region Actions
-    public void onClickScannedDevice(View view) {
-        int groupPosition = (Integer) view.getTag(R.string.scan_tag_id);
+    public void onClickScannedDevice(final View view) {
+        final int groupPosition = (Integer) view.getTag();
+
         if (mScannedDevicesListView.isGroupExpanded(groupPosition)) {
             mScannedDevicesListView.collapseGroup(groupPosition);
         } else {
-            // Expand this, collapse the rest
-            int len = mScannedDevicesAdapter.getGroupCount();
-            for (int i = 0; i < len; i++) {
-                if (i != groupPosition) {
-                    mScannedDevicesListView.collapseGroup(i);
-                }
-            }
-
             mScannedDevicesListView.expandGroup(groupPosition, true);
+
+            // Force scrolling to view the children
+            mDevicesScrollView.post(new Runnable() {
+                @Override
+                public void run() {
+                    mScannedDevicesListView.scrollToGroup(groupPosition, view, mDevicesScrollView);
+                }
+            });
         }
     }
 
@@ -763,13 +792,13 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                 holder.rssiTextView = (TextView) convertView.findViewById(R.id.rssiTextView);
                 holder.connectButton = (Button) convertView.findViewById(R.id.connectButton);
 
-                convertView.setTag(holder);
+                convertView.setTag(R.string.scan_tag_id, holder);
 
             } else {
-                holder = (GroupViewHolder) convertView.getTag();
+                holder = (GroupViewHolder) convertView.getTag(R.string.scan_tag_id);
             }
 
-            convertView.setTag(R.string.scan_tag_id, groupPosition);
+            convertView.setTag(groupPosition);
             holder.connectButton.setTag(groupPosition);
 
             BluetoothDeviceData deviceData = mBluetoothDevices.get(groupPosition);
