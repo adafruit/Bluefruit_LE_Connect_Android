@@ -13,7 +13,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
-import android.widget.ExpandableListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
@@ -234,7 +233,97 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
 
     @Override
     public void onDataAvailable(BluetoothGattCharacteristic characteristic) {
+        byte[] data = characteristic.getValue();
 
+        if (data.length <= 20) {
+            processInputData(data);
+        } else {
+            Log.w(TAG, "unexpected received data length: " + data.length);
+        }
+    }
+
+    private void processInputData(byte[] data) {
+
+        Log.d(TAG, "received data: data = " + data[0] + " length = " + data.length);
+
+        for (int i = 0; i < data.length; i += 3) {
+            int data0 = data[i];
+
+            //Digital Reporting (per port)
+            if (data0 == 0x90) {                            //Port 0
+                int pinStates = (int) (data[i + 1]);
+                pinStates |= (int) (data[i + 2]) << 7;      //use LSB of third byte for pin7
+                updateForPinStates(pinStates, 0);
+            }
+            else if (data0 == 0x91) {                       //Port 1
+                int pinStates = (int) (data[i + 1]);
+                pinStates |= (int) (data[i + 2]) << 7;      //pins 14 & 15
+                updateForPinStates(pinStates, 1);
+            }
+            else if (data0 == 0x92) {                       // Port 2
+                int pinStates = (int) (data[i + 1]);
+                updateForPinStates(pinStates, 2);
+            }
+
+            //Analog Reporting (per pin)
+            else if ((data0 >= 0xe0) && (data0 <= 0xe5)) {
+                int pin = data0 - 0xe0;
+                int val = (int) (data[i + 1]) + ((int) (data[i + 2]) << 7);
+
+                if (pin < mAnalogPins.length) {
+                    PinData pinData = mAnalogPins[pin];
+                    pinData.state = val;
+
+                    // Update UI
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mAnalogListAdapter.notifyDataSetChanged();
+
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    private void updateForPinStates(int pinStates, int port) {
+
+        // Update all ports
+        for (int i = 0; i < 8; i++) {
+            int state = pinStates;
+            int mask = 1 << i;
+            state = state & mask;
+            state = state >> i;
+
+            // update port
+            if (port < mDigitalPins.length) {
+                PinData pinData = mDigitalPins[port];
+                if (pinData.mode == PinData.kMode_Input || pinData.mode == PinData.kMode_Output) {
+                    if (state==0 || state==1) {
+                        pinData.state = state==0?PinData.kState_Low:PinData.kState_High;
+                    }
+                    else {
+                        Log.w(TAG, "Attempting set digital pin to analog value");
+                    }
+                }
+                else {
+                    Log.w(TAG, "Attempting set analog pin to digital value");
+                }
+            }
+        }
+
+        // Save reference state mask
+        portMasks[port] = (byte)pinStates;
+
+        // Update UI
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mDigitalListAdapter.notifyDataSetChanged();
+
+            }
+        });
     }
 
     @Override
@@ -418,7 +507,7 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
         byte pinNumber;
         byte pinId;
         int mode = kMode_Unknown;
-        int state = kState_Low;
+        int state = kState_Low;         // low-high for digital or int value for analog
         int pwm = 0;
     }
 
@@ -511,7 +600,7 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
             TextView stateTextView = (TextView) convertView.findViewById(R.id.stateTextView);
             int stateStringResourceId;
             if (pinData.mode == PinData.kMode_Analog) {
-                stateTextView.setText("0");
+                stateTextView.setText("" + pinData.state);
             } else if (pinData.mode == PinData.kMode_PWM) {
                 stateTextView.setText("" + pinData.pwm);
             } else {
