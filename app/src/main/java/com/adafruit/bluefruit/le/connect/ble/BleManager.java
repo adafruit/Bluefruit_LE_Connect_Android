@@ -62,6 +62,7 @@ public class BleManager implements BleExecutorListener {
     public void setBleListener(BleServiceListener listener) {
         mBleListener = listener;
     }
+    public BleServiceListener getBleListener()  {return mBleListener; }
 
     public BluetoothAdapter getAdapter() {
         return mAdapter;

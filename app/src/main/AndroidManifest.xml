@@ -10,6 +10,8 @@
     <uses-permission android:name="android.permission.BLUETOOTH"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <!-- Wifi permissions are only needed if the app needs to turn off wifi to improve ble connections -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
@@ -101,6 +103,15 @@
             android:label="@string/title_activity_settings"
             android:parentActivityName="com.adafruit.bluefruit.le.connect.app.MainActivity"
             android:screenOrientation="fullUser"/>
+        <activity
+            android:name="com.adafruit.bluefruit.le.connect.app.update.NotificationActivity"
+            android:label="@string/dfu_feature_title" />
+
+        <service
+            android:name="com.adafruit.bluefruit.le.connect.app.update.DfuService" />
     </application>
+
+
+
 
 </manifest>

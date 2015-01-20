@@ -1,45 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-
     <PreferenceCategory
-        android:key="pref_key_storage_settings"
+        android:key="pref_key_connectivity_settings"
         android:title="@string/settings_category_connectivity">
 
         <CheckBoxPreference
             android:defaultValue="false"
+            android:disableDependentsState="true"
             android:key="pref_disableWifi"
             android:summary="@string/settings_disablewifi_summary"
-            android:title="@string/settings_disablewifi_title" />
+            android:title="@string/settings_disablewifi_title"/>
 
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pref_resetble"
             android:summary="@string/settings_resetble_summary"
-            android:title="@string/settings_resetble_title" />
+            android:title="@string/settings_resetble_title"/>
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:key="pref_key_storage_settings"
+        android:key="pref_key_bleinternal_settings"
         android:title="@string/settings_category_bleinternal">
 
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pref_recycleconnection"
             android:summary="@string/settings_recyclebleconnection_summary"
-            android:title="@string/settings_recyclebleconnection_title" />
+            android:title="@string/settings_recyclebleconnection_title"/>
 
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_forcecloseconnection"
             android:summary="@string/settings_forcecloseconnection_summary"
-            android:title="@string/settings_forcecloseconnection_title" />
-
+            android:title="@string/settings_forcecloseconnection_title"/>
 
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pref_gattautoconnect"
             android:summary="@string/settings_gattautoconnect_summary"
             android:title="@string/settings_gattautoconnect_title" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:dependency="pref_disableWifi"
+        android:key="@string/pref_key_update_settings"
+        android:title="@string/settings_category_update">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pref_updatesenabled"
+            android:summary="@string/settings_updatesenabled_summary"
+            android:title="@string/settings_updateenabled_title"/>
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="@string/pref_updatesversioncheck"
+            android:summary="@string/settings_pref_updatesversioncheck_summary"
+            android:title="@string/settings_pref_updatesversioncheck_title"/>
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="@string/pref_updatesblefriendcheck"
+            android:summary="@string/settings_pref_updatesblefriendcheck_summary"
+            android:title="@string/settings_pref_updatesblefriendcheck_title"/>
+
+
+        <EditTextPreference
+            android:key="@string/pref_updateserver"
+            android:summary="@string/settings_updateserver_summary"
+            android:title="@string/settings_updateserver_title"
+            android:dialogTitle="@string/settings_updateserver_edittitle"/>
 
 
     </PreferenceCategory>

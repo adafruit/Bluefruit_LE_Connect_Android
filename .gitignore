@@ -4,3 +4,7 @@
 /.idea/libraries
 .DS_Store
 /build
+BuildConfig.java
+R.java
+dFULibrary/build
+tools/nRF_Toolbox_Android_1.9.2
