@@ -348,15 +348,21 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
         mProgressDialog.setIndeterminate(true);
         mProgressDialog.setMessage(mContext.getString(R.string.softwareupdate_startupdate));
         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        mProgressDialog.setCancelable(false);
+        mProgressDialog.setCancelable(true);
         mProgressDialog.show();
 
         mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
+                // Abort dfu library process
+                final LocalBroadcastManager manager = LocalBroadcastManager.getInstance(mContext);
+                final Intent pauseAction = new Intent(DfuService.BROADCAST_ACTION);
+                pauseAction.putExtra(DfuService.EXTRA_ACTION, DfuService.ACTION_ABORT);
+                manager.sendBroadcast(pauseAction);
 
-
+                // Cancel dialog
                 mListener.onInstallCancelled();
+                mLastestChechedDeviceAddress = null;
             }
         });
 
