@@ -14,6 +14,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.PowerManager;
@@ -242,12 +244,17 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
             mDownloadTask.cancel(true);
         }
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-        String updateServer = sharedPreferences.getString("pref_updateserver", SoftwareUpdateManager.kDefaultUpdateServerUrl);
-        Log.d(TAG, "Get latest software version data from: "+updateServer);
+        if (isNetworkAvailable()) {
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+            String updateServer = sharedPreferences.getString("pref_updateserver", SoftwareUpdateManager.kDefaultUpdateServerUrl);
+            Log.d(TAG, "Get latest software version data from: " + updateServer);
 
-        mDownloadTask = new DownloadTask(mContext, this, kDownloadOperation_Version);
-        mDownloadTask.execute(updateServer);
+            mDownloadTask = new DownloadTask(mContext, this, kDownloadOperation_Version);
+            mDownloadTask.execute(updateServer);
+        }
+        else {
+            Log.d(TAG, "Can't update lastest software info from server. Connection not available");
+        }
     }
 
     public void setListener(SoftwareUpdateManagerListener listener) {
@@ -258,53 +265,56 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
     }
 
     public boolean checkIfNewSoftwareVersionIsAvailable() {
-        // Check if the user chose to ignore the latest version
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-        String versionToIgnore = sharedPreferences.getString("updatemanager_ignoredVersion", "0");
-        if (versionCompare(mLatestVersion, versionToIgnore) != 0) {
+        if (isNetworkAvailable()) {
+            // Check if the user chose to ignore the latest version
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+            String versionToIgnore = sharedPreferences.getString("updatemanager_ignoredVersion", "0");
+            if (versionCompare(mLatestVersion, versionToIgnore) != 0) {
 
-            BleManager bleManager = BleManager.getInstance(mContext);
-            String deviceAddress = bleManager.getConnectedDeviceAddress();
-            if (!deviceAddress.equals(mLastestChechedDeviceAddress)) {
-                mLastestChechedDeviceAddress = deviceAddress;
+                BleManager bleManager = BleManager.getInstance(mContext);
+                String deviceAddress = bleManager.getConnectedDeviceAddress();
+                if (!deviceAddress.equals(mLastestChechedDeviceAddress)) {
+                    mLastestChechedDeviceAddress = deviceAddress;
 
-                // Check if the device is an adafruit updateable device
-                if (mListener == null) Log.w(TAG, "Trying to verify software version without listener!!");
+                    // Check if the device is an adafruit updateable device
+                    if (mListener == null) Log.w(TAG, "Trying to verify software version without listener!!");
 
-                boolean hasDFUService = bleManager.getGattService(kNordicDeviceFirmwareUpdateService) != null;
-                if (hasDFUService) {
-                    boolean checkBleFriendDevice = sharedPreferences.getBoolean("pref_updatesblefriendcheck", true);
-                    if (checkBleFriendDevice) {
-                        BluetoothGattService deviceInformationService = bleManager.getGattService(kDeviceInformationService);
-                        boolean hasDISService = deviceInformationService != null;
-                        if (hasDISService) {
-                            mDeviceInfoData.manufacturer = null;
-                            mDeviceInfoData.modelNumber = null;
-                            mDeviceInfoData.softwareVersion = null;
-                            bleManager.setBleListener(this);
+                    boolean hasDFUService = bleManager.getGattService(kNordicDeviceFirmwareUpdateService) != null;
+                    if (hasDFUService) {
+                        boolean checkBleFriendDevice = sharedPreferences.getBoolean("pref_updatesblefriendcheck", true);
+                        if (checkBleFriendDevice) {
+                            BluetoothGattService deviceInformationService = bleManager.getGattService(kDeviceInformationService);
+                            boolean hasDISService = deviceInformationService != null;
+                            if (hasDISService) {
+                                mDeviceInfoData.manufacturer = null;
+                                mDeviceInfoData.modelNumber = null;
+                                mDeviceInfoData.softwareVersion = null;
+                                bleManager.setBleListener(this);
 
-                            bleManager.readCharacteristic(deviceInformationService, kManufacturerNameCharacteristic);
-                            bleManager.readCharacteristic(deviceInformationService, kModelNumberCharacteristic);
-                            bleManager.readCharacteristic(deviceInformationService, kSoftwareRevisionCharacteristic);
+                                bleManager.readCharacteristic(deviceInformationService, kManufacturerNameCharacteristic);
+                                bleManager.readCharacteristic(deviceInformationService, kModelNumberCharacteristic);
+                                bleManager.readCharacteristic(deviceInformationService, kSoftwareRevisionCharacteristic);
 
-                            // Data will be received asynchronously (onDataAvailable)
+                                // Data will be received asynchronously (onDataAvailable)
+                                return true;
+                            } else {
+                                Log.d(TAG, "Updates unavailable: No DIS service found");
+                            }
+
+                        } else {
+                            // Update anything with a DFU service
+                            mListener.onSoftwareUpdateChecked(true, mLatestVersion);
                             return true;
                         }
-                        else {
-                            Log.d(TAG, "Updates unavailable: No DIS service found");                        }
-
-                    } else {
-                        // Update anything with a DFU service
-                        mListener.onSoftwareUpdateChecked(true, mLatestVersion);
-                        return true;
                     }
+                } else {
+                    Log.d(TAG, "Version for connected device was already checked this session. Skipping check");
                 }
-            }
-            else {
-                Log.d(TAG, "Version for connected device was already checked this session. Skipping check");
+            } else {
+                Log.d(TAG, "User asked to ignore version: " + versionToIgnore);
             }
         } else {
-            Log.d(TAG, "User asked to ignore version: " + versionToIgnore);
+            Log.d(TAG, "No update available. Internet connection not detected");
         }
 
         return false;
@@ -324,24 +334,30 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
             mDownloadTask.cancel(true);
         }
 
-        mProgressDialog = new ProgressDialog(activity);
-        mProgressDialog.setMessage(mContext.getString(R.string.softwareupdate_downloading));
-        mProgressDialog.setIndeterminate(true);
-        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        mProgressDialog.setCancelable(true);
-        mProgressDialog.show();
+        if (isNetworkAvailable()) {
+            mProgressDialog = new ProgressDialog(activity);
+            mProgressDialog.setMessage(mContext.getString(R.string.softwareupdate_downloading));
+            mProgressDialog.setIndeterminate(true);
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            mProgressDialog.setCancelable(true);
+            mProgressDialog.show();
 
-        Log.d(TAG, "Downloading " + mLatestVersionUrl);
-        mDownloadTask = new DownloadTask(mContext, this, kDownloadOperation_Software);
-        mDownloadTask.execute(mLatestVersionUrl);
+            Log.d(TAG, "Downloading " + mLatestVersionUrl);
+            mDownloadTask = new DownloadTask(mContext, this, kDownloadOperation_Software);
+            mDownloadTask.execute(mLatestVersionUrl);
 
-        mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                mDownloadTask.cancel(true);
-                mListener.onInstallCancelled();
-            }
-        });
+            mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialog) {
+                    mDownloadTask.cancel(true);
+                    mListener.onInstallCancelled();
+                }
+            });
+        }
+        else {
+            Log.w(TAG, "Cant install latest version. Internet connection not found");
+            Toast.makeText(mContext, mContext.getString(R.string.softwareupdate_connectionnotavailable), Toast.LENGTH_LONG).show();
+        }
     }
 
     private void updateDeviceFirmware(String path) {
@@ -375,7 +391,7 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
 
         service.putExtra(DfuService.EXTRA_DEVICE_ADDRESS, mSelectedDevice.getAddress());
         service.putExtra(DfuService.EXTRA_DEVICE_NAME, mSelectedDevice.getName());
-        service.putExtra(DfuService.EXTRA_FILE_MIME_TYPE, fileType == DfuService.TYPE_AUTO ? DfuService.MIME_TYPE_ZIP : DfuService.MIME_TYPE_HEX);
+        service.putExtra(DfuService.EXTRA_FILE_MIME_TYPE, fileType == DfuService.TYPE_AUTO ? DfuService.MIME_TYPE_ZIP : DfuService.MIME_TYPE_OCTET_STREAM);
         service.putExtra(DfuService.EXTRA_FILE_TYPE, fileType);
         service.putExtra(DfuService.EXTRA_FILE_PATH, path);
         service.putExtra(DfuService.EXTRA_FILE_URI, fileStreamUri);
@@ -439,13 +455,13 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
                 }
             }
         } else if (operationId == kDownloadOperation_Software) {
-            mProgressDialog.dismiss();
-            //mProgressDialog = null;
+            //mProgressDialog.dismiss();
 
             if (result == null) {
                 Log.w(TAG, "Error downloading software version: " + mLatestVersionUrl);
                 mListener.onInstallFailed(true);
                 mLastestChechedDeviceAddress = null;
+                mProgressDialog.dismiss();
             } else {
                 Log.d(TAG, "Downloaded version: " + mLatestVersion + " size: " + result.size());
 
@@ -467,6 +483,7 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
                 } else {
                     mListener.onInstallFailed(true);
                     mLastestChechedDeviceAddress = null;
+                    mProgressDialog.dismiss();
                 }
 
             }
@@ -593,7 +610,7 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
                 }
 
             } catch (Exception e) {
-                Log.w(TAG, "Error downloading latest version info: " + e);
+                Log.w(TAG, "Error DownloadTask " + e);
                 return null;
             } finally {
                 try {
@@ -679,6 +696,12 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
         else {
             return Integer.signum(vals1.length - vals2.length);
         }
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
 }

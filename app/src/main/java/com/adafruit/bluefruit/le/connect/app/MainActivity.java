@@ -742,6 +742,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     showConnectionStatus(false);        // hide current dialogs because software update will display a dialog
+                                    stopScanning();
                                     BluetoothDevice device = mBleManager.getConnectedDevice();
                                     mBleManager.disconnect();       // disconnect to let the dfu library connect to the device
                                     mBleManager.close();

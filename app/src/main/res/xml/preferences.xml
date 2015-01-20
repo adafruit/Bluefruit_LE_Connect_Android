@@ -6,7 +6,6 @@
 
         <CheckBoxPreference
             android:defaultValue="false"
-            android:disableDependentsState="true"
             android:key="pref_disableWifi"
             android:summary="@string/settings_disablewifi_summary"
             android:title="@string/settings_disablewifi_title"/>
@@ -43,7 +42,6 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:dependency="pref_disableWifi"
         android:key="@string/pref_key_update_settings"
         android:title="@string/settings_category_update">
         <CheckBoxPreference

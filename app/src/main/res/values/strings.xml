@@ -39,15 +39,13 @@
     </string-array>
 
     <string name="scan_softwareupdate_title">Update available</string>
-    <string name="scan_softwareupdate_message">Software version %s is ready to be installed</string>
+    <string name="scan_softwareupdate_message">Software version %s is available</string>
     <string name="scan_softwareupdate_install">Install</string>
     <string name="scan_softwareupdate_notnow">Ask later</string>
     <string name="scan_softwareupdate_dontask">Ignore</string>
     <string name="scan_softwareupdate_downloaderror">Software download error</string>
     <string name="scan_softwareupdate_updateerror">Software update error</string>
     <string name="scan_softwareupdate_completed">Software updated successfully</string>
-
-
 
     <!-- Scan Help Activity -->
     <string name="title_activity_mainhelp">Help</string>
@@ -151,8 +149,9 @@
 
 
     <!-- Software update -->
-    <string name="softwareupdate_downloading">Downloading update...</string>
+    <string name="softwareupdate_downloading">Downloading new software version...</string>
     <string name="softwareupdate_startupdate">Starting firmware update...</string>
+    <string name="softwareupdate_connectionnotavailable">No internet connection detected</string>
     <string name="dfu_service_progress">%d%%</string>
     <string name="dfu_feature_title">Bluefruit Update</string>
 

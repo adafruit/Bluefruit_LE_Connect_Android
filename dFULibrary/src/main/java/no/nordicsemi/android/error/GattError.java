@@ -78,8 +78,10 @@ public class GattError {
 			return "GATT ENCRYPED NO MITM";
 		case 0x008e:
 			return "GATT NOT ENCRYPTED";
+		case 0x0101:
+			return "TOO MANY OPEN CONNECTIONS";
 		case 0x00FF:
-			return "DFU SERVICE DSCOVERY NOT STARTED";
+			return "DFU SERVICE DISCOVERY NOT STARTED";
 		case DfuBaseService.ERROR_DEVICE_DISCONNECTED:
 			return "DFU DEVICE DISCONNECTED";
 		case DfuBaseService.ERROR_FILE_ERROR:
@@ -98,6 +100,8 @@ public class GattError {
 			return "DFU CHARACTERISTICS NOT FOUND";
 		case DfuBaseService.ERROR_FILE_TYPE_UNSUPPORTED:
 			return "DFU FILE TYPE NOT SUPPORTED";
+		case DfuBaseService.ERROR_BLUETOOTH_DISABLED:
+			return "BLUETOOTH ADAPTER DISABLED";
 		default:
 			if ((DfuBaseService.ERROR_REMOTE_MASK & error) > 0) {
 				switch (error & (~DfuBaseService.ERROR_REMOTE_MASK)) {
@@ -113,7 +117,7 @@ public class GattError {
 					return "REMOTE DFU OPERATION FAILED";
 				}
 			}
-			return String.format("UNKNOWN (0x%02X)", error & 0xFF);
+			return "UNKNOWN (" + error + ")";
 		}
 	}
 }
