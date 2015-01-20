@@ -233,6 +233,10 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
         mLatestVersionUrl = sharedPreferences.getString("updatemanager_latestVersionUrl", "");
     }
 
+    public void clearLastCheckedDeviceAddress() {
+        mLastestChechedDeviceAddress = null;
+    }
+
     public void updateInfoFromServer() {
         if (mDownloadTask != null) {
             mDownloadTask.cancel(true);
@@ -344,12 +348,14 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
         mProgressDialog.setIndeterminate(true);
         mProgressDialog.setMessage(mContext.getString(R.string.softwareupdate_startupdate));
         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        mProgressDialog.setCancelable(true);
+        mProgressDialog.setCancelable(false);
         mProgressDialog.show();
 
         mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
+
+
                 mListener.onInstallCancelled();
             }
         });

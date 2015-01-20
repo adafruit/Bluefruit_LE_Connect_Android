@@ -402,6 +402,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
             boolean updatesEnabled = sharedPreferences.getBoolean("pref_updatesenabled", true);
             if(updatesEnabled) {
                 mSoftwareUpdateManager = SoftwareUpdateManager.getInstance(this);
+                mSoftwareUpdateManager.clearLastCheckedDeviceAddress();
                 mSoftwareUpdateManager.updateInfoFromServer();
             }
             else {
