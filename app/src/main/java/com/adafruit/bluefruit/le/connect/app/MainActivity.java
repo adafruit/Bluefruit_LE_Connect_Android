@@ -82,7 +82,6 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
 
     private DataFragment mRetainedDataFragment;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -133,7 +132,6 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
             boolean autoResetBluetoothOnStart = sharedPreferences.getBoolean("pref_resetble", false);
             boolean disableWifi = sharedPreferences.getBoolean("pref_disableWifi", false);
             boolean updatesEnabled = sharedPreferences.getBoolean("pref_updatesenabled", true);
-
 
             // Update SoftwareUpdateManager
             if (updatesEnabled) {
@@ -194,8 +192,8 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
         // Set listener
         mBleManager.setBleListener(this);
         if (mSoftwareUpdateManager != null) {       // if software updates are enabled
-            mSoftwareUpdateManager.setListener(this);
-            mSoftwareUpdateManager.onResumeListenerActivity();
+            mSoftwareUpdateManager.setListener(this, this);
+//            mSoftwareUpdateManager.onResumeListenerActivity();
         }
 
         // Autostart scan
@@ -226,11 +224,11 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
             mWasScanningBeforeOnPause = false;
         }
 
-
+/*
         if (mSoftwareUpdateManager != null) {       // if software updates are enabled
             mSoftwareUpdateManager.onPauseListenerActivity();
         }
-
+*/
         super.onPause();
     }
 
@@ -707,7 +705,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                     showCheckingUpdateState();
                 }
             });
-            mSoftwareUpdateManager.setListener(this);
+            mSoftwareUpdateManager.setListener(this, this);
             isVerifying = mSoftwareUpdateManager.checkIfNewSoftwareVersionIsAvailable();        // continues asynchronously in onSoftwareUpdateChecked
             Log.d(TAG, isVerifying ? "Verifying if software update is available" : "No software update available");
         }

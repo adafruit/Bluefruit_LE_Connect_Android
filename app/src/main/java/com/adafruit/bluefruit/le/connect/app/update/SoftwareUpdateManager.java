@@ -1,6 +1,7 @@
 package com.adafruit.bluefruit.le.connect.app.update;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
@@ -28,6 +29,7 @@ import com.adafruit.bluefruit.le.connect.BuildConfig;
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ble.BleServiceListener;
+import com.adafruit.bluefruit.le.connect.ui.ProgressDialogFragment;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -69,8 +71,10 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
     private DownloadTask mDownloadTask;
     private DeviceInfoData mDeviceInfoData;
     private SoftwareUpdateManagerListener mListener;
-    private ProgressDialog mProgressDialog;
+    private ProgressDialogFragment mProgressDialog;
     private BluetoothDevice mSelectedDevice;
+    private PowerManager.WakeLock mWakeLock;
+    private Activity mParentActivity;
 
     private String mLastestChechedDeviceAddress;           // To avoid waiting to check device if we have already checked it this session
 
@@ -125,34 +129,51 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
     private void updateProgressBar(final int progress, final int part, final int total, final boolean error) {
         switch (progress) {
             case DfuService.PROGRESS_CONNECTING:
-                mProgressDialog.setIndeterminate(true);
-                mProgressDialog.setMessage(mContext.getString(R.string.dfu_status_connecting));
+                if (mProgressDialog != null) {
+                    mProgressDialog.setIndeterminate(mParentActivity.getFragmentManager(), true);
+                    mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.dfu_status_connecting));
+                }
                 break;
 
             case DfuService.PROGRESS_STARTING:
-                mProgressDialog.setIndeterminate(true);
-                mProgressDialog.setMessage(mContext.getString(R.string.dfu_status_starting));
+                if (mProgressDialog != null) {
+                    mProgressDialog.setIndeterminate(mParentActivity.getFragmentManager(), true);
+                    mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.dfu_status_starting));
+                }
+                break;
+
+            case DfuService.PROGRESS_ENABLING_DFU_MODE:
+                if (mProgressDialog != null) {
+                    mProgressDialog.setIndeterminate(mParentActivity.getFragmentManager(), true);
+                    mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.dfu_status_switching_to_dfu));
+                }
                 break;
 
             case DfuService.PROGRESS_VALIDATING:
-                mProgressDialog.setIndeterminate(true);
-                mProgressDialog.setMessage(mContext.getString(R.string.dfu_status_validating));
+                if (mProgressDialog != null) {
+                    mProgressDialog.setIndeterminate(mParentActivity.getFragmentManager(), true);
+                    mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.dfu_status_validating));
+                }
                 break;
 
             case DfuService.PROGRESS_DISCONNECTING:
-                mProgressDialog.setIndeterminate(true);
-                mProgressDialog.setMessage(mContext.getString(R.string.dfu_status_disconnecting));
+                if (mProgressDialog != null) {
+                    mProgressDialog.setIndeterminate(mParentActivity.getFragmentManager(), true);
+                    mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.dfu_status_disconnecting));
+                    mProgressDialog.setProgress(mParentActivity.getFragmentManager(), 100);
+                }
                 break;
 
             case DfuService.PROGRESS_COMPLETED:
-                mProgressDialog.setMessage(mContext.getString(R.string.dfu_status_completed));
+                if (mProgressDialog != null) {
+                    mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.dfu_status_completed));
+                }
                 // let's wait a bit until we cancel the notification. When canceled immediately it will be recreated by service again.
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        cleanInstallationAttempt(true);
                         mListener.onInstallCompleted();
-                        mProgressDialog.dismiss();
-                        mProgressDialog = null;
 
                         // if this activity is still open and upload process was completed, cancel the notification
                         final NotificationManager manager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -162,14 +183,15 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
                 break;
 
             case DfuService.PROGRESS_ABORTED:
-                mProgressDialog.setMessage(mContext.getString(R.string.dfu_status_aborted));
+                if (mProgressDialog != null) {
+                    mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.dfu_status_aborted));
+                }
                 // let's wait a bit until we cancel the notification. When canceled immediately it will be recreated by service again.
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        cleanInstallationAttempt(false);
                         mListener.onInstallCancelled();
-                        mProgressDialog.dismiss();
-                        mProgressDialog = null;
 
                         // if this activity is still open and upload process was completed, cancel the notification
                         final NotificationManager manager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -179,25 +201,28 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
                 break;
 
             default:
-                mProgressDialog.setIndeterminate(false);
+                if (mProgressDialog != null) {
+                    mProgressDialog.setIndeterminate(mParentActivity.getFragmentManager(), false);
+                }
                 if (error) {
                     Toast.makeText(mContext, "Upload failed: " + GattError.parse(progress) + " (" + (progress & ~(DfuService.ERROR_MASK | DfuService.ERROR_REMOTE_MASK)) + ")", Toast.LENGTH_LONG).show();
+                    cleanInstallationAttempt(false);
                     mListener.onInstallFailed(false);
-                    mLastestChechedDeviceAddress = null;
-                    mProgressDialog.dismiss();
-                    mProgressDialog = null;
                 } else {
-                    mProgressDialog.setProgress(progress);
-                    mProgressDialog.setMessage(mContext.getString(R.string.dfu_service_progress, progress));
-                    if (total > 1)
-                        mProgressDialog.setMessage(mContext.getString(R.string.dfu_status_uploading_part, part, total));
-                    else
-                        mProgressDialog.setMessage(mContext.getString(R.string.dfu_status_uploading));
+                    if (mProgressDialog != null) {
+                        mProgressDialog.setProgress(mParentActivity.getFragmentManager(), progress);
+                        mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.dfu_service_progress, progress));
+                        if (total > 1)
+                            mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.dfu_status_uploading_part, part, total));
+                        else
+                            mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.dfu_status_uploading));
+                    }
                 }
                 break;
         }
     }
 
+    /*
     public void onResumeListenerActivity() {
         Log.d(TAG, "Register mDfuUpdateReceiver");
         // We are using LocalBroadcastReceiver instead of normal BroadcastReceiver for optimization purposes
@@ -210,6 +235,7 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
         final LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(mContext);
         broadcastManager.unregisterReceiver(mDfuUpdateReceiver);
     }
+    */
 
     private static IntentFilter makeDfuUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
@@ -233,6 +259,17 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         mLatestVersion = sharedPreferences.getString("updatemanager_latestVersion", "0");
         mLatestVersionUrl = sharedPreferences.getString("updatemanager_latestVersionUrl", "");
+
+        // We are using LocalBroadcastReceiver instead of normal BroadcastReceiver for optimization purposes
+        final LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(mContext);
+        broadcastManager.registerReceiver(mDfuUpdateReceiver, makeDfuUpdateIntentFilter());
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        Log.d(TAG, "Unregister mDfuUpdateReceiver");
+        final LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(mContext);
+        broadcastManager.unregisterReceiver(mDfuUpdateReceiver);
     }
 
     public void clearLastCheckedDeviceAddress() {
@@ -257,8 +294,9 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
         }
     }
 
-    public void setListener(SoftwareUpdateManagerListener listener) {
+    public void setListener(SoftwareUpdateManagerListener listener, Activity activity) {
         mListener = listener;
+        mParentActivity = activity;
 
         BleManager bleManager = BleManager.getInstance(mContext);
         mDeviceInfoData.previousListener = bleManager.getBleListener();         // Save current listener to restore it when we finish checking information
@@ -335,24 +373,27 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
         }
 
         if (isNetworkAvailable()) {
-            mProgressDialog = new ProgressDialog(activity);
-            mProgressDialog.setMessage(mContext.getString(R.string.softwareupdate_downloading));
-            mProgressDialog.setIndeterminate(true);
-            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            mProgressDialog = new ProgressDialogFragment.Builder()
+                    .setMessage(mContext.getString(R.string.softwareupdate_downloading)).setCancelableOnTouchOutside(false).build();
+            mProgressDialog.show(activity.getFragmentManager(), "progress_download");
+            mParentActivity.getFragmentManager().executePendingTransactions();
+
+            mProgressDialog.setIndeterminate(activity.getFragmentManager(), true);
             mProgressDialog.setCancelable(true);
-            mProgressDialog.show();
+            mProgressDialog.setOnCancelListener(activity.getFragmentManager(), new DialogInterface.OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialog) {
+                    mDownloadTask.cancel(true);
+                    cleanInstallationAttempt(false);
+                    mListener.onInstallCancelled();
+                }
+            });
 
             Log.d(TAG, "Downloading " + mLatestVersionUrl);
             mDownloadTask = new DownloadTask(mContext, this, kDownloadOperation_Software);
             mDownloadTask.execute(mLatestVersionUrl);
 
-            mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                @Override
-                public void onCancel(DialogInterface dialog) {
-                    mDownloadTask.cancel(true);
-                    mListener.onInstallCancelled();
-                }
-            });
+
         }
         else {
             Log.w(TAG, "Cant install latest version. Internet connection not found");
@@ -360,14 +401,27 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
         }
     }
 
-    private void updateDeviceFirmware(String path) {
-        mProgressDialog.setIndeterminate(true);
-        mProgressDialog.setMessage(mContext.getString(R.string.softwareupdate_startupdate));
-        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        mProgressDialog.setCancelable(true);
-        mProgressDialog.show();
+    private void cleanInstallationAttempt(boolean sucessful) {
+        try {
+            mWakeLock.release();
+        }catch (Exception e) {}
+        mProgressDialog.dismiss(mParentActivity.getFragmentManager());
+        mProgressDialog = null;
+        if (!sucessful) {
+            mLastestChechedDeviceAddress = null;
+        }
+    }
 
-        mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+    private void updateDeviceFirmware(String path) {
+        mProgressDialog = new ProgressDialogFragment.Builder()
+                .setMessage(mContext.getString(R.string.softwareupdate_downloading)).setCancelableOnTouchOutside(false).build();
+        mProgressDialog.show(mParentActivity.getFragmentManager(), "progress_update");
+        mParentActivity.getFragmentManager().executePendingTransactions();
+        mProgressDialog.setIndeterminate(mParentActivity.getFragmentManager(), true);
+        mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.softwareupdate_startupdate));
+        mProgressDialog.setCancelable(true);
+
+        mProgressDialog.setOnCancelListener(mParentActivity.getFragmentManager(), new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
                 // Abort dfu library process
@@ -377,16 +431,23 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
                 manager.sendBroadcast(pauseAction);
 
                 // Cancel dialog
+                //cleanInstallationAttempt(false);
                 mListener.onInstallCancelled();
-                mLastestChechedDeviceAddress = null;
             }
         });
+
 
         final int fileType = DfuService.TYPE_APPLICATION;
         String fileStreamUri = null;
 
         Log.d(TAG, "update from: " + path);
 
+        // take CPU lock to prevent CPU from going off if the user  presses the power button during download
+        PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,  getClass().getName());
+        mWakeLock.acquire();
+
+        // Start dfu update service
         final Intent service = new Intent(mContext, DfuService.class);
 
         service.putExtra(DfuService.EXTRA_DEVICE_ADDRESS, mSelectedDevice.getAddress());
@@ -399,8 +460,8 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
         Log.d(TAG, "Service started: " + serviceName);
         if (serviceName == null) {
             Log.e(TAG, "Error starting DFU service " + service.getPackage() + ":" + service.getAction());
+            cleanInstallationAttempt(false);
             mListener.onInstallFailed(false);
-            mLastestChechedDeviceAddress = null;
         }
     }
 
@@ -408,9 +469,8 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
     public void onDownloadProgress(int operationId, int progress) {
         if (operationId == kDownloadOperation_Software) {
             Log.d(TAG, "download progress: " + progress + "%%");
-            mProgressDialog.setIndeterminate(false);
-            mProgressDialog.setMax(100);
-            mProgressDialog.setProgress(progress);
+            mProgressDialog.setIndeterminate(mParentActivity.getFragmentManager(), false);
+            mProgressDialog.setProgress(mParentActivity.getFragmentManager(), progress);
         }
     }
 
@@ -455,13 +515,12 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
                 }
             }
         } else if (operationId == kDownloadOperation_Software) {
-            //mProgressDialog.dismiss();
+            mProgressDialog.dismiss(mParentActivity.getFragmentManager());
 
             if (result == null) {
                 Log.w(TAG, "Error downloading software version: " + mLatestVersionUrl);
+                cleanInstallationAttempt(false);
                 mListener.onInstallFailed(true);
-                mLastestChechedDeviceAddress = null;
-                mProgressDialog.dismiss();
             } else {
                 Log.d(TAG, "Downloaded version: " + mLatestVersion + " size: " + result.size());
 
@@ -481,9 +540,8 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
                 if (success) {
                     updateDeviceFirmware(file.getAbsolutePath());
                 } else {
+                    cleanInstallationAttempt(false);
                     mListener.onInstallFailed(true);
-                    mLastestChechedDeviceAddress = null;
-                    mProgressDialog.dismiss();
                 }
 
             }
@@ -635,8 +693,7 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
             super.onPreExecute();
             // take CPU lock to prevent CPU from going off if the user  presses the power button during download
             PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-            mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
-                    getClass().getName());
+            mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,  getClass().getName());
             mWakeLock.acquire();
         }
 
@@ -705,6 +762,7 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
     }
 
 }
+
 
 interface DownloadTaskListener {
     void onDownloadProgress(int operationId, int progress);
