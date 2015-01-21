@@ -9,6 +9,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -35,7 +37,6 @@ import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ble.BleServiceListener;
 
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 
 
 public class UartActivity extends UartInterfaceActivity implements BleServiceListener {
@@ -47,6 +48,9 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
     private final static String kPreferences_eol = "eol";
     private final static String kPreferences_echo = "echo";
     private final static String kPreferences_asciiMode = "ascii";
+
+    private int mTxColor;
+    private int mRxColor;
 
     // UI
     private Switch mEchoSwitch;
@@ -92,6 +96,14 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
             headerLayout.addView(controlsLayout);
         }
 
+        // Get default theme colors
+        TypedValue typedValue = new TypedValue();
+        Resources.Theme theme = getTheme();
+        theme.resolveAttribute(R.attr.colorPrimaryDark, typedValue, true);
+        mTxColor = typedValue.data;
+        theme.resolveAttribute(R.attr.colorControlActivated, typedValue, true);
+        mRxColor= typedValue.data;
+
         // Read preferences
         SharedPreferences preferences = getSharedPreferences(kPreferences, MODE_PRIVATE);
         final boolean echo = preferences.getBoolean(kPreferences_echo, true);
@@ -104,9 +116,9 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
         mEolSwitch = (Switch) findViewById(R.id.eolSwitch);
         mEolSwitch.setChecked(eol);
 
-        RadioButton asciiFormatRadioButton = (RadioButton)findViewById(R.id.asciiFormatRadioButton);
+        RadioButton asciiFormatRadioButton = (RadioButton) findViewById(R.id.asciiFormatRadioButton);
         asciiFormatRadioButton.setChecked(asciiMode);
-        RadioButton hexFormatRadioButton = (RadioButton)findViewById(R.id.hexFormatRadioButton);
+        RadioButton hexFormatRadioButton = (RadioButton) findViewById(R.id.hexFormatRadioButton);
         hexFormatRadioButton.setChecked(!asciiMode);
         mShowDataInHexFormat = !asciiMode;
 
@@ -140,8 +152,7 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
     }
 
     @Override
-    public void onPause()
-    {
+    public void onPause() {
         super.onPause();
 
         // Save preferences
@@ -155,8 +166,7 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
     }
 
     @Override
-    public void onDestroy()
-    {
+    public void onDestroy() {
         // Retain data
         saveRetainedDataFragment();
 
@@ -164,7 +174,7 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
     }
 
     public void dismissKeyboard(View view) {
-        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
@@ -179,15 +189,15 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
         sendData(data);
 
         if (mEchoSwitch.isChecked()) {      // Add send data to visible buffer if checked
-            addTextToSpanBuffer(mAsciiSpanBuffer, data, Color.BLUE);
-            addTextToSpanBuffer(mHexSpanBuffer, asciiToHex(data), Color.BLUE);
+            addTextToSpanBuffer(mAsciiSpanBuffer, data, mTxColor);
+            addTextToSpanBuffer(mHexSpanBuffer, asciiToHex(data), mTxColor);
         }
 
         updateUI();
     }
 
     public void onClickCopy(View view) {
-        String text = mShowDataInHexFormat?mHexSpanBuffer.toString():mAsciiSpanBuffer.toString();
+        String text = mShowDataInHexFormat ? mHexSpanBuffer.toString() : mAsciiSpanBuffer.toString();
         ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
         ClipData clip = ClipData.newPlainText("UART", text);
         clipboard.setPrimaryClip(clip);
@@ -279,8 +289,8 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
             if (characteristic.getUuid().toString().equalsIgnoreCase(UUID_RX)) {
                 String data = new String(characteristic.getValue(), Charset.forName("UTF-8"));
 
-                addTextToSpanBuffer(mAsciiSpanBuffer, data, Color.RED);
-                addTextToSpanBuffer(mHexSpanBuffer, asciiToHex(data), Color.RED);
+                addTextToSpanBuffer(mAsciiSpanBuffer, data, mRxColor);
+                addTextToSpanBuffer(mHexSpanBuffer, asciiToHex(data), mRxColor);
 
                 runOnUiThread(new Runnable() {
                     @Override
@@ -308,12 +318,11 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
 
     private void updateUI() {
 
-        mBufferTextView.setText(mShowDataInHexFormat?mHexSpanBuffer:mAsciiSpanBuffer);
+        mBufferTextView.setText(mShowDataInHexFormat ? mHexSpanBuffer : mAsciiSpanBuffer);
         mBufferTextView.setSelection(0, mBufferTextView.getText().length());        // to automatically scroll to the end
     }
 
-    private String asciiToHex(String text)
-    {
+    private String asciiToHex(String text) {
         StringBuffer stringBuffer = new StringBuffer();
         for (int i = 0; i < text.length(); i++) {
             String charString = String.format("0x%02X", (byte) text.charAt(i));
@@ -322,7 +331,6 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
         }
         return stringBuffer.toString();
     }
-
 
 
     // region DataFragment
