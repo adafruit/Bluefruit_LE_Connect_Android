@@ -745,8 +745,13 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
         }
         // compare first non-equal ordinal number
         if (i < vals1.length && i < vals2.length) {
-            int diff = Integer.valueOf(vals1[i].replaceAll("\\D+","")).compareTo(Integer.valueOf(vals2[i].replaceAll("\\D+","")));                  /// .replaceAll("\\D+","") to remove all characteres not numbers
-            return Integer.signum(diff);
+            try {
+                int diff = Integer.valueOf(vals1[i].replaceAll("\\D+", "")).compareTo(Integer.valueOf(vals2[i].replaceAll("\\D+", "")));                  /// .replaceAll("\\D+","") to remove all characteres not numbers
+                return Integer.signum(diff);
+            }catch(NumberFormatException e) {
+                // Not a number: compare strings
+                return str1.compareToIgnoreCase(str2);
+            }
         }
         // the strings are equal or one string is a substring of the other
         // e.g. "1.2.3" = "1.2.3" or "1.2.3" < "1.2.3.4"

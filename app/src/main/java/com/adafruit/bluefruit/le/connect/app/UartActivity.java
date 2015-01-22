@@ -91,7 +91,7 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
             {
                 controlsLayout = (ViewGroup) getLayoutInflater().inflate(R.layout.layout_uart_multiline_controls, headerLayout, false);
             }
-            Log.d(TAG, "width: " + controlWidth + " baseWidth: " + rootWidth);
+            //Log.d(TAG, "width: " + controlWidth + " baseWidth: " + rootWidth);
 
             headerLayout.addView(controlsLayout);
         }
