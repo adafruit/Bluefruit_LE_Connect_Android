@@ -57,7 +57,8 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
     private static final String kDeviceInformationService = "0000180A-0000-1000-8000-00805F9B34FB";
     private static final String kModelNumberCharacteristic = "00002A24-0000-1000-8000-00805F9B34FB";
     private static final String kManufacturerNameCharacteristic = "00002A29-0000-1000-8000-00805F9B34FB";
-    private static final String kSoftwareRevisionCharacteristic = "00002A28-0000-1000-8000-00805F9B34FB";
+//    private static final String kSoftwareRevisionCharacteristic = "00002A28-0000-1000-8000-00805F9B34FB";
+    private static final String kFirmwareRevisionCharacteristic = "00002A26-0000-1000-8000-00805F9B34FB";
 
     private static final int kDownloadOperation_Version = 0;
     private static final int kDownloadOperation_Software = 1;
@@ -331,7 +332,7 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
 
                                 bleManager.readCharacteristic(deviceInformationService, kManufacturerNameCharacteristic);
                                 bleManager.readCharacteristic(deviceInformationService, kModelNumberCharacteristic);
-                                bleManager.readCharacteristic(deviceInformationService, kSoftwareRevisionCharacteristic);
+                                bleManager.readCharacteristic(deviceInformationService, kFirmwareRevisionCharacteristic);
 
                                 // Data will be received asynchronously (onDataAvailable)
                                 return true;
@@ -577,7 +578,7 @@ public class SoftwareUpdateManager implements DownloadTaskListener, BleServiceLi
             if (characteristic.getUuid().toString().equalsIgnoreCase(kModelNumberCharacteristic)) {
                 mDeviceInfoData.modelNumber = characteristic.getStringValue(0);
             }
-            if (characteristic.getUuid().toString().equalsIgnoreCase(kSoftwareRevisionCharacteristic)) {
+            if (characteristic.getUuid().toString().equalsIgnoreCase(kFirmwareRevisionCharacteristic)) {
                 mDeviceInfoData.softwareVersion = characteristic.getStringValue(0);
             }
 
