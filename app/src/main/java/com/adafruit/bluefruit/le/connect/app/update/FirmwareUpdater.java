@@ -549,7 +549,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                     boolean isManufacturerCorrect = mDeviceInfoData.manufacturer.equalsIgnoreCase(kManufacturer);
                     if (isManufacturerCorrect) {
                         List<ReleaseInfo> modelReleases = allReleases.get(mDeviceInfoData.modelNumber);
-                        if (modelReleases != null) {
+                        if (modelReleases != null && modelReleases.size() > 0) {
 
                             // Get the latest release
                             latestRelease = modelReleases.get(0);
