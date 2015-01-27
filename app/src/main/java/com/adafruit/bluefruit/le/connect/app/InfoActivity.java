@@ -8,7 +8,6 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
@@ -41,7 +40,7 @@ public class InfoActivity extends ActionBarActivity implements BleManager.BleMan
     private final static String TAG = InfoActivity.class.getSimpleName();
 
     // Activity request codes (used for onActivityResult)
-    private static final int kActivityRequestCode_FirmwareUpdateCompleted = 0;
+    private static final int kActivityRequestCode_ConnectedSettingsActivity = 0;
 
     // Constants
     private final static int kDataFormatCount = 2;
@@ -148,12 +147,12 @@ public class InfoActivity extends ActionBarActivity implements BleManager.BleMan
     private void startConnectedSettings() {
         // Launch connected settings activity
         Intent intent = new Intent(this, ConnectedSettingsActivity.class);
-        startActivityForResult(intent, kActivityRequestCode_FirmwareUpdateCompleted);
+        startActivityForResult(intent, kActivityRequestCode_ConnectedSettingsActivity);
     }
 
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent intent) {
-        if (resultCode == RESULT_OK && requestCode == kActivityRequestCode_FirmwareUpdateCompleted) {
+        if (resultCode == RESULT_OK && requestCode == kActivityRequestCode_ConnectedSettingsActivity) {
             finish();
         }
     }

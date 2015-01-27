@@ -86,6 +86,8 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         void onFirmwareUpdateCompleted();
 
         void onFirmwareUpdateFailed(boolean isDownloadError);
+
+        void onFirmwareUpdateDeviceDisconnected();
     }
 
     public class DeviceInfoData {
@@ -174,7 +176,6 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         }
 
         mListener.onFirmwareUpdatesChecked(false, null, null, null);
-
         return false;       // Returns false, meaning the checking has finished
     }
 
@@ -193,7 +194,6 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
             mParentActivity = activity;
         }
     }
-
 
     public void downloadAndInstallFirmware(Activity activity, String uri) {
         ReleaseInfo release = new ReleaseInfo();
@@ -283,23 +283,29 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         // Register as dfu listener
         registerAsDfuListener(true);
 
-
         // Start dfu update service
         BluetoothDevice device = BleManager.getInstance(mContext).getConnectedDevice();     // current connected device
-        final Intent service = new Intent(mContext, DfuService.class);
 
-        service.putExtra(DfuService.EXTRA_DEVICE_ADDRESS, device.getAddress());
-        service.putExtra(DfuService.EXTRA_DEVICE_NAME, device.getName());
-        service.putExtra(DfuService.EXTRA_FILE_MIME_TYPE, fileType == DfuService.TYPE_AUTO ? DfuService.MIME_TYPE_ZIP : DfuService.MIME_TYPE_OCTET_STREAM);
-        service.putExtra(DfuService.EXTRA_FILE_TYPE, fileType);
-        service.putExtra(DfuService.EXTRA_FILE_PATH, localPath);
-        service.putExtra(DfuService.EXTRA_FILE_URI, uriPath);
-        ComponentName serviceName = mContext.startService(service);
-        Log.d(TAG, "Service started: " + serviceName);
-        if (serviceName == null) {
-            Log.e(TAG, "Error starting DFU service " + service.getPackage() + ":" + service.getAction());
-            cleanInstallationAttempt(false);
-            mListener.onFirmwareUpdateFailed(false);
+        if (device != null) {
+            final Intent service = new Intent(mContext, DfuService.class);
+
+            service.putExtra(DfuService.EXTRA_DEVICE_ADDRESS, device.getAddress());
+            service.putExtra(DfuService.EXTRA_DEVICE_NAME, device.getName());
+            service.putExtra(DfuService.EXTRA_FILE_MIME_TYPE, fileType == DfuService.TYPE_AUTO ? DfuService.MIME_TYPE_ZIP : DfuService.MIME_TYPE_OCTET_STREAM);
+            service.putExtra(DfuService.EXTRA_FILE_TYPE, fileType);
+            service.putExtra(DfuService.EXTRA_FILE_PATH, localPath);
+            service.putExtra(DfuService.EXTRA_FILE_URI, uriPath);
+            ComponentName serviceName = mContext.startService(service);
+            Log.d(TAG, "Service started: " + serviceName);
+            if (serviceName == null) {
+                Log.e(TAG, "Error starting DFU service " + service.getPackage() + ":" + service.getAction());
+                cleanInstallationAttempt(false);
+                mListener.onFirmwareUpdateFailed(false);
+            }
+        }
+        else {
+            Log.d(TAG, "Updates: bluetooth device not ready");
+            Toast.makeText(mContext, R.string.softwareupdate_noconnecteddevice, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -516,7 +522,9 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
 
     @Override
     public void onDisconnected() {
-
+        if(mListener != null) {
+            mListener.onFirmwareUpdateDeviceDisconnected();
+        }
     }
 
     @Override

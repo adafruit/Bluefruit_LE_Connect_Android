@@ -807,6 +807,16 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
         mScannedDevices.clear();
         startScan(null, null);
     }
+
+    @Override
+    public void onFirmwareUpdateDeviceDisconnected() {
+        onDisconnected();
+
+        mLatestCheckedDeviceAddress = null;
+
+        mScannedDevices.clear();
+        startScan(null, null);
+    }
     // endregion
 
     // region Helpers

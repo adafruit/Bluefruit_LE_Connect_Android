@@ -3,17 +3,13 @@ package com.adafruit.bluefruit.le.connect.app.settings;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,7 +24,6 @@ import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.app.update.FirmwareUpdater;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -70,18 +65,21 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
         mReleasesDialogTextView = (TextView) findViewById(R.id.releasesDialogTextView);
         mCustomFirmwareButton = (Button) findViewById(R.id.customFirmwareButton);
 
-
         // Start
         mFirmwareUpdater = new FirmwareUpdater(this, this);
         boolean hasDFUService = mFirmwareUpdater.hasCurrentConnectedDeviceDFUService();
         if (hasDFUService) {
-            showReleasesDialog(true, getString(R.string.connectedsettings_dfunotfound), true);
-
-            mFirmwareUpdater.checkFirmwareUpdatesForTheCurrentConnectedDevice();
+            showReleasesDialog(true, getString(R.string.connectedsettings_retrievinginfo), true);
+            mFirmwareUpdater.checkFirmwareUpdatesForTheCurrentConnectedDevice();            // continues on onFirmwareUpdatesChecked
         } else {
             showReleasesDialog(true, getString(R.string.connectedsettings_dfunotfound), false);
             mCustomFirmwareButton.setVisibility(View.GONE);
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
     /*
@@ -142,10 +140,16 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
                 });
             } else {
                 // Current board was not found, so show all releases found
+                final String message = String.format(getString(R.string.connectedsettings_retrievinginfoformat), deviceInfoData.modelNumber);
 
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        showReleasesDialog(true, message, false);
+                    }
+                });
             }
         }
-
     }
 
     @Override
@@ -163,6 +167,19 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
     @Override
     public void onFirmwareUpdateFailed(boolean isDownloadError) {
         Toast.makeText(this, isDownloadError ? R.string.scan_softwareupdate_downloaderror : R.string.scan_softwareupdate_updateerror, Toast.LENGTH_LONG).show();
+
+    }
+
+    @Override
+    public void onFirmwareUpdateDeviceDisconnected() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(ConnectedSettingsActivity.this, R.string.scan_unexpecteddisconnect, Toast.LENGTH_LONG).show();
+                setResult(Activity.RESULT_OK);
+                finish();
+            }
+        });
 
     }
 
@@ -280,8 +297,7 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
             if (uriScheme.equalsIgnoreCase("file")) {       // if is a file in local storage bypass downloader and send the link directly to installer
                 final String path = uri.getPath();          // waning: this may need WRITE_EXTERNAL_STORAGE permission (for example if using Dropbox)
                 mFirmwareUpdater.installFirmware(this, path, null);
-            }
-            else {
+            } else {
                 mFirmwareUpdater.downloadAndInstallFirmware(this, uri.toString());
             }
         }
@@ -289,5 +305,7 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
 
 
     // endregion
+
+
 }
 

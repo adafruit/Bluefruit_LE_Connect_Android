@@ -106,6 +106,7 @@
     <string name="connectedsettings_dfunotfound">Firmware Update Service not detected. Can\'t update this device</string>
     <string name="connectedsettings_usecustomfirmware">Use custom firmware</string>
     <string name="connectedsettings_versionformat">Version %s</string>
+    <string name="connectedsettings_retrievinginfoformat">No releases found for this device (%s)</string>
 
     <string name="connectedsettings_install_messageformat">Download and install firmware version %s</string>
 
@@ -144,12 +145,13 @@
     <string name="pref_updatesversioncheck">pref_updatesversioncheck</string>
     <string name="pref_updatesblefriendcheck">pref_updatesblefriendcheck</string>
 
-    <!-- Software update -->
+    <!-- Firmware update -->
     <string name="softwareupdate_downloading">Downloading new software version...</string>
     <string name="softwareupdate_startupdate">Starting firmware update...</string>
     <string name="softwareupdate_connectionnotavailable">No internet connection detected</string>
     <string name="dfu_service_progress">%d%%</string>
     <string name="dfu_feature_title">Bluefruit Update</string>
+    <string name="softwareupdate_noconnecteddevice">Error: Device is no longer connected. Can\'t update</string>
 
     <!-- Common -->
     <string name="dialog_ok">Ok</string>
