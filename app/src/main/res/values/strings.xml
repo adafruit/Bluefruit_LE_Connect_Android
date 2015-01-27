@@ -101,7 +101,7 @@
 
     <!-- Connected Settings -->
     <string name="title_activity_connected_settings">Connected Settings</string>
-    <string name="connectedsettings_updatesheadertitle">SOFTWARE UPDATES</string>
+    <string name="connectedsettings_updatesheadertitle">FIRMWARE RELEASES</string>
     <string name="connectedsettings_retrievinginfo">Retrieving device info...</string>
     <string name="connectedsettings_dfunotfound">Firmware Update Service not detected. Can\'t update this device</string>
     <string name="connectedsettings_usecustomfirmware">Use custom firmware</string>
