@@ -3,13 +3,17 @@ package com.adafruit.bluefruit.le.connect.app.settings;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,6 +28,7 @@ import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.app.update.FirmwareUpdater;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -270,9 +275,18 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
         if (resultCode == RESULT_OK && requestCode == kActivityRequestCode_SelectFile) {
             Uri uri = data.getData();
-            mFirmwareUpdater.downloadAndInstallFirmware(this, uri.toString());
+            String uriScheme = uri.getScheme();
+
+            if (uriScheme.equalsIgnoreCase("file")) {       // if is a file in local storage bypass downloader and send the link directly to installer
+                final String path = uri.getPath();          // waning: this may need WRITE_EXTERNAL_STORAGE permission (for example if using Dropbox)
+                mFirmwareUpdater.installFirmware(this, path, null);
+            }
+            else {
+                mFirmwareUpdater.downloadAndInstallFirmware(this, uri.toString());
+            }
         }
     }
+
 
     // endregion
 }

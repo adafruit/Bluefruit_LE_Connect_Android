@@ -41,6 +41,7 @@ public class DownloadTask extends AsyncTask<String, Integer, ByteArrayOutputStre
             int fileLength = 0;
             Uri uri = Uri.parse(sUrl[0]);
             String uriScheme = uri.getScheme();
+            Log.d(TAG, "Downloading from "+uriScheme);
             boolean shouldBeConsideredAsInputStream = (uriScheme.equalsIgnoreCase("file") || uriScheme.equalsIgnoreCase("content"));
             if (shouldBeConsideredAsInputStream) {
                 input = context.getContentResolver().openInputStream(uri);
