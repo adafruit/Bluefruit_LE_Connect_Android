@@ -80,6 +80,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
     private ArrayList<BluetoothDeviceData> mScannedDevices;
     private Class<?> mComponentToStartWhenConnected;
     private boolean mShouldEnableWifiOnQuit = false;
+    private String mLatestCheckedDeviceAddress;
 
     private DataFragment mRetainedDataFragment;
 
@@ -395,7 +396,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
             boolean updatesEnabled = sharedPreferences.getBoolean("pref_updatesenabled", true);
             if (updatesEnabled) {
-                mFirmwareUpdater.clearLastCheckedDeviceAddress();
+                mLatestCheckedDeviceAddress = null;
                 mFirmwareUpdater.refreshSoftwareUpdatesDatabase();
             } else {
                 mFirmwareUpdater = null;
@@ -690,16 +691,28 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
     @Override
     public void onServicesDiscovered() {
         Log.d(TAG, "services discovered");
+
+        boolean isCheckingFirmware = false;
         if (mFirmwareUpdater != null) {
-            // Check if should update device software
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    showCheckingUpdateState();
-                }
-            });
-            //mFirmwareUpdater.setListener(this, this);
-            mFirmwareUpdater.checkFirmwareUpdatesForTheCurrentConnectedDevice();        // continues asynchronously in onFirmwareUpdatesChecked
+           // Don't bother the user waiting for checks if the latest connected device was this
+            String deviceAddress = mBleManager.getConnectedDeviceAddress();
+            if (!deviceAddress.equals(mLatestCheckedDeviceAddress)) {
+                mLatestCheckedDeviceAddress = deviceAddress;
+
+                // Check if should update device software
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        showCheckingUpdateState();
+                    }
+                });
+                mFirmwareUpdater.checkFirmwareUpdatesForTheCurrentConnectedDevice();        // continues asynchronously in onFirmwareUpdatesChecked
+                isCheckingFirmware = true;
+            }
+        }
+
+        if (!isCheckingFirmware) {
+            onFirmwareUpdatesChecked(false, null, null, null);
         }
     }
 
@@ -764,8 +777,8 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
     public void onInstallCancelled() {
         Log.d(TAG, "Software version installation cancelled");
 
-        // Continue to the component activity
-        // launchComponentActivity();
+        mLatestCheckedDeviceAddress = null;
+
         mScannedDevices.clear();
         startScan(null, null);
     }
@@ -776,8 +789,6 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
 
         Toast.makeText(this, R.string.scan_softwareupdate_completed, Toast.LENGTH_LONG).show();
 
-        // Continue to the component activity
-        //launchComponentActivity();
         mScannedDevices.clear();
         startScan(null, null);
     }
@@ -787,8 +798,8 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
         Log.d(TAG, "Software version installation failed");
         Toast.makeText(this, isDownloadError ? R.string.scan_softwareupdate_downloaderror : R.string.scan_softwareupdate_updateerror, Toast.LENGTH_LONG).show();
 
-        // Continue to the component activity
-        //launchComponentActivity();
+        mLatestCheckedDeviceAddress = null;
+
         mScannedDevices.clear();
         startScan(null, null);
     }
@@ -993,6 +1004,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
         private Class<?> mComponentToStartWhenConnected;
         private boolean mShouldEnableWifiOnQuit;
         private FirmwareUpdater mFirmwareUpdater;
+        private String mLatestCheckedDeviceAddress;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -1020,6 +1032,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
             mComponentToStartWhenConnected = mRetainedDataFragment.mComponentToStartWhenConnected;
             mShouldEnableWifiOnQuit = mRetainedDataFragment.mShouldEnableWifiOnQuit;
             mFirmwareUpdater = mRetainedDataFragment.mFirmwareUpdater;
+            mLatestCheckedDeviceAddress = mRetainedDataFragment.mLatestCheckedDeviceAddress;
         }
     }
 
@@ -1029,6 +1042,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
         mRetainedDataFragment.mComponentToStartWhenConnected = mComponentToStartWhenConnected;
         mRetainedDataFragment.mShouldEnableWifiOnQuit = mShouldEnableWifiOnQuit;
         mRetainedDataFragment.mFirmwareUpdater = mFirmwareUpdater;
+        mRetainedDataFragment.mLatestCheckedDeviceAddress = mLatestCheckedDeviceAddress;
     }
     // endregion
 }

@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import com.adafruit.bluefruit.le.connect.BuildConfig;
 import com.adafruit.bluefruit.le.connect.R;
+import com.adafruit.bluefruit.le.connect.app.settings.ConnectedSettingsActivity;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ble.BleUtils;
 import com.adafruit.bluefruit.le.connect.ui.ExpandableHeightExpandableListView;
@@ -94,6 +95,7 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
         super.onDestroy();
     }
 
+    // region Menu
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -113,8 +115,19 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
             startHelp();
             return true;
         }
+        else if (id == R.id.action_connected_settings) {
+            startConnectedSettings();
+            return true;
+        }
+
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void startConnectedSettings() {
+        // Launch connected settings activity
+        Intent intent = new Intent(this, ConnectedSettingsActivity.class);
+        startActivity(intent);
     }
 
     private void startHelp() {
@@ -124,6 +137,7 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
         intent.putExtra("help", "pinio_help.html");
         startActivity(intent);
     }
+    // endregion
 
     public void onClickPinIOTitle(final View view) {
         boolean isDigital = (Boolean) view.getTag(R.string.pinio_tag_mode);

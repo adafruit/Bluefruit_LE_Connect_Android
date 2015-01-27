@@ -5,7 +5,6 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
-import com.adafruit.bluefruit.le.connect.ble.BleUtils;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -38,9 +37,10 @@ public class UartInterfaceActivity extends ActionBarActivity {
                 final byte[] chunk = Arrays.copyOfRange(data, i, Math.min(i + kTxMaxCharacters, data.length));
                 mBleManager.writeService(mUartService, UUID_TX, chunk);
             }
-        }
-        else {
+        } else {
             Log.w(TAG, "Uart Service not discovered. Unable to send data");
         }
     }
+
+
 }

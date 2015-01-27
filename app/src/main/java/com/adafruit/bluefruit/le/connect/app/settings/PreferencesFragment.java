@@ -39,9 +39,6 @@ public class PreferencesFragment extends PreferenceFragment {
             Preference versionCheckPreference = findPreference(getResources().getString(R.string.pref_updatesversioncheck));
             category.removePreference(versionCheckPreference);
 
-            Preference checkBlefriendPreference = findPreference(getResources().getString(R.string.pref_updatesblefriendcheck));
-            category.removePreference(checkBlefriendPreference);
-
         }
     }
 

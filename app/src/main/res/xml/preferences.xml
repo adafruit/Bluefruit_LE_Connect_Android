@@ -56,12 +56,6 @@
             android:summary="@string/settings_pref_updatesversioncheck_summary"
             android:title="@string/settings_pref_updatesversioncheck_title"/>
 
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="@string/pref_updatesblefriendcheck"
-            android:summary="@string/settings_pref_updatesblefriendcheck_summary"
-            android:title="@string/settings_pref_updatesblefriendcheck_title"/>
-
 
         <EditTextPreference
             android:key="@string/pref_updateserver"

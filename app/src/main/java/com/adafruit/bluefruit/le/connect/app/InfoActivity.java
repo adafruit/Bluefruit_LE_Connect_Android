@@ -105,6 +105,7 @@ public class InfoActivity extends ActionBarActivity implements BleManager.BleMan
         super.onDestroy();
     }
 
+    // region Menu
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -145,6 +146,7 @@ public class InfoActivity extends ActionBarActivity implements BleManager.BleMan
         Intent intent = new Intent(this, ConnectedSettingsActivity.class);
         startActivity(intent);
     }
+    // endregion
 
     public void onClickInfoService(View view) {
         int groupPosition = (Integer) view.getTag();

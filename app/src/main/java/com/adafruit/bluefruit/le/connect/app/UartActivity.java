@@ -32,6 +32,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.adafruit.bluefruit.le.connect.R;
+import com.adafruit.bluefruit.le.connect.app.settings.ConnectedSettingsActivity;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 
 import java.nio.charset.Charset;
@@ -225,6 +226,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         mBleManager.setBleListener(this);
     }
 
+    // region Menu
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -244,8 +246,19 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
             startHelp();
             return true;
         }
+        else if (id == R.id.action_connected_settings) {
+            startConnectedSettings();
+            return true;
+        }
+
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void startConnectedSettings() {
+        // Launch connected settings activity
+        Intent intent = new Intent(this, ConnectedSettingsActivity.class);
+        startActivity(intent);
     }
 
     private void startHelp() {
@@ -255,6 +268,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         intent.putExtra("help", "uart_help.html");
         startActivity(intent);
     }
+    // endregion
 
     // region BleManagerListener
     @Override

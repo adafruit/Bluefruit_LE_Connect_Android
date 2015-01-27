@@ -57,7 +57,6 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     public static final String kDefaultUpdateServerUrl = "https://raw.githubusercontent.com/adafruit/Adafruit_BluefruitLE_Firmware/master/releases.xml";
 
     private static final String kManufacturer = "Adafruit Industries";
-    //   private static final String kModelNumber = "BLEFRIEND";
 
     // Constants
     private final static String TAG = FirmwareUpdater.class.getSimpleName();
@@ -79,8 +78,6 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     private BluetoothDevice mSelectedDevice;
     private PowerManager.WakeLock mWakeLock;
     private Activity mParentActivity;
-
-    private String mLatestCheckedDeviceAddress;           // To avoid waiting to check device if we have already checked it this session
 
     public static interface FirmwareUpdaterListener {
         void onFirmwareUpdatesChecked(boolean isUpdateAvailable, ReleaseInfo latestRelease, DeviceInfoData deviceInfoData, Map<String, List<ReleaseInfo>> allReleases);
@@ -113,13 +110,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
             broadcastManager.unregisterReceiver(mDfuUpdateReceiver);
         }
     }
-
     // endregion
-
-    public void clearLastCheckedDeviceAddress() {
-        mLatestCheckedDeviceAddress = null;
-    }
-
 
     public void refreshSoftwareUpdatesDatabase() {
         // Cancel previous downloads
@@ -141,16 +132,6 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         }
     }
 
-    /*
-    public void setListener(FirmwareUpdateManagerListener listener, Activity activity) {
-        mListener = listener;
-        mParentActivity = activity;
-
-        BleManager bleManager = BleManager.getInstance(mContext);
-        mDeviceInfoData.previousListener = bleManager.getBleListener();         // Save current listener to restore it when we finish checking information
-    }
-    */
-
     public boolean hasCurrentConnectedDeviceDFUService() {
         BleManager bleManager = BleManager.getInstance(mContext);
         return bleManager.getGattService(kNordicDeviceFirmwareUpdateService) != null;
@@ -163,42 +144,31 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         // Only makes sense to check for a newer version if the user can download it (even if we could check the version number because is stored locally)
         if (isNetworkAvailable()) {
 
-            BleManager bleManager = BleManager.getInstance(mContext);
-            String deviceAddress = bleManager.getConnectedDeviceAddress();
-            if (!deviceAddress.equals(mLatestCheckedDeviceAddress)) {
-                mLatestCheckedDeviceAddress = deviceAddress;
+            // Check if the device is an adafruit updateable device
+            if (mListener == null) Log.w(TAG, "Trying to verify software version without a listener!!");
 
-                // Check if the device is an adafruit updateable device
-                if (mListener == null) Log.w(TAG, "Trying to verify software version without a listener!!");
+            boolean hasDFUService = hasCurrentConnectedDeviceDFUService();
+            if (hasDFUService) {
+                BleManager bleManager = BleManager.getInstance(mContext);
+                BluetoothGattService deviceInformationService = bleManager.getGattService(kDeviceInformationService);
+                boolean hasDISService = deviceInformationService != null;
+                if (hasDISService) {
+                    mDeviceInfoData.manufacturer = null;
+                    mDeviceInfoData.modelNumber = null;
+                    mDeviceInfoData.firmwareRevision = null;
+                    bleManager.setBleListener(this);
 
-                boolean hasDFUService = hasCurrentConnectedDeviceDFUService();
-                if (hasDFUService) {
-                    //boolean checkBleFriendDevice = sharedPreferences.getBoolean("pref_updatesblefriendcheck", true);
-                    // if (checkBleFriendDevice) {
+                    bleManager.readCharacteristic(deviceInformationService, kManufacturerNameCharacteristic);
+                    bleManager.readCharacteristic(deviceInformationService, kModelNumberCharacteristic);
+                    bleManager.readCharacteristic(deviceInformationService, kFirmwareRevisionCharacteristic);
 
-                    BluetoothGattService deviceInformationService = bleManager.getGattService(kDeviceInformationService);
-                    boolean hasDISService = deviceInformationService != null;
-                    if (hasDISService) {
-                        mDeviceInfoData.manufacturer = null;
-                        mDeviceInfoData.modelNumber = null;
-                        mDeviceInfoData.firmwareRevision = null;
-                        bleManager.setBleListener(this);
-
-                        bleManager.readCharacteristic(deviceInformationService, kManufacturerNameCharacteristic);
-                        bleManager.readCharacteristic(deviceInformationService, kModelNumberCharacteristic);
-                        bleManager.readCharacteristic(deviceInformationService, kFirmwareRevisionCharacteristic);
-
-                        // Data will be received asynchronously (onDataAvailable)
-                        return true;        // returns true that means that the process is still working
-                    } else {
-                        Log.d(TAG, "Updates unavailable: No DIS service found");
-                    }
-
+                    // Data will be received asynchronously (onDataAvailable)
+                    return true;        // returns true that means that the process is still working
+                } else {
+                    Log.d(TAG, "Updates unavailable: No DIS service found");
                 }
-            } else {
-                Log.d(TAG, "Version for connected device was already checked this session. Skipping check");
-            }
 
+            }
 
         } else {
             Log.d(TAG, "No update available. Internet connection not detected");
@@ -332,10 +302,6 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         mProgressDialog = null;
 
         mParentActivity = null;
-        //
-        if (!successful) {
-            mLatestCheckedDeviceAddress = null;
-        }
     }
 
     // region DownloadTaskListener
@@ -468,7 +434,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                             releaseInfo.version = firmwareElement.getAttribute("version");
                             releaseInfo.hexFileUrl = firmwareElement.getAttribute("hexfile");
                             releaseInfo.iniFileUrl = firmwareElement.getAttribute("initfile");
-                            releaseInfo.description =  boardName;
+                            releaseInfo.description = boardName;
 
                             /*
                             Log.d(TAG, "\t\tversion: " + releaseInfo.version);
