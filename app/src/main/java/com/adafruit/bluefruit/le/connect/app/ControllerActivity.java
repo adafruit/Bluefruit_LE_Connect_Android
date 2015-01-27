@@ -29,7 +29,6 @@ import android.widget.ToggleButton;
 
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
-import com.adafruit.bluefruit.le.connect.ble.BleServiceListener;
 import com.adafruit.bluefruit.le.connect.ui.ExpandableHeightExpandableListView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -40,7 +39,7 @@ import com.google.android.gms.location.LocationServices;
 
 import java.nio.ByteBuffer;
 
-public class ControllerActivity extends UartInterfaceActivity implements BleServiceListener, SensorEventListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class ControllerActivity extends UartInterfaceActivity implements BleManager.BleManagerListener, SensorEventListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     // Log
     private final static String TAG = ControllerActivity.class.getSimpleName();
 
@@ -208,7 +207,7 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
     }
 
     private void startHelp() {
-        // Launch app hep activity
+        // Launch app help activity
         Intent intent = new Intent(this, CommonHelpActivity.class);
         intent.putExtra("title", getString(R.string.controller_help_title));
         intent.putExtra("help", "controller_help.html");
@@ -356,7 +355,7 @@ public class ControllerActivity extends UartInterfaceActivity implements BleServ
     }
 
 
-    // region BleServiceListener
+    // region BleManagerListener
     @Override
     public void onConnected() {
     }

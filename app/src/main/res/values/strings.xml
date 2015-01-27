@@ -6,6 +6,7 @@
     <string name="app_full_name">Bluefruit LE Connect</string>
     <string name="action_info">Info</string>
     <string name="action_settings">Settings</string>
+    <string name="action_connected_settings">Connected Settings</string>
 
     <!-- Bluetooth Adapter -->
     <string name="dialog_error_no_ble">Bluetooth Low Energy not supported</string>
@@ -26,20 +27,18 @@
     <string name="scan_connecting">Connecting ...</string>
     <string name="scan_checkingupdates">Checking updates ...</string>
     <string name="scan_connectto_dialog_title_format">Choose mode to connect to %s</string>
-
     <string name="scan_unexpecteddisconnect">Peripheral disconnected</string>
-
     <string name="scan_tag_id">Id</string>
 
     <string-array name="scan_connectservice_items">
         <item>Info</item>
         <item>UART</item>
-<!--       <item>Pin I/O</item>-->
+        <!-- <item>Pin I/O</item> -->
         <item>Controller</item>
     </string-array>
 
     <string name="scan_softwareupdate_title">Update available</string>
-    <string name="scan_softwareupdate_message">Software version %s is available</string>
+    <string name="scan_softwareupdate_messageformat">Software version %s is available</string>
     <string name="scan_softwareupdate_install">Install</string>
     <string name="scan_softwareupdate_notnow">Ask later</string>
     <string name="scan_softwareupdate_dontask">Ignore</string>
@@ -86,7 +85,6 @@
     <string name="controller_help_title">Controller Help</string>
     <string name="controller_location_unknown">Waiting for location data...</string>
     <string name="controller_location_disabled">Location is disabled. Go to settings and enable it to receive location data</string>
-
     <string name="controller_interface_controlpad">Control Pad</string>
 
     <string-array name="controller_stream_items">
@@ -101,52 +99,48 @@
     <!-- Pad Activity -->
     <string name="title_activity_pad">Control Pad</string>
 
+    <!-- Connected Settings -->
+    <string name="title_activity_connected_settings">Connected Settings</string>
+    <string name="connectedsettings_updatesheadertitle">SOFTWARE UPDATES</string>
+    <string name="connectedsettings_retrievinginfo">Retrieving device info...</string>
+    <string name="connectedsettings_dfunotfound">Firmware Update Service not detected. Can\'t update this device</string>
+    <string name="connectedsettings_usecustomfirmware">Use custom firmware</string>
+    <string name="connectedsettings_versionformat">Version %s</string>
+
+    <string name="connectedsettings_install_messageformat">Download and install firmware version %s</string>
+
+
 
     <!-- Settings -->
     <string name="title_activity_settings">Settings</string>
-
     <string name="settings_category_connectivity">App launch</string>
-
     <string name="settings_disablewifi_title">Disable Wifi</string>
     <string name="settings_disablewifi_summary">Disables Wifi when the app is launched to make Bluetooth more stable</string>
-
     <string name="settings_resetble_title">Auto-Reset Bluetooth</string>
     <string name="settings_resetble_summary">Resets the Bluetooth adapter when the app is launched</string>
-
     <string name="settings_category_bleinternal">Advanced Bluetooth settings</string>
-
     <string name="settings_recyclebleconnection_title">Recycle connections</string>
     <string name="settings_recyclebleconnection_summary">Reuse existing Bluetooth connections</string>
-
     <string name="settings_forcecloseconnection_title">Close Connection</string>
     <string name="settings_forcecloseconnection_summary">Force close connection before connect</string>
-
     <string name="settings_gattautoconnect_title">Reconnect</string>
     <string name="settings_gattautoconnect_summary">Try to reconnect when the connection to a device fails</string>
-
     <string name="settingsaction_confirmenablewifi_title">Wifi status</string>
     <string name="settingsaction_confirmenablewifi_message">Wifi was previously disabled to improve Bluetooth connections. Would you like to enable it again?</string>
-
     <string name="settings_category_update">Software updates</string>
-
     <string name="settings_updateenabled_title">Updates enabled</string>
     <string name="settings_updatesenabled_summary">Check for software updates when connecting to a device</string>
-
     <string name="settings_updateserver_title">Update server</string>
     <string name="settings_updateserver_summary">Edit update server URL</string>
     <string name="settings_updateserver_edittitle">Update file url</string>
-
     <string name="settings_pref_updatesversioncheck_title">Version check</string>
     <string name="settings_pref_updatesversioncheck_summary">Show updates only for newer versions</string>
-
     <string name="settings_pref_updatesblefriendcheck_title">Only update Blefriend</string>
     <string name="settings_pref_updatesblefriendcheck_summary">Verify that the device is a Blefriend</string>
-
     <string name="pref_key_update_settings">pref_key_update_settings</string>
     <string name="pref_updateserver">pref_updateserver</string>
     <string name="pref_updatesversioncheck">pref_updatesversioncheck</string>
     <string name="pref_updatesblefriendcheck">pref_updatesblefriendcheck</string>
-
 
     <!-- Software update -->
     <string name="softwareupdate_downloading">Downloading new software version...</string>
@@ -155,11 +149,9 @@
     <string name="dfu_service_progress">%d%%</string>
     <string name="dfu_feature_title">Bluefruit Update</string>
 
-
     <!-- Common -->
     <string name="dialog_ok">Ok</string>
 
     <!-- Debug -->
-    <string name="hello_world">Hello world!</string>
 
 </resources>

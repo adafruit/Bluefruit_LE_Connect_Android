@@ -17,7 +17,7 @@ import android.util.Log;
 import java.util.List;
 import java.util.UUID;
 
-public class BleManager implements BleExecutorListener {
+public class BleManager implements BleGattExecutor.BleExecutorListener {
     // Log
     private final static String TAG = BleManager.class.getSimpleName();
 
@@ -39,7 +39,7 @@ public class BleManager implements BleExecutorListener {
     private String mDeviceAddress;
     private int mConnectionState = STATE_DISCONNECTED;
 
-    private BleServiceListener mBleListener;
+    private BleManagerListener mBleListener;
 
     public static BleManager getInstance(Context context) {
         if(mInstance == null)
@@ -59,10 +59,10 @@ public class BleManager implements BleExecutorListener {
         return mDeviceAddress;
     }
 
-    public void setBleListener(BleServiceListener listener) {
+    public void setBleListener(BleManagerListener listener) {
         mBleListener = listener;
     }
-    public BleServiceListener getBleListener()  {return mBleListener; }
+    public BleManagerListener getBleListener()  {return mBleListener; }
 
     public BluetoothAdapter getAdapter() {
         return mAdapter;
@@ -370,4 +370,15 @@ public class BleManager implements BleExecutorListener {
         }
     }
     //endregion
+
+    public static interface BleManagerListener {
+
+        public void onConnected();
+        public void onConnecting();
+        public void onDisconnected();
+        public void onServicesDiscovered();
+
+        public void onDataAvailable(BluetoothGattCharacteristic characteristic);
+        public void onDataAvailable(BluetoothGattDescriptor descriptor);
+    }
 }

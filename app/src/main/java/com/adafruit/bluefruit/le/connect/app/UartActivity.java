@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.text.Spannable;
@@ -34,12 +33,11 @@ import android.widget.TextView;
 
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
-import com.adafruit.bluefruit.le.connect.ble.BleServiceListener;
 
 import java.nio.charset.Charset;
 
 
-public class UartActivity extends UartInterfaceActivity implements BleServiceListener {
+public class UartActivity extends UartInterfaceActivity implements BleManager.BleManagerListener {
     // Log
     private final static String TAG = UartActivity.class.getSimpleName();
 
@@ -251,14 +249,14 @@ public class UartActivity extends UartInterfaceActivity implements BleServiceLis
     }
 
     private void startHelp() {
-        // Launch app hep activity
+        // Launch app help activity
         Intent intent = new Intent(this, CommonHelpActivity.class);
         intent.putExtra("title", getString(R.string.uart_help_title));
         intent.putExtra("help", "uart_help.html");
         startActivity(intent);
     }
 
-    // region BleServiceListener
+    // region BleManagerListener
     @Override
     public void onConnected() {
 

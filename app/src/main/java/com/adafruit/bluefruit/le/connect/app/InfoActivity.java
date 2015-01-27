@@ -23,8 +23,8 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.adafruit.bluefruit.le.connect.R;
+import com.adafruit.bluefruit.le.connect.app.settings.ConnectedSettingsActivity;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
-import com.adafruit.bluefruit.le.connect.ble.BleServiceListener;
 import com.adafruit.bluefruit.le.connect.ble.BleUtils;
 import com.adafruit.bluefruit.le.connect.ble.KnownUUIDs;
 import com.adafruit.bluefruit.le.connect.ui.ExpandableHeightListView;
@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class InfoActivity extends ActionBarActivity implements BleServiceListener {
+public class InfoActivity extends ActionBarActivity implements BleManager.BleManagerListener {
     // Log
     private final static String TAG = InfoActivity.class.getSimpleName();
 
@@ -124,21 +124,27 @@ public class InfoActivity extends ActionBarActivity implements BleServiceListene
             startHelp();
             return true;
         }
+        else if (id == R.id.action_connected_settings) {
+            startConnectedSettings();
+            return true;
+        }
 
         return super.onOptionsItemSelected(item);
     }
 
     private void startHelp() {
-        // Launch app hep activity
+        // Launch app help activity
         Intent intent = new Intent(this, CommonHelpActivity.class);
         intent.putExtra("title", getString(R.string.info_help_title));
         intent.putExtra("help", "info_help.html");
         startActivity(intent);
     }
 
-    // region Actions
-
-    //endregion
+    private void startConnectedSettings() {
+        // Launch connected settings activity
+        Intent intent = new Intent(this, ConnectedSettingsActivity.class);
+        startActivity(intent);
+    }
 
     public void onClickInfoService(View view) {
         int groupPosition = (Integer) view.getTag();

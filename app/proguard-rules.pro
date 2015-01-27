@@ -32,3 +32,10 @@
 -keepnames class * implements android.os.Parcelable {
     public static final ** CREATOR;
 }
+
+// Custom Proguard settings
+-keep class * extends android.app.Activity
+-assumenosideeffects class android.util.Log {
+    public static *** d(...);
+    public static *** v(...);
+}

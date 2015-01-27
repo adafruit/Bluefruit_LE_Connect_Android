@@ -8,11 +8,10 @@ import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.preference.PreferenceScreen;
 
 import com.adafruit.bluefruit.le.connect.BuildConfig;
 import com.adafruit.bluefruit.le.connect.R;
-import com.adafruit.bluefruit.le.connect.app.update.SoftwareUpdateManager;
+import com.adafruit.bluefruit.le.connect.app.update.FirmwareUpdater;
 
 
 public class PreferencesFragment extends PreferenceFragment {
@@ -25,7 +24,7 @@ public class PreferencesFragment extends PreferenceFragment {
 
         // Set updateserver
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String updateServer = sharedPreferences.getString("pref_updateserver", SoftwareUpdateManager.kDefaultUpdateServerUrl);
+        String updateServer = sharedPreferences.getString("pref_updateserver", FirmwareUpdater.kDefaultUpdateServerUrl);
 
         EditTextPreference etp = (EditTextPreference) findPreference("pref_updateserver");
         etp.setSummary(updateServer);

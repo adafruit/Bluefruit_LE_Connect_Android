@@ -32,10 +32,9 @@ import android.widget.Toast;
 
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.app.settings.SettingsActivity;
-import com.adafruit.bluefruit.le.connect.app.update.SoftwareUpdateManager;
+import com.adafruit.bluefruit.le.connect.app.update.FirmwareUpdater;
 import com.adafruit.bluefruit.le.connect.ble.BleDevicesScanner;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
-import com.adafruit.bluefruit.le.connect.ble.BleServiceListener;
 import com.adafruit.bluefruit.le.connect.ble.BleUtils;
 import com.adafruit.bluefruit.le.connect.ui.ExpandableHeightExpandableListView;
 
@@ -43,12 +42,14 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 
 
-public class MainActivity extends ActionBarActivity implements BleServiceListener, BleUtils.ResetBluetoothAdapterListener, SoftwareUpdateManager.SoftwareUpdateManagerListener {
+public class MainActivity extends ActionBarActivity implements BleManager.BleManagerListener, BleUtils.ResetBluetoothAdapterListener, FirmwareUpdater.FirmwareUpdaterListener {
     // Log
     private final static String TAG = MainActivity.class.getSimpleName();
     private final static long kMinDelayToUpdateUI = 800;    // in milliseconds
@@ -73,7 +74,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     private BleManager mBleManager;
     private boolean mIsScanPaused = true;
     private BleDevicesScanner mScanner;
-    private SoftwareUpdateManager mSoftwareUpdateManager;
+    private FirmwareUpdater mFirmwareUpdater;
 
     private boolean mWasScanningBeforeOnPause = true;       // used to track previous status when activity is recreated (i.e. orientation change)
     private ArrayList<BluetoothDeviceData> mScannedDevices;
@@ -135,8 +136,8 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
 
             // Update SoftwareUpdateManager
             if (updatesEnabled) {
-                mSoftwareUpdateManager = SoftwareUpdateManager.getInstance(this);
-                mSoftwareUpdateManager.updateInfoFromServer();
+                mFirmwareUpdater = new FirmwareUpdater(this, this);
+                mFirmwareUpdater.refreshSoftwareUpdatesDatabase();
             }
 
             // Turn off wifi
@@ -191,9 +192,9 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
 
         // Set listener
         mBleManager.setBleListener(this);
-        if (mSoftwareUpdateManager != null) {       // if software updates are enabled
-            mSoftwareUpdateManager.setListener(this, this);
-//            mSoftwareUpdateManager.onResumeListenerActivity();
+        if (mFirmwareUpdater != null) {       // if software updates are enabled
+            // mFirmwareUpdater.setListener(this, this);
+            mFirmwareUpdater.changedParentActivity(this);
         }
 
         // Autostart scan
@@ -224,11 +225,6 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
             mWasScanningBeforeOnPause = false;
         }
 
-/*
-        if (mSoftwareUpdateManager != null) {       // if software updates are enabled
-            mSoftwareUpdateManager.onPauseListenerActivity();
-        }
-*/
         super.onPause();
     }
 
@@ -367,7 +363,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     }
 
     private void startHelp() {
-        // Launch app hep activity
+        // Launch app help activity
         Intent intent = new Intent(this, MainHelpActivity.class);
         startActivity(intent);
     }
@@ -398,13 +394,11 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
             // Return from activity settings. Update app behaviour if needed
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
             boolean updatesEnabled = sharedPreferences.getBoolean("pref_updatesenabled", true);
-            if(updatesEnabled) {
-                mSoftwareUpdateManager = SoftwareUpdateManager.getInstance(this);
-                mSoftwareUpdateManager.clearLastCheckedDeviceAddress();
-                mSoftwareUpdateManager.updateInfoFromServer();
-            }
-            else {
-                mSoftwareUpdateManager = null;
+            if (updatesEnabled) {
+                mFirmwareUpdater.clearLastCheckedDeviceAddress();
+                mFirmwareUpdater.refreshSoftwareUpdatesDatabase();
+            } else {
+                mFirmwareUpdater = null;
             }
 
 
@@ -679,7 +673,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     }
 
 
-    // region BleServiceListener
+    // region BleManagerListener
     @Override
     public void onConnected() {
     }
@@ -696,8 +690,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     @Override
     public void onServicesDiscovered() {
         Log.d(TAG, "services discovered");
-        boolean isVerifying = false;
-        if (mSoftwareUpdateManager != null) {
+        if (mFirmwareUpdater != null) {
             // Check if should update device software
             runOnUiThread(new Runnable() {
                 @Override
@@ -705,13 +698,8 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                     showCheckingUpdateState();
                 }
             });
-            mSoftwareUpdateManager.setListener(this, this);
-            isVerifying = mSoftwareUpdateManager.checkIfNewSoftwareVersionIsAvailable();        // continues asynchronously in onSoftwareUpdateChecked
-            Log.d(TAG, isVerifying ? "Verifying if software update is available" : "No software update available");
-        }
-
-        if (!isVerifying) {
-            launchComponentActivity();
+            //mFirmwareUpdater.setListener(this, this);
+            mFirmwareUpdater.checkFirmwareUpdatesForTheCurrentConnectedDevice();        // continues asynchronously in onFirmwareUpdatesChecked
         }
     }
 
@@ -726,13 +714,15 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
 
     // region SoftwareUpdateManagerListener
     @Override
-    public void onSoftwareUpdateChecked(boolean isUpdateAvailable, final String latestSoftwareVersion) {
+    public void onFirmwareUpdatesChecked(boolean isUpdateAvailable, final FirmwareUpdater.ReleaseInfo latestRelease, FirmwareUpdater.DeviceInfoData deviceInfoData, Map<String, List<FirmwareUpdater.ReleaseInfo>> allReleases) {
+        mBleManager.setBleListener(this);
+
         if (isUpdateAvailable) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     // Ask user if should update
-                    String message = String.format(getString(R.string.scan_softwareupdate_message), latestSoftwareVersion);
+                    String message = String.format(getString(R.string.scan_softwareupdate_messageformat), latestRelease.version);
                     new AlertDialog.Builder(MainActivity.this)
                             .setTitle(R.string.scan_softwareupdate_title)
                             .setMessage(message)
@@ -744,7 +734,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                                     BluetoothDevice device = mBleManager.getConnectedDevice();
                                     mBleManager.disconnect();       // disconnect to let the dfu library connect to the device
                                     mBleManager.close();
-                                    mSoftwareUpdateManager.installLatestVersion(MainActivity.this, device);
+                                    mFirmwareUpdater.downloadAndInstallFirmware(MainActivity.this, device, latestRelease);
                                 }
                             })
                             .setNeutralButton(R.string.scan_softwareupdate_notnow, new DialogInterface.OnClickListener() {
@@ -756,7 +746,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                             .setNegativeButton(R.string.scan_softwareupdate_dontask, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    mSoftwareUpdateManager.ignoreCurrentVersion();
+                                    mFirmwareUpdater.ignoreVersion(latestRelease.version);
                                     launchComponentActivity();
                                 }
                             })
@@ -765,7 +755,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
                 }
             });
         } else {
-            Log.d(TAG, "onSoftwareUpdateChecked: No software update available");
+            Log.d(TAG, "onFirmwareUpdatesChecked: No software update available");
             launchComponentActivity();
         }
     }
@@ -775,7 +765,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
         Log.d(TAG, "Software version installation cancelled");
 
         // Continue to the component activity
-       // launchComponentActivity();
+        // launchComponentActivity();
         mScannedDevices.clear();
         startScan(null, null);
     }
@@ -795,7 +785,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
     @Override
     public void onInstallFailed(boolean isDownloadError) {
         Log.d(TAG, "Software version installation failed");
-        Toast.makeText(this , isDownloadError?R.string.scan_softwareupdate_downloaderror:R.string.scan_softwareupdate_updateerror, Toast.LENGTH_LONG).show();
+        Toast.makeText(this, isDownloadError ? R.string.scan_softwareupdate_downloaderror : R.string.scan_softwareupdate_updateerror, Toast.LENGTH_LONG).show();
 
         // Continue to the component activity
         //launchComponentActivity();
@@ -1002,7 +992,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
         private boolean mWasScanningBeforeOnPause;
         private Class<?> mComponentToStartWhenConnected;
         private boolean mShouldEnableWifiOnQuit;
-        private SoftwareUpdateManager mSoftwareUpdateManager;
+        private FirmwareUpdater mFirmwareUpdater;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -1029,7 +1019,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
             mWasScanningBeforeOnPause = mRetainedDataFragment.mWasScanningBeforeOnPause;
             mComponentToStartWhenConnected = mRetainedDataFragment.mComponentToStartWhenConnected;
             mShouldEnableWifiOnQuit = mRetainedDataFragment.mShouldEnableWifiOnQuit;
-            mSoftwareUpdateManager = mRetainedDataFragment.mSoftwareUpdateManager;
+            mFirmwareUpdater = mRetainedDataFragment.mFirmwareUpdater;
         }
     }
 
@@ -1038,7 +1028,7 @@ public class MainActivity extends ActionBarActivity implements BleServiceListene
         mRetainedDataFragment.mWasScanningBeforeOnPause = mWasScanningBeforeOnPause;
         mRetainedDataFragment.mComponentToStartWhenConnected = mComponentToStartWhenConnected;
         mRetainedDataFragment.mShouldEnableWifiOnQuit = mShouldEnableWifiOnQuit;
-        mRetainedDataFragment.mSoftwareUpdateManager = mSoftwareUpdateManager;
+        mRetainedDataFragment.mFirmwareUpdater = mFirmwareUpdater;
     }
     // endregion
 }

@@ -22,11 +22,10 @@ import android.widget.TextView;
 import com.adafruit.bluefruit.le.connect.BuildConfig;
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
-import com.adafruit.bluefruit.le.connect.ble.BleServiceListener;
 import com.adafruit.bluefruit.le.connect.ble.BleUtils;
 import com.adafruit.bluefruit.le.connect.ui.ExpandableHeightExpandableListView;
 
-public class PinIOActivity extends UartInterfaceActivity implements BleServiceListener {
+public class PinIOActivity extends UartInterfaceActivity implements BleManager.BleManagerListener {
     // Log
     private final static String TAG = UartActivity.class.getSimpleName();
 
@@ -119,7 +118,7 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
     }
 
     private void startHelp() {
-        // Launch app hep activity
+        // Launch app help activity
         Intent intent = new Intent(this, CommonHelpActivity.class);
         intent.putExtra("title", getString(R.string.pinio_help_title));
         intent.putExtra("help", "pinio_help.html");
@@ -203,7 +202,7 @@ public class PinIOActivity extends UartInterfaceActivity implements BleServiceLi
         listAdapter.notifyDataSetChanged();
     }
 
-    // region BleServiceListener
+    // region BleManagerListener
     @Override
     public void onConnected() {
 

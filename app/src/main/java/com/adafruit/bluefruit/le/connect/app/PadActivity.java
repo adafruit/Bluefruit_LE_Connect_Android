@@ -13,9 +13,8 @@ import android.widget.ImageButton;
 
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
-import com.adafruit.bluefruit.le.connect.ble.BleServiceListener;
 
-public class PadActivity extends UartInterfaceActivity implements BleServiceListener {
+public class PadActivity extends UartInterfaceActivity implements BleManager.BleManagerListener {
     // Log
     private final static String TAG = PadActivity.class.getSimpleName();
 
