@@ -109,6 +109,8 @@
 
     <string name="connectedsettings_install_messageformat">Download and install firmware version %s</string>
 
+    <string name="connectedsettings_noexplorer_title">Unavailable</string>
+    <string name="connectedsettings_noexplorer_message">File browser app not has not been found on your device. You should install an app like Dropbox, GoogleDrive...</string>
 
 
     <!-- Settings -->

@@ -30,6 +30,9 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
     // Log
     private final static String TAG = UartActivity.class.getSimpleName();
 
+    // Activity request codes (used for onActivityResult)
+    private static final int kActivityRequestCode_FirmwareUpdateCompleted = 0;
+
     // Pin Constants
     private static final int FIRST_DIGITAL_PIN = 3;
     private static final int LAST_DIGITAL_PIN = 8;
@@ -127,9 +130,15 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
     private void startConnectedSettings() {
         // Launch connected settings activity
         Intent intent = new Intent(this, ConnectedSettingsActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, kActivityRequestCode_FirmwareUpdateCompleted);
     }
 
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent intent) {
+        if (resultCode == RESULT_OK && requestCode == kActivityRequestCode_FirmwareUpdateCompleted) {
+            finish();
+        }
+    }
     private void startHelp() {
         // Launch app help activity
         Intent intent = new Intent(this, CommonHelpActivity.class);

@@ -1,6 +1,7 @@
 package com.adafruit.bluefruit.le.connect.app.update;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.PowerManager;
 import android.util.Log;
@@ -36,21 +37,32 @@ public class DownloadTask extends AsyncTask<String, Integer, ByteArrayOutputStre
         HttpURLConnection connection = null;
         try {
             urlAddress = sUrl[0];
-            URL url = new URL(urlAddress);
-            connection = (HttpURLConnection) url.openConnection();
-            connection.connect();
 
-            // expect HTTP 200 OK, so we don't mistakenly save error report instead of the file
-            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                return null;
+            int fileLength = 0;
+            Uri uri = Uri.parse(sUrl[0]);
+            String uriScheme = uri.getScheme();
+            boolean shouldBeConsideredAsInputStream = (uriScheme.equalsIgnoreCase("file") || uriScheme.equalsIgnoreCase("content"));
+            if (shouldBeConsideredAsInputStream) {
+                input = context.getContentResolver().openInputStream(uri);
+            } else {
+                URL url = new URL(urlAddress);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.connect();
+
+                // expect HTTP 200 OK, so we don't mistakenly save error report instead of the file
+                if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                    return null;
+                }
+
+                // this will be useful to display download percentage  might be -1: server did not report the length
+                fileLength = connection.getContentLength();
+
+                // download the file
+                input = connection.getInputStream();
             }
-
-            // this will be useful to display download percentage  might be -1: server did not report the length
-            int fileLength = connection.getContentLength();
-//                Log.d(TAG, "\tFile size: "+fileLength);
+//          Log.d(TAG, "\tFile size: "+fileLength);
 
             // download the file
-            input = connection.getInputStream();
             output = new ByteArrayOutputStream();
 
             byte data[] = new byte[4096];

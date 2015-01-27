@@ -1,9 +1,12 @@
 package com.adafruit.bluefruit.le.connect.app.settings;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
@@ -15,6 +18,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.app.update.FirmwareUpdater;
@@ -27,10 +31,12 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
     // Log
     private final static String TAG = ConnectedSettingsActivity.class.getSimpleName();
 
+    // Activity request codes (used for onActivityResult)
+    private static final int kActivityRequestCode_SelectFile = 0;
+
     // UI
     private ListView mReleasesListView;
     private ReleasesListAdapter mReleasesListAdapter;
-    private Map<String, List<FirmwareUpdater.ReleaseInfo>> mReleases;
 
     private View mReleasesDialogView;
     private View mReleasesDialogWaitView;
@@ -53,13 +59,11 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
 
         // UI
         mReleasesListView = (ListView) findViewById(R.id.releasesListView);
-       // mReleasesListAdapter = new ReleasesListAdapter(this, mReleases);
-       // mUpdatesListView.setAdapter(mReleasesListAdapter);
 
         mReleasesDialogView = findViewById(R.id.releasesDialogView);
         mReleasesDialogWaitView = findViewById(R.id.releasesDialogWaitView);
-        mReleasesDialogTextView = (TextView)findViewById(R.id.releasesDialogTextView);
-        mCustomFirmwareButton = (Button)findViewById(R.id.customFirmwareButton);
+        mReleasesDialogTextView = (TextView) findViewById(R.id.releasesDialogTextView);
+        mCustomFirmwareButton = (Button) findViewById(R.id.customFirmwareButton);
 
 
         // Start
@@ -69,8 +73,7 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
             showReleasesDialog(true, getString(R.string.connectedsettings_dfunotfound), true);
 
             mFirmwareUpdater.checkFirmwareUpdatesForTheCurrentConnectedDevice();
-        }
-        else {
+        } else {
             showReleasesDialog(true, getString(R.string.connectedsettings_dfunotfound), false);
             mCustomFirmwareButton.setVisibility(View.GONE);
         }
@@ -106,16 +109,15 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
     }
 
     public void showReleasesDialog(boolean show, String text, boolean showWait) {
-        mReleasesDialogView.setVisibility(show?View.VISIBLE:View.GONE);
+        mReleasesDialogView.setVisibility(show ? View.VISIBLE : View.GONE);
         mReleasesDialogTextView.setText(text);
-        mReleasesDialogWaitView.setVisibility(showWait?View.VISIBLE:View.GONE);
+        mReleasesDialogWaitView.setVisibility(showWait ? View.VISIBLE : View.GONE);
 
-        mReleasesListView.setVisibility(!show?View.VISIBLE:View.GONE);
+        mReleasesListView.setVisibility(!show ? View.VISIBLE : View.GONE);
     }
 
 
-
-    // region FirmwareUpdateManagerListener
+    // region FirmwareUpdaterListener
     @Override
     public void onFirmwareUpdatesChecked(boolean isUpdateAvailable, FirmwareUpdater.ReleaseInfo latestRelease, FirmwareUpdater.DeviceInfoData deviceInfoData, Map<String, List<FirmwareUpdater.ReleaseInfo>> allReleases) {
 
@@ -142,19 +144,23 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
     }
 
     @Override
-    public void onInstallCancelled() {
+    public void onFirmwareUpdateCancelled() {
 
     }
 
     @Override
-    public void onInstallCompleted() {
-
+    public void onFirmwareUpdateCompleted() {
+        Toast.makeText(this, R.string.scan_softwareupdate_completed, Toast.LENGTH_LONG).show();
+        setResult(Activity.RESULT_OK);
+        finish();
     }
 
     @Override
-    public void onInstallFailed(boolean isDownloadError) {
+    public void onFirmwareUpdateFailed(boolean isDownloadError) {
+        Toast.makeText(this, isDownloadError ? R.string.scan_softwareupdate_downloaderror : R.string.scan_softwareupdate_updateerror, Toast.LENGTH_LONG).show();
 
     }
+
     // endregion
 
 
@@ -225,11 +231,49 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
     private void downloadAndInstallRelease(FirmwareUpdater.ReleaseInfo release) {
         BleManager bleManager = BleManager.getInstance(this);
         BluetoothDevice device = bleManager.getConnectedDevice();
-        mFirmwareUpdater.downloadAndInstallFirmware(this, device, release);
+        mFirmwareUpdater.downloadAndInstallFirmware(this, release);
+        //mFirmwareUpdater.installFirmware(this, null, release.hexFileUrl);
     }
 
     public void onClickCustomFirmware(View view) {
-
+        openFileChooser();
     }
+
+    // region FileExplorer
+
+
+    private void openFileChooser() {
+
+        final Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        /*
+        final int fileType = DfuService.TYPE_APPLICATION;
+        String types = fileType == DfuService.TYPE_AUTO ? DfuService.MIME_TYPE_ZIP : DfuService.MIME_TYPE_OCTET_STREAM;
+        types += ";application/mac-binhex";    // hex is recognized as this mimetype (for dropbox)
+        */
+        intent.setType("*/*");      // Everything to avoid problems with GoogleDrive
+
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            // file browser has been found on the device
+            startActivityForResult(intent, kActivityRequestCode_SelectFile);
+        } else {
+            // Aert user that no file browers app is available
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.connectedsettings_noexplorer_title)
+                    .setMessage(R.string.connectedsettings_noexplorer_message)
+                    .setCancelable(true)
+                    .show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        if (resultCode == RESULT_OK && requestCode == kActivityRequestCode_SelectFile) {
+            Uri uri = data.getData();
+            mFirmwareUpdater.downloadAndInstallFirmware(this, uri.toString());
+        }
+    }
+
+    // endregion
 }
 

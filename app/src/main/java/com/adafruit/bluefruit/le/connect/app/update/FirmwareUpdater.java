@@ -15,6 +15,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
@@ -75,18 +76,17 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     private DeviceInfoData mDeviceInfoData;
     private FirmwareUpdaterListener mListener;
     private ProgressDialogFragment mProgressDialog;
-    private BluetoothDevice mSelectedDevice;
     private PowerManager.WakeLock mWakeLock;
     private Activity mParentActivity;
 
     public static interface FirmwareUpdaterListener {
         void onFirmwareUpdatesChecked(boolean isUpdateAvailable, ReleaseInfo latestRelease, DeviceInfoData deviceInfoData, Map<String, List<ReleaseInfo>> allReleases);
 
-        void onInstallCancelled();
+        void onFirmwareUpdateCancelled();
 
-        void onInstallCompleted();
+        void onFirmwareUpdateCompleted();
 
-        void onInstallFailed(boolean isDownloadError);
+        void onFirmwareUpdateFailed(boolean isDownloadError);
     }
 
     public class DeviceInfoData {
@@ -195,9 +195,14 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         }
     }
 
-    public void downloadAndInstallFirmware(Activity activity, BluetoothDevice selectedDevice, ReleaseInfo release) {
-        mSelectedDevice = selectedDevice;
 
+    public void downloadAndInstallFirmware(Activity activity, String uri) {
+        ReleaseInfo release = new ReleaseInfo();
+        release.hexFileUrl = uri;
+        downloadAndInstallFirmware(activity, release);
+    }
+
+    public void downloadAndInstallFirmware(Activity activity, ReleaseInfo release) {
         if (mDownloadTask != null) {
             mDownloadTask.cancel(true);
         }
@@ -217,7 +222,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                 public void onCancel(DialogInterface dialog) {
                     mDownloadTask.cancel(true);
                     cleanInstallationAttempt(false);
-                    mListener.onInstallCancelled();
+                    mListener.onFirmwareUpdateCancelled();
                 }
             });
 
@@ -231,11 +236,19 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     }
 
 
-    private void installFirmware(String path) {
+    public void installFirmware(Activity activity, String localPath, String fileStreamUri) {          // Set one of the parameters: either localPath if the file is in the local filesystem or fileStreamUri if the has to be downloaded
+        if (localPath == null && fileStreamUri == null) {
+            Log.w(TAG, "installFirmware with null parameters");
+            return;
+        }
+
+        mParentActivity = activity;
+
         mProgressDialog = new ProgressDialogFragment.Builder()
                 .setMessage(mContext.getString(R.string.softwareupdate_downloading)).setCancelableOnTouchOutside(false).build();
         mProgressDialog.show(mParentActivity.getFragmentManager(), "progress_update");
         mParentActivity.getFragmentManager().executePendingTransactions();
+
         mProgressDialog.setIndeterminate(mParentActivity.getFragmentManager(), true);
         mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.softwareupdate_startupdate));
         mProgressDialog.setCancelable(true);
@@ -251,15 +264,17 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
 
                 // Cancel dialog
                 //cleanInstallationAttempt(false);      // cleaning is performed by the dfu-library listener
-                mListener.onInstallCancelled();
+                mListener.onFirmwareUpdateCancelled();
             }
         });
 
 
         final int fileType = DfuService.TYPE_APPLICATION;
-        String fileStreamUri = null;
-
-        Log.d(TAG, "update from: " + path);
+        Uri uriPath = null;
+        if (fileStreamUri != null) {
+            uriPath = Uri.parse(fileStreamUri);
+        }
+        Log.d(TAG, "update from: " + (localPath!=null?"path "+localPath:"uri "+uriPath.toString()));
 
         // take CPU lock to prevent CPU from going off if the user  presses the power button during download
         PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
@@ -269,21 +284,23 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         // Register as dfu listener
         registerAsDfuListener(true);
 
+
         // Start dfu update service
+        BluetoothDevice device = BleManager.getInstance(mContext).getConnectedDevice();     // current connected device
         final Intent service = new Intent(mContext, DfuService.class);
 
-        service.putExtra(DfuService.EXTRA_DEVICE_ADDRESS, mSelectedDevice.getAddress());
-        service.putExtra(DfuService.EXTRA_DEVICE_NAME, mSelectedDevice.getName());
+        service.putExtra(DfuService.EXTRA_DEVICE_ADDRESS, device.getAddress());
+        service.putExtra(DfuService.EXTRA_DEVICE_NAME, device.getName());
         service.putExtra(DfuService.EXTRA_FILE_MIME_TYPE, fileType == DfuService.TYPE_AUTO ? DfuService.MIME_TYPE_ZIP : DfuService.MIME_TYPE_OCTET_STREAM);
         service.putExtra(DfuService.EXTRA_FILE_TYPE, fileType);
-        service.putExtra(DfuService.EXTRA_FILE_PATH, path);
-        service.putExtra(DfuService.EXTRA_FILE_URI, fileStreamUri);
+        service.putExtra(DfuService.EXTRA_FILE_PATH, localPath);
+        service.putExtra(DfuService.EXTRA_FILE_URI, uriPath);
         ComponentName serviceName = mContext.startService(service);
         Log.d(TAG, "Service started: " + serviceName);
         if (serviceName == null) {
             Log.e(TAG, "Error starting DFU service " + service.getPackage() + ":" + service.getAction());
             cleanInstallationAttempt(false);
-            mListener.onInstallFailed(false);
+            mListener.onFirmwareUpdateFailed(false);
         }
     }
 
@@ -457,7 +474,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         if (result == null) {
             Log.w(TAG, "Error downloading software version: " + urlAddress);
             cleanInstallationAttempt(false);
-            mListener.onInstallFailed(true);
+            mListener.onFirmwareUpdateFailed(true);
         } else {
             Log.d(TAG, "Downloaded version: " + urlAddress + " size: " + result.size());
 
@@ -475,10 +492,10 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
             }
 
             if (success) {
-                installFirmware(file.getAbsolutePath());
+                installFirmware(mParentActivity, file.getAbsolutePath(), null);
             } else {
                 cleanInstallationAttempt(false);
-                mListener.onInstallFailed(true);
+                mListener.onFirmwareUpdateFailed(true);
             }
 
         }
@@ -707,7 +724,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                     @Override
                     public void run() {
                         cleanInstallationAttempt(true);
-                        mListener.onInstallCompleted();
+                        mListener.onFirmwareUpdateCompleted();
 
                         // if this activity is still open and upload process was completed, cancel the notification
                         final NotificationManager manager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -725,7 +742,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                     @Override
                     public void run() {
                         cleanInstallationAttempt(false);
-                        mListener.onInstallCancelled();
+                        mListener.onFirmwareUpdateCancelled();
 
                         // if this activity is still open and upload process was completed, cancel the notification
                         final NotificationManager manager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -741,7 +758,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                 if (error) {
                     Toast.makeText(mContext, "Upload failed: " + GattError.parse(progress) + " (" + (progress & ~(DfuService.ERROR_MASK | DfuService.ERROR_REMOTE_MASK)) + ")", Toast.LENGTH_LONG).show();
                     cleanInstallationAttempt(false);
-                    mListener.onInstallFailed(false);
+                    mListener.onFirmwareUpdateFailed(false);
                 } else {
                     if (mProgressDialog != null) {
                         mProgressDialog.setProgress(mParentActivity.getFragmentManager(), progress);

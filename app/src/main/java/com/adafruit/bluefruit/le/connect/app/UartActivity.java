@@ -42,6 +42,9 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
     // Log
     private final static String TAG = UartActivity.class.getSimpleName();
 
+    // Activity request codes (used for onActivityResult)
+    private static final int kActivityRequestCode_FirmwareUpdateCompleted = 0;
+
     // Constants
     private final static String kPreferences = "UartActivity_prefs";
     private final static String kPreferences_eol = "eol";
@@ -258,9 +261,15 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
     private void startConnectedSettings() {
         // Launch connected settings activity
         Intent intent = new Intent(this, ConnectedSettingsActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, kActivityRequestCode_FirmwareUpdateCompleted);
     }
 
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent intent) {
+        if (resultCode == RESULT_OK && requestCode == kActivityRequestCode_FirmwareUpdateCompleted) {
+            finish();
+        }
+    }
     private void startHelp() {
         // Launch app help activity
         Intent intent = new Intent(this, CommonHelpActivity.class);

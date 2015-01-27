@@ -747,7 +747,8 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
                                     BluetoothDevice device = mBleManager.getConnectedDevice();
                                     mBleManager.disconnect();       // disconnect to let the dfu library connect to the device
                                     mBleManager.close();
-                                    mFirmwareUpdater.downloadAndInstallFirmware(MainActivity.this, device, latestRelease);
+                                    mFirmwareUpdater.downloadAndInstallFirmware(MainActivity.this, latestRelease);
+                                    //mFirmwareUpdater.installFirmware(MainActivity.this, null, latestRelease.hexFileUrl);
                                 }
                             })
                             .setNeutralButton(R.string.scan_softwareupdate_notnow, new DialogInterface.OnClickListener() {
@@ -774,7 +775,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
     }
 
     @Override
-    public void onInstallCancelled() {
+    public void onFirmwareUpdateCancelled() {
         Log.d(TAG, "Software version installation cancelled");
 
         mLatestCheckedDeviceAddress = null;
@@ -784,7 +785,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
     }
 
     @Override
-    public void onInstallCompleted() {
+    public void onFirmwareUpdateCompleted() {
         Log.d(TAG, "Software version installation completed successfully");
 
         Toast.makeText(this, R.string.scan_softwareupdate_completed, Toast.LENGTH_LONG).show();
@@ -794,7 +795,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
     }
 
     @Override
-    public void onInstallFailed(boolean isDownloadError) {
+    public void onFirmwareUpdateFailed(boolean isDownloadError) {
         Log.d(TAG, "Software version installation failed");
         Toast.makeText(this, isDownloadError ? R.string.scan_softwareupdate_downloaderror : R.string.scan_softwareupdate_updateerror, Toast.LENGTH_LONG).show();
 
