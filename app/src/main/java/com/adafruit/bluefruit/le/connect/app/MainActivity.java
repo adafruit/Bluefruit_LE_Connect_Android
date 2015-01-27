@@ -709,6 +709,9 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
                 mFirmwareUpdater.checkFirmwareUpdatesForTheCurrentConnectedDevice();        // continues asynchronously in onFirmwareUpdatesChecked
                 isCheckingFirmware = true;
             }
+            else {
+                Log.d(TAG, "Updates: Device already checked previously. Skipping...");
+            }
         }
 
         if (!isCheckingFirmware) {

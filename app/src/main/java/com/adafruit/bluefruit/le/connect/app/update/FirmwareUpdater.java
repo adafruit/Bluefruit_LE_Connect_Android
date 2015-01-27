@@ -23,7 +23,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.adafruit.bluefruit.le.connect.BuildConfig;
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ui.ProgressDialogFragment;
@@ -165,13 +164,13 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                     // Data will be received asynchronously (onDataAvailable)
                     return true;        // returns true that means that the process is still working
                 } else {
-                    Log.d(TAG, "Updates unavailable: No DIS service found");
+                    Log.d(TAG, "Updates: No DIS service found");
                 }
 
             }
 
         } else {
-            Log.d(TAG, "No update available. Internet connection not detected");
+            Log.d(TAG, "Updates: Internet connection not detected. Skipping version check...");
         }
 
         mListener.onFirmwareUpdatesChecked(false, null, null, null);
@@ -274,7 +273,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         if (fileStreamUri != null) {
             uriPath = Uri.parse(fileStreamUri);
         }
-        Log.d(TAG, "update from: " + (localPath!=null?"path "+localPath:"uri "+uriPath.toString()));
+        Log.d(TAG, "update from: " + (localPath != null ? "path " + localPath : "uri " + uriPath.toString()));
 
         // take CPU lock to prevent CPU from going off if the user  presses the power button during download
         PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
@@ -530,12 +529,15 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         if (characteristic.getService().getUuid().toString().equalsIgnoreCase(kDeviceInformationService)) {
             if (characteristic.getUuid().toString().equalsIgnoreCase(kManufacturerNameCharacteristic)) {
                 mDeviceInfoData.manufacturer = characteristic.getStringValue(0);
+                Log.d(TAG, "Updates: received manufacturer:" + mDeviceInfoData.manufacturer);
             }
             if (characteristic.getUuid().toString().equalsIgnoreCase(kModelNumberCharacteristic)) {
                 mDeviceInfoData.modelNumber = characteristic.getStringValue(0);
+                Log.d(TAG, "Updates: received modelNumber:" + mDeviceInfoData.modelNumber);
             }
             if (characteristic.getUuid().toString().equalsIgnoreCase(kFirmwareRevisionCharacteristic)) {
                 mDeviceInfoData.firmwareRevision = characteristic.getStringValue(0);
+                Log.d(TAG, "Updates: received firmwareRevision:" + mDeviceInfoData.firmwareRevision);
             }
 
             // Check if we have received all data to check if a software update is needed
@@ -565,18 +567,30 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
 
                                 isFirmwareUpdateAvailable = (isNewerVersion || !showUpdateOnlyForNewerVersions);
 
-                                if (BuildConfig.DEBUG) {
-                                    if (!isNewerVersion) {
-                                        Log.d(TAG, "Device has already latest version: " + latestRelease.version);
+
+                                if (isNewerVersion) {
+                                    Log.d(TAG, "Updates: New version found. Ask the user to install: " + latestRelease.version);
+                                } else {
+                                    Log.d(TAG, "Updates: Device has already latest version: " + mDeviceInfoData.firmwareRevision);
+
+                                    if (isFirmwareUpdateAvailable) {
+                                        Log.d(TAG, "Updates: user asked to show old versions too");
                                     }
                                 }
+
+                            } else {
+                                Log.d(TAG, "Updates: User ignored version: " + versionToIgnore + ". Skipping...");
                             }
                         } else {
-                            Log.d(TAG, "No releases found for model: " + mDeviceInfoData.modelNumber);
+                            Log.d(TAG, "Updates: No releases found for model: " + mDeviceInfoData.modelNumber);
                         }
+                    } else {
+                        Log.d(TAG, "Updates: No updates for unknown manufacturer " + mDeviceInfoData.manufacturer);
                     }
 
                     mListener.onFirmwareUpdatesChecked(isFirmwareUpdateAvailable, latestRelease, mDeviceInfoData, allReleases);
+                } else {
+                    Log.d(TAG, "Updates: No listener. Skipping version check...");
                 }
             }
         }
