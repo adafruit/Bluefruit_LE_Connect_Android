@@ -47,7 +47,12 @@
                 android:text="Choose"/>
         </LinearLayout>
 
-        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#aaaaaa" android:layout_margin="10dp"></View>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp"
+            android:background="#cccccc"></View>
 
         <LinearLayout
             android:layout_width="match_parent"

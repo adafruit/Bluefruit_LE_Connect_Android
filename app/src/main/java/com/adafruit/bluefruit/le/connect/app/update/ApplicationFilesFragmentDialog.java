@@ -20,7 +20,7 @@ public class ApplicationFilesFragmentDialog extends DialogFragment {
     // UI
     private TextView mHexTextView;
     private TextView mIniTextView;
-    private Dialog mDialog;
+    private AlertDialog mDialog;
 
     // Data
     public interface ApplicationFilesDialogListener {
@@ -46,6 +46,7 @@ public class ApplicationFilesFragmentDialog extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        setRetainInstance(true);
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View contentView = inflater.inflate(R.layout.layout_application_files_dialog, null);
@@ -70,9 +71,23 @@ public class ApplicationFilesFragmentDialog extends DialogFragment {
                     }
                 });
         mDialog =  builder.create();
+
+        updateUI();
+
         return mDialog;
     }
 
+    @Override
+    public void onDestroyView()
+    {
+        Dialog dialog = getDialog();
+
+        // Work around bug: http://code.google.com/p/android/issues/detail?id=17423
+        if ((dialog != null) && getRetainInstance())
+            dialog.setDismissMessage(null);
+
+        super.onDestroyView();
+    }
     /*
     public void setPositiveButtonEnabled(boolean enabled) {
         ((AlertDialog)mDialog).getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(enabled);
@@ -91,14 +106,20 @@ public class ApplicationFilesFragmentDialog extends DialogFragment {
 
     public void setHexFilename(Uri uri) {
         mHexUri = uri;
-        String filename = filenameFromUri(uri);
-        mHexTextView.setText(filename);
+        updateUI();
     }
 
     public void setIniFilename(Uri uri) {
         mIniUri = uri;
-        String filename = filenameFromUri(uri);
-        mIniTextView.setText(filename);
+        updateUI();
+    }
+
+    private void updateUI() {
+        String hexName = filenameFromUri(mHexUri);
+        mHexTextView.setText(hexName);
+        String iniName = filenameFromUri(mIniUri);
+        mIniTextView.setText(iniName);
+
     }
 
     public Uri getHexUri() {

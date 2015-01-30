@@ -2,7 +2,8 @@ package com.adafruit.bluefruit.le.connect.app.settings;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -24,7 +25,6 @@ import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.app.update.ApplicationFilesFragmentDialog;
 import com.adafruit.bluefruit.le.connect.app.update.FirmwareUpdater;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +48,12 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
     // Data
     private FirmwareUpdater mFirmwareUpdater;
     private boolean mIsUpdating;
+    List<FirmwareUpdater.ReleaseInfo> mReleases;
+
     private ApplicationFilesFragmentDialog mApplicationFilesDialog;
+
+
+    private DataFragment mRetainedDataFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,8 +64,13 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
 
+        // Restore state
+        restoreRetainedDataFragment();
+
         // UI
         mReleasesListView = (ListView) findViewById(R.id.releasesListView);
+        mReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, mReleases);      // mReleases is still null here (except if we are restoring the activity because onConfigChanges)
+        mReleasesListView.setAdapter(mReleasesListAdapter);
 
         mReleasesDialogView = findViewById(R.id.releasesDialogView);
         mReleasesDialogWaitView = findViewById(R.id.releasesDialogWaitView);
@@ -68,21 +78,20 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
         mCustomFirmwareButton = (Button) findViewById(R.id.customFirmwareButton);
 
         // Start
-        mIsUpdating = false;
-        mFirmwareUpdater = new FirmwareUpdater(this, this);
-        boolean hasDFUService = mFirmwareUpdater.hasCurrentConnectedDeviceDFUService();
-        if (hasDFUService) {
-            showReleasesDialog(true, getString(R.string.connectedsettings_retrievinginfo), true);
-            mFirmwareUpdater.checkFirmwareUpdatesForTheCurrentConnectedDevice();            // continues on onFirmwareUpdatesChecked
-        } else {
-            showReleasesDialog(true, getString(R.string.connectedsettings_dfunotfound), false);
-            mCustomFirmwareButton.setVisibility(View.GONE);
-        }
+        updateUI();
     }
 
     @Override
     public void onResume() {
         super.onResume();
+    }
+
+    @Override
+    public void onDestroy() {
+        // Retain data
+        saveRetainedDataFragment();
+
+        super.onDestroy();
     }
 
     /*
@@ -114,7 +123,22 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
         return super.onOptionsItemSelected(item);
     }
 
-    public void showReleasesDialog(boolean show, String text, boolean showWait) {
+    private void updateUI() {
+        if (mReleases != null) {
+            showReleasesInfo(false, null, false);
+        } else {
+            boolean hasDFUService = mFirmwareUpdater.hasCurrentConnectedDeviceDFUService();
+            if (hasDFUService) {
+                showReleasesInfo(true, getString(R.string.connectedsettings_retrievinginfo), true);
+                mFirmwareUpdater.checkFirmwareUpdatesForTheCurrentConnectedDevice();            // continues on onFirmwareUpdatesChecked
+            } else {
+                showReleasesInfo(true, getString(R.string.connectedsettings_dfunotfound), false);
+                mCustomFirmwareButton.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    private void showReleasesInfo(boolean show, String text, boolean showWait) {
         mReleasesDialogView.setVisibility(show ? View.VISIBLE : View.GONE);
         mReleasesDialogTextView.setText(text);
         mReleasesDialogWaitView.setVisibility(showWait ? View.VISIBLE : View.GONE);
@@ -129,16 +153,16 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
 
         if (allReleases != null) {
             // Get releases for the current board
-            List<FirmwareUpdater.ReleaseInfo> releases = allReleases.get(deviceInfoData.modelNumber);
-            if (releases != null && releases.size() > 0) {
-                mReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, releases);
+            mReleases = allReleases.get(deviceInfoData.modelNumber);
+            if (mReleases != null && mReleases.size() > 0) {
+                mReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, mReleases);
 
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         //  Show releases
                         mReleasesListView.setAdapter(mReleasesListAdapter);
-                        showReleasesDialog(false, null, false);
+                        showReleasesInfo(false, null, false);
                     }
                 });
             } else {
@@ -148,7 +172,7 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        showReleasesDialog(true, message, false);
+                        showReleasesInfo(true, message, false);
                     }
                 });
             }
@@ -158,7 +182,6 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
     @Override
     public void onFirmwareUpdateCancelled() {
         mIsUpdating = false;
-
     }
 
     @Override
@@ -187,10 +210,7 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
                 }
             });
         }
-
     }
-
-
     // endregion
 
 
@@ -205,7 +225,7 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
 
         @Override
         public int getCount() {
-            return mReleases.size();
+            return mReleases == null ? 0 : mReleases.size();
         }
 
         @Override
@@ -237,7 +257,6 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
         }
     }
 
-
     public void onClickRelease(View view) {
         final FirmwareUpdater.ReleaseInfo release = (FirmwareUpdater.ReleaseInfo) view.getTag();
 
@@ -254,33 +273,23 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
                 .setNegativeButton(android.R.string.cancel, null)
                 .setCancelable(true)
                 .show();
-
     }
 
     private void downloadAndInstallRelease(FirmwareUpdater.ReleaseInfo release) {
-//        BleManager bleManager = BleManager.getInstance(this);
-//        BluetoothDevice device = bleManager.getConnectedDevice();
         mIsUpdating = true;
         mFirmwareUpdater.downloadAndInstallFirmware(this, release);
-        //mFirmwareUpdater.installFirmware(this, null, release.hexFileUrl);
     }
 
     public void onClickCustomFirmware(View view) {
-       // openFileChooser();
-
         mApplicationFilesDialog = new ApplicationFilesFragmentDialog();
         mApplicationFilesDialog.show(getFragmentManager(), null);
-       // mApplicationFilesDialog.setPositiveButtonEnabled(false);
-
     }
 
-    public void onApplicationDialogChooseHex(View view)
-    {
+    public void onApplicationDialogChooseHex(View view) {
         openFileChooser(kActivityRequestCode_SelectFile_Hex);
     }
 
-    public void onApplicationDialogChooseIni(View view)
-    {
+    public void onApplicationDialogChooseIni(View view) {
         openFileChooser(kActivityRequestCode_SelectFile_Ini);
     }
 
@@ -331,24 +340,21 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
 
             if (requestCode == kActivityRequestCode_SelectFile_Hex) {
                 mApplicationFilesDialog.setHexFilename(uri);
-               // mApplicationFilesDialog.setPositiveButtonEnabled(uri!=null);
-            }
-            else  if (requestCode == kActivityRequestCode_SelectFile_Ini) {
+                // mApplicationFilesDialog.setPositiveButtonEnabled(uri!=null);
+            } else if (requestCode == kActivityRequestCode_SelectFile_Ini) {
                 mApplicationFilesDialog.setIniFilename(uri);
             }
         }
     }
 
-
     private void startUpdate(Uri hexUri, Uri iniUri) {
-
         if (hexUri != null) {           // hexUri should be defined
             // Start the updates
             mIsUpdating = true;
 
             if (hexUri.getScheme().equalsIgnoreCase("file") && (iniUri == null || iniUri.getScheme().equalsIgnoreCase("file"))) {       // if is a file in local storage bypass downloader and send the link directly to installer
                 final String hexPath = hexUri.getPath();
-                final String iniPath = iniUri.getPath();
+                final String iniPath = iniUri == null ? null : iniUri.getPath();
                 mFirmwareUpdater.installFirmware(this, hexPath, iniPath, null, null);
             } else {
                 mFirmwareUpdater.downloadAndInstallFirmware(this, hexUri.toString(), iniUri != null ? iniUri.toString() : null);
@@ -358,6 +364,53 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
 
     // endregion
 
+    // region DataFragment
+    public static class DataFragment extends Fragment {
+        private FirmwareUpdater mFirmwareUpdater;
+        private boolean mIsUpdating;
+        List<FirmwareUpdater.ReleaseInfo> mReleases;
+        private ApplicationFilesFragmentDialog mApplicationFilesDialog;
 
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setRetainInstance(true);
+        }
+    }
+
+    private void restoreRetainedDataFragment() {
+        // find the retained fragment
+        FragmentManager fm = getFragmentManager();
+        mRetainedDataFragment = (DataFragment) fm.findFragmentByTag(TAG);
+
+        if (mRetainedDataFragment == null) {
+            // Create
+            mRetainedDataFragment = new DataFragment();
+            fm.beginTransaction().add(mRetainedDataFragment, TAG).commit();
+
+            // Init
+            mIsUpdating = false;
+            mFirmwareUpdater = new FirmwareUpdater(this, this);
+
+        } else {
+            // Restore status
+            mFirmwareUpdater = mRetainedDataFragment.mFirmwareUpdater;
+            mIsUpdating = mRetainedDataFragment.mIsUpdating;
+            mReleases = mRetainedDataFragment.mReleases;
+            mApplicationFilesDialog = mRetainedDataFragment.mApplicationFilesDialog;
+
+            if (mFirmwareUpdater != null) {
+                mFirmwareUpdater.changedParentActivity(this);       // set the new activity
+            }
+        }
+    }
+
+    private void saveRetainedDataFragment() {
+        mRetainedDataFragment.mFirmwareUpdater = mFirmwareUpdater;
+        mRetainedDataFragment.mIsUpdating = mIsUpdating;
+        mRetainedDataFragment.mReleases = mReleases;
+        mRetainedDataFragment.mApplicationFilesDialog = mApplicationFilesDialog;
+    }
+    // endregion
 }
 

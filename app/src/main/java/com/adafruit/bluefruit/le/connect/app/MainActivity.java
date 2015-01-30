@@ -193,10 +193,6 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
 
         // Set listener
         mBleManager.setBleListener(this);
-        if (mFirmwareUpdater != null) {       // if software updates are enabled
-            // mFirmwareUpdater.setListener(this, this);
-            mFirmwareUpdater.changedParentActivity(this);
-        }
 
         // Autostart scan
         if (BleUtils.getBleStatus(this) == BleUtils.STATUS_BLE_ENABLED) {
@@ -1046,6 +1042,10 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
             mShouldEnableWifiOnQuit = mRetainedDataFragment.mShouldEnableWifiOnQuit;
             mFirmwareUpdater = mRetainedDataFragment.mFirmwareUpdater;
             mLatestCheckedDeviceAddress = mRetainedDataFragment.mLatestCheckedDeviceAddress;
+
+            if (mFirmwareUpdater != null) {
+                mFirmwareUpdater.changedParentActivity(this);       // set the new activity
+            }
         }
     }
 

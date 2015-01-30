@@ -16,6 +16,7 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
@@ -25,7 +26,6 @@ import android.widget.Toast;
 
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
-import com.adafruit.bluefruit.le.connect.ui.ProgressDialogFragment;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -78,8 +78,10 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     private DownloadTask mDownloadTask;
     private DeviceInfoData mDeviceInfoData;
     private FirmwareUpdaterListener mListener;
-    private ProgressDialogFragment mProgressDialog;
     private PowerManager.WakeLock mWakeLock;
+
+    //private ProgressDialogFragment mProgressDialog;
+    private ProgressFragmentDialog mProgressDialog;
     private Activity mParentActivity;
 
     public static interface FirmwareUpdaterListener {
@@ -200,19 +202,11 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     }
 
 
-    public void changedParentActivity(Activity activity) {
+    public void changedParentActivity(Activity activity) {      // method to refresh parent activity if a configchange is detected
         if (mParentActivity != null) {      // only save the activity if we are using it
             mParentActivity = activity;
         }
     }
-
-    /*
-    public void downloadAndInstallFirmware(Activity activity, String hexUri) {
-        ReleaseInfo release = new ReleaseInfo();
-        release.hexFileUrl = hexUri;
-        downloadAndInstallFirmware(activity, release);
-    }
-    */
 
     public void downloadAndInstallFirmware(Activity activity, String hexUri, String iniUri) {
         ReleaseInfo release = new ReleaseInfo();
@@ -229,8 +223,8 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         if (isNetworkAvailable()) {
             mParentActivity = activity;
 
-            mProgressDialog = new ProgressDialogFragment.Builder()
-                    .setMessage(mContext.getString(R.string.firmware_downloading)).setCancelableOnTouchOutside(false).build();
+            /*
+            mProgressDialog = new ProgressDialogFragment.Builder().setMessage(mContext.getString(R.string.firmware_downloading)).setCancelableOnTouchOutside(false).build();
             mProgressDialog.show(activity.getFragmentManager(), "progress_download");
             activity.getFragmentManager().executePendingTransactions();
 
@@ -244,6 +238,27 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                     mListener.onFirmwareUpdateCancelled();
                 }
             });
+            */
+            mProgressDialog = new ProgressFragmentDialog();
+            Bundle arguments = new Bundle();
+            arguments.putString("message", mContext.getString(R.string.firmware_downloading));          // message should be set before oncreate
+            mProgressDialog.setArguments(arguments);
+
+            mProgressDialog.show(activity.getFragmentManager(), null);
+            activity.getFragmentManager().executePendingTransactions();
+//            ProgressDialog progressDialog =  mProgressDialog.getDialog();
+
+            //mProgressDialog.setMessage(mContext.getString(R.string.firmware_downloading));
+            mProgressDialog.setIndeterminate(true);
+            mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialog) {
+                    mDownloadTask.cancel(true);
+                    cleanInstallationAttempt(false);
+                    mListener.onFirmwareUpdateCancelled();
+                }
+            });
+
 
             Log.d(TAG, "Downloading " + release.hexFileUrl);
             mDownloadTask = new DownloadTask(mContext, this, kDownloadOperation_Software_Hex);
@@ -266,16 +281,39 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         if (device != null) {                                                               // Check that we are still connected to the device
             mParentActivity = activity;
 
+            /*
             mProgressDialog = new ProgressDialogFragment.Builder()
-                    .setMessage(mContext.getString(R.string.firmware_downloading)).setCancelableOnTouchOutside(false).build();
+                    .setMessage(mContext.getString(R.string.firmware_startupdate)).setCancelableOnTouchOutside(false).build();
             mProgressDialog.show(mParentActivity.getFragmentManager(), "progress_update");
             mParentActivity.getFragmentManager().executePendingTransactions();
 
             mProgressDialog.setIndeterminate(mParentActivity.getFragmentManager(), true);
-            mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.firmware_startupdate));
+//            mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.firmware_startupdate));
             mProgressDialog.setCancelable(true);
 
             mProgressDialog.setOnCancelListener(mParentActivity.getFragmentManager(), new DialogInterface.OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialog) {
+                    // Abort dfu library process
+                    final LocalBroadcastManager manager = LocalBroadcastManager.getInstance(mContext);
+                    final Intent pauseAction = new Intent(DfuService.BROADCAST_ACTION);
+                    pauseAction.putExtra(DfuService.EXTRA_ACTION, DfuService.ACTION_ABORT);
+                    manager.sendBroadcast(pauseAction);
+
+                    // Cancel dialog
+                    //cleanInstallationAttempt(false);      // cleaning is performed by the dfu-library listener
+                    mListener.onFirmwareUpdateCancelled();
+                }
+            });
+            */
+            mProgressDialog = new ProgressFragmentDialog();
+            Bundle arguments = new Bundle();
+            arguments.putString("message", mContext.getString(R.string.firmware_startupdate));          // message should be set before oncreate
+            mProgressDialog.setArguments(arguments);
+            mProgressDialog.show(activity.getFragmentManager(), null);
+            activity.getFragmentManager().executePendingTransactions();
+            mProgressDialog.setIndeterminate(true);
+            mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                 @Override
                 public void onCancel(DialogInterface dialog) {
                     // Abort dfu library process
@@ -353,8 +391,14 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         }
 
         // dismiss progress dialog
+        /*
         if (mProgressDialog != null) {
             mProgressDialog.dismiss(mParentActivity.getFragmentManager());
+            mProgressDialog = null;
+        }
+        */
+        if(mProgressDialog != null) {
+            mProgressDialog.dismiss();
             mProgressDialog = null;
         }
 
@@ -366,8 +410,8 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     public void onDownloadProgress(int operationId, int progress) {
         if (operationId == kDownloadOperation_Software_Hex || operationId == kDownloadOperation_Software_Ini) {
             Log.d(TAG, "download (" + operationId + ") progress: " + progress + "%%");
-            mProgressDialog.setIndeterminate(mParentActivity.getFragmentManager(), false);
-            mProgressDialog.setProgress(mParentActivity.getFragmentManager(), progress);
+            mProgressDialog.setIndeterminate(false);
+            mProgressDialog.setProgress(progress);
         }
     }
 
@@ -436,43 +480,8 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
             } else {
                 Log.w(TAG, "Error processing releases.xml");
             }
-
-
-            /*  Old text file processing
-            String contentString = null;
-            try {
-                contentString = result.toString("UTF-8");
-            } catch (UnsupportedEncodingException e) {
-            }
-
-            if (contentString != null) {
-                String[] lines = contentString.split(System.getProperty("line.separator"));
-
-                String firmwareRevision = null, softwareUrl;
-                if (lines.length >= 2) {
-                    firmwareRevision = lines[0];
-                    softwareUrl = lines[1];
-
-                    if (versionCompare(firmwareRevision, mLatestVersion) > 0) {
-                        Log.d(TAG, "Newer version found: " + firmwareRevision + " > " + mLatestVersion);
-                        mLatestVersion = firmwareRevision;
-                        mLatestVersionUrl = softwareUrl;
-
-                        // Save in settings
-                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-                        SharedPreferences.Editor sharedPreferencesEdit = sharedPreferences.edit();
-                        sharedPreferencesEdit.putString("updatemanager_latestVersion", mLatestVersion);
-                        sharedPreferencesEdit.putString("updatemanager_latestVersionUrl", mLatestVersionUrl);
-                        sharedPreferencesEdit.apply();
-                    }
-                }
-
-                Log.d(TAG, "Latest software version: " + firmwareRevision);
-            }
-            */
         }
     }
-
 
     public class ReleaseInfo {
         public String description;
@@ -480,7 +489,6 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         public String iniFileUrl;
         public String version;
     }
-
 
     private Map<String, List<ReleaseInfo>> getReleases() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
@@ -528,11 +536,6 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                             releaseInfo.iniFileUrl = firmwareElement.getAttribute("initfile");
                             releaseInfo.description = boardName;
 
-                            /*
-                            Log.d(TAG, "\t\tversion: " + releaseInfo.version);
-                            Log.d(TAG, "\t\thexfile: " + releaseInfo.hexFileUrl);
-                            Log.d(TAG, "\t\tinitfile: " + releaseInfo.iniFileUrl);
-*/
                             boardReleasesInfo.add(releaseInfo);
                         }
                     }
@@ -544,7 +547,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     }
 
     private File onDownloadSoftwareCompleted(String urlAddress, ByteArrayOutputStream result, String filename) {
-        mProgressDialog.dismiss(mParentActivity.getFragmentManager());
+        mProgressDialog.dismiss();
 
         File resultFile = null;
         if (result == null) {
@@ -567,15 +570,6 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
             } catch (IOException e) {
                 success = false;
             }
-
-            /*
-            if (success) {
-                installFirmware(mParentActivity, file.getAbsolutePath(), null, null, null);
-            } else {
-                cleanInstallationAttempt(false);
-                mListener.onFirmwareUpdateFailed(true);
-            }
-            */
 
             resultFile = success ? file : null;
 
@@ -786,43 +780,43 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         switch (progress) {
             case DfuService.PROGRESS_CONNECTING:
                 if (mProgressDialog != null) {
-                    mProgressDialog.setIndeterminate(mParentActivity.getFragmentManager(), true);
-                    mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.dfu_status_connecting));
+                    mProgressDialog.setIndeterminate(true);
+                    mProgressDialog.setMessage(mContext.getString(R.string.dfu_status_connecting));
                 }
                 break;
 
             case DfuService.PROGRESS_STARTING:
                 if (mProgressDialog != null) {
-                    mProgressDialog.setIndeterminate(mParentActivity.getFragmentManager(), true);
-                    mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.dfu_status_starting));
+                    mProgressDialog.setIndeterminate(true);
+                    mProgressDialog.setMessage(mContext.getString(R.string.dfu_status_starting));
                 }
                 break;
 
             case DfuService.PROGRESS_ENABLING_DFU_MODE:
                 if (mProgressDialog != null) {
-                    mProgressDialog.setIndeterminate(mParentActivity.getFragmentManager(), true);
-                    mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.dfu_status_switching_to_dfu));
+                    mProgressDialog.setIndeterminate(true);
+                    mProgressDialog.setMessage(mContext.getString(R.string.dfu_status_switching_to_dfu));
                 }
                 break;
 
             case DfuService.PROGRESS_VALIDATING:
                 if (mProgressDialog != null) {
-                    mProgressDialog.setIndeterminate(mParentActivity.getFragmentManager(), true);
-                    mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.dfu_status_validating));
+                    mProgressDialog.setIndeterminate(true);
+                    mProgressDialog.setMessage(mContext.getString(R.string.dfu_status_validating));
                 }
                 break;
 
             case DfuService.PROGRESS_DISCONNECTING:
                 if (mProgressDialog != null) {
-                    mProgressDialog.setIndeterminate(mParentActivity.getFragmentManager(), true);
-                    mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.dfu_status_disconnecting));
-                    mProgressDialog.setProgress(mParentActivity.getFragmentManager(), 100);
+                    mProgressDialog.setIndeterminate(true);
+                    mProgressDialog.setMessage(mContext.getString(R.string.dfu_status_disconnecting));
+                    mProgressDialog.setProgress(100);
                 }
                 break;
 
             case DfuService.PROGRESS_COMPLETED:
                 if (mProgressDialog != null) {
-                    mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.dfu_status_completed));
+                    mProgressDialog.setMessage(mContext.getString(R.string.dfu_status_completed));
                 }
                 // let's wait a bit until we cancel the notification. When canceled immediately it will be recreated by service again.
                 new Handler().postDelayed(new Runnable() {
@@ -840,7 +834,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
 
             case DfuService.PROGRESS_ABORTED:
                 if (mProgressDialog != null) {
-                    mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.dfu_status_aborted));
+                    mProgressDialog.setMessage(mContext.getString(R.string.dfu_status_aborted));
                 }
                 // let's wait a bit until we cancel the notification. When canceled immediately it will be recreated by service again.
                 new Handler().postDelayed(new Runnable() {
@@ -858,7 +852,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
 
             default:
                 if (mProgressDialog != null) {
-                    mProgressDialog.setIndeterminate(mParentActivity.getFragmentManager(), false);
+                    mProgressDialog.setIndeterminate(false);
                 }
                 if (error) {
                     Toast.makeText(mContext, "Upload failed: " + GattError.parse(progress) + " (" + (progress & ~(DfuService.ERROR_MASK | DfuService.ERROR_REMOTE_MASK)) + ")", Toast.LENGTH_LONG).show();
@@ -866,12 +860,12 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                     mListener.onFirmwareUpdateFailed(false);
                 } else {
                     if (mProgressDialog != null) {
-                        mProgressDialog.setProgress(mParentActivity.getFragmentManager(), progress);
-                        mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.dfu_service_progress, progress));
+                        mProgressDialog.setProgress(progress);
+                        mProgressDialog.setMessage(mContext.getString(R.string.dfu_service_progress, progress));
                         if (total > 1)
-                            mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.dfu_status_uploading_part, part, total));
+                            mProgressDialog.setMessage(mContext.getString(R.string.dfu_status_uploading_part, part, total));
                         else
-                            mProgressDialog.setMessage(mParentActivity.getFragmentManager(), mContext.getString(R.string.dfu_status_uploading));
+                            mProgressDialog.setMessage(mContext.getString(R.string.dfu_status_uploading));
                     }
                 }
                 break;
