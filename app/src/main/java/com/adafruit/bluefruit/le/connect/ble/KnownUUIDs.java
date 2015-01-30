@@ -31,6 +31,12 @@ public class KnownUUIDs extends StandardUUIDs {
         aMap.put("B71E0103-7E57-4AFE-EB1E-5CA1AB1E1DEA".toUpperCase(), "Dynamic Sensor Info");
         aMap.put("b71e0104-7e57-4afe-eb1e-5ca1ab1e1dea".toUpperCase(), "Sensor Data");
         aMap.put("00002a24-0000-1000-8000-00805f9b34fb".toUpperCase(), "Model Number");
+        aMap.put("00001530-1212-efde-1523-785feabcd123".toUpperCase(), "Nordic Device Firmware Update Service");
+
+        // DFU
+        aMap.put("00001532-1212-efde-1523-785feabcd123".toUpperCase(), "DFU Packet");
+        aMap.put("00001531-1212-efde-1523-785feabcd123".toUpperCase(), "DFU Control Point");
+        aMap.put("00001534-1212-efde-1523-785feabcd123".toUpperCase(), "DFU Version");
 
         // Uart
         aMap.put(UartInterfaceActivity.UUID_RX.toUpperCase(), "RX Buffer");

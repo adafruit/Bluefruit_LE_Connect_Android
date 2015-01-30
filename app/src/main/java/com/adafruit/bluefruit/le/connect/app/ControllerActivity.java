@@ -28,6 +28,7 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.adafruit.bluefruit.le.connect.R;
+import com.adafruit.bluefruit.le.connect.app.settings.ConnectedSettingsActivity;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ui.ExpandableHeightExpandableListView;
 import com.google.android.gms.common.ConnectionResult;
@@ -42,6 +43,9 @@ import java.nio.ByteBuffer;
 public class ControllerActivity extends UartInterfaceActivity implements BleManager.BleManagerListener, SensorEventListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     // Log
     private final static String TAG = ControllerActivity.class.getSimpleName();
+
+    // Activity request codes (used for onActivityResult)
+    private static final int kActivityRequestCode_ConnectedSettingsActivity = 0;
 
     // Constants
     private final static int kSendDataInterval = 500;   // milliseconds
@@ -202,8 +206,17 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
             startHelp();
             return true;
         }
-
+        else if (id == R.id.action_connected_settings) {
+            startConnectedSettings();
+            return true;
+        }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void startConnectedSettings() {
+        // Launch connected settings activity
+        Intent intent = new Intent(this, ConnectedSettingsActivity.class);
+        startActivityForResult(intent, kActivityRequestCode_ConnectedSettingsActivity);
     }
 
     private void startHelp() {

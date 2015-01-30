@@ -18,16 +18,17 @@ public class DownloadTask extends AsyncTask<String, Integer, ByteArrayOutputStre
     private final static String TAG = DownloadTask.class.getSimpleName();
 
     // Data
-    private Context context;
+    private Context mContext;
     private PowerManager.WakeLock mWakeLock;
-    private DownloadTaskListener listener;
-    private int operationId;
-    private String urlAddress;
+    private DownloadTaskListener mListener;
+    private int mOperationId;
+    private String mUrlAddress;
+    private Object mTag;
 
     public DownloadTask(Context context, DownloadTaskListener listener, int operationId) {
-        this.context = context;
-        this.listener = listener;
-        this.operationId = operationId;
+        mContext = context;
+        mListener = listener;
+        mOperationId = operationId;
     }
 
     @Override
@@ -36,7 +37,7 @@ public class DownloadTask extends AsyncTask<String, Integer, ByteArrayOutputStre
         ByteArrayOutputStream output = null;
         HttpURLConnection connection = null;
         try {
-            urlAddress = sUrl[0];
+            mUrlAddress = sUrl[0];
 
             int fileLength = 0;
             Uri uri = Uri.parse(sUrl[0]);
@@ -44,9 +45,9 @@ public class DownloadTask extends AsyncTask<String, Integer, ByteArrayOutputStre
             Log.d(TAG, "Downloading from "+uriScheme);
             boolean shouldBeConsideredAsInputStream = (uriScheme.equalsIgnoreCase("file") || uriScheme.equalsIgnoreCase("content"));
             if (shouldBeConsideredAsInputStream) {
-                input = context.getContentResolver().openInputStream(uri);
+                input = mContext.getContentResolver().openInputStream(uri);
             } else {
-                URL url = new URL(urlAddress);
+                URL url = new URL(mUrlAddress);
                 connection = (HttpURLConnection) url.openConnection();
                 connection.connect();
 
@@ -109,7 +110,7 @@ public class DownloadTask extends AsyncTask<String, Integer, ByteArrayOutputStre
     protected void onPreExecute() {
         super.onPreExecute();
         // take CPU lock to prevent CPU from going off if the user  presses the power button during download
-        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
         mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getClass().getName());
         mWakeLock.acquire();
     }
@@ -118,19 +119,27 @@ public class DownloadTask extends AsyncTask<String, Integer, ByteArrayOutputStre
     protected void onProgressUpdate(Integer... progress) {
         super.onProgressUpdate(progress);
 
-        listener.onDownloadProgress(operationId, progress[0]);
+        mListener.onDownloadProgress(mOperationId, progress[0]);
     }
 
     @Override
     protected void onPostExecute(ByteArrayOutputStream result) {
         mWakeLock.release();
 
-        listener.onDownloadCompleted(operationId, urlAddress, result);
+        mListener.onDownloadCompleted(mOperationId, mUrlAddress, result);
     }
 
     static interface DownloadTaskListener {
         void onDownloadProgress(int operationId, int progress);
 
         void onDownloadCompleted(int operationId, String url, ByteArrayOutputStream result);
+    }
+
+    public Object getTag() {
+        return mTag;
+    }
+
+    public void setTag(Object tag) {
+        this.mTag = tag;
     }
 }

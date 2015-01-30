@@ -2,7 +2,7 @@ package com.adafruit.bluefruit.le.connect.app.settings;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.bluetooth.BluetoothDevice;
+import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -21,18 +21,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.adafruit.bluefruit.le.connect.R;
+import com.adafruit.bluefruit.le.connect.app.update.ApplicationFilesFragmentDialog;
 import com.adafruit.bluefruit.le.connect.app.update.FirmwareUpdater;
-import com.adafruit.bluefruit.le.connect.ble.BleManager;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
-public class ConnectedSettingsActivity extends ActionBarActivity implements FirmwareUpdater.FirmwareUpdaterListener {
+public class ConnectedSettingsActivity extends ActionBarActivity implements FirmwareUpdater.FirmwareUpdaterListener, ApplicationFilesFragmentDialog.ApplicationFilesDialogListener {
     // Log
     private final static String TAG = ConnectedSettingsActivity.class.getSimpleName();
 
     // Activity request codes (used for onActivityResult)
-    private static final int kActivityRequestCode_SelectFile = 0;
+    private static final int kActivityRequestCode_SelectFile_Hex = 0;
+    private static final int kActivityRequestCode_SelectFile_Ini = 1;
 
     // UI
     private ListView mReleasesListView;
@@ -45,8 +47,8 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
 
     // Data
     private FirmwareUpdater mFirmwareUpdater;
-    private Map<String, List<FirmwareUpdater.ReleaseInfo>> mAllReleases;
-    FirmwareUpdater.DeviceInfoData mDeviceInfoData;
+    private boolean mIsUpdating;
+    private ApplicationFilesFragmentDialog mApplicationFilesDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +68,7 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
         mCustomFirmwareButton = (Button) findViewById(R.id.customFirmwareButton);
 
         // Start
+        mIsUpdating = false;
         mFirmwareUpdater = new FirmwareUpdater(this, this);
         boolean hasDFUService = mFirmwareUpdater.hasCurrentConnectedDeviceDFUService();
         if (hasDFUService) {
@@ -127,7 +130,7 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
         if (allReleases != null) {
             // Get releases for the current board
             List<FirmwareUpdater.ReleaseInfo> releases = allReleases.get(deviceInfoData.modelNumber);
-            if (releases != null) {
+            if (releases != null && releases.size() > 0) {
                 mReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, releases);
 
                 runOnUiThread(new Runnable() {
@@ -154,11 +157,13 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
 
     @Override
     public void onFirmwareUpdateCancelled() {
+        mIsUpdating = false;
 
     }
 
     @Override
     public void onFirmwareUpdateCompleted() {
+        mIsUpdating = false;
         Toast.makeText(this, R.string.scan_softwareupdate_completed, Toast.LENGTH_LONG).show();
         setResult(Activity.RESULT_OK);
         finish();
@@ -166,22 +171,25 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
 
     @Override
     public void onFirmwareUpdateFailed(boolean isDownloadError) {
+        mIsUpdating = false;
         Toast.makeText(this, isDownloadError ? R.string.scan_softwareupdate_downloaderror : R.string.scan_softwareupdate_updateerror, Toast.LENGTH_LONG).show();
-
     }
 
     @Override
     public void onFirmwareUpdateDeviceDisconnected() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(ConnectedSettingsActivity.this, R.string.scan_unexpecteddisconnect, Toast.LENGTH_LONG).show();
-                setResult(Activity.RESULT_OK);
-                finish();
-            }
-        });
+        if (!mIsUpdating) {         // Is normal no be disconnected during updates, so we don't take those disconnections into account
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(ConnectedSettingsActivity.this, R.string.scan_unexpecteddisconnect, Toast.LENGTH_LONG).show();
+                    setResult(Activity.RESULT_OK);
+                    finish();
+                }
+            });
+        }
 
     }
+
 
     // endregion
 
@@ -236,7 +244,6 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
         // Ask user if should update
         String message = String.format(getString(R.string.connectedsettings_install_messageformat), release.version);
         new AlertDialog.Builder(this)
-//                .setTitle(R.string.scan_softwareupdate_title)
                 .setMessage(message)
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
@@ -251,20 +258,47 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
     }
 
     private void downloadAndInstallRelease(FirmwareUpdater.ReleaseInfo release) {
-        BleManager bleManager = BleManager.getInstance(this);
-        BluetoothDevice device = bleManager.getConnectedDevice();
+//        BleManager bleManager = BleManager.getInstance(this);
+//        BluetoothDevice device = bleManager.getConnectedDevice();
+        mIsUpdating = true;
         mFirmwareUpdater.downloadAndInstallFirmware(this, release);
         //mFirmwareUpdater.installFirmware(this, null, release.hexFileUrl);
     }
 
     public void onClickCustomFirmware(View view) {
-        openFileChooser();
+       // openFileChooser();
+
+        mApplicationFilesDialog = new ApplicationFilesFragmentDialog();
+        mApplicationFilesDialog.show(getFragmentManager(), null);
+       // mApplicationFilesDialog.setPositiveButtonEnabled(false);
+
+    }
+
+    public void onApplicationDialogChooseHex(View view)
+    {
+        openFileChooser(kActivityRequestCode_SelectFile_Hex);
+    }
+
+    public void onApplicationDialogChooseIni(View view)
+    {
+        openFileChooser(kActivityRequestCode_SelectFile_Ini);
+    }
+
+    @Override
+    public void onApplicationFilesDialogDoneClick() {
+        startUpdate(mApplicationFilesDialog.getHexUri(), mApplicationFilesDialog.getIniUri());
+        mApplicationFilesDialog = null;
+    }
+
+    @Override
+    public void onApplicationFilesDialogCancelClick() {
+        mApplicationFilesDialog = null;
     }
 
     // region FileExplorer
 
 
-    private void openFileChooser() {
+    private void openFileChooser(int operationId) {
 
         final Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         /*
@@ -277,9 +311,9 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         if (intent.resolveActivity(getPackageManager()) != null) {
             // file browser has been found on the device
-            startActivityForResult(intent, kActivityRequestCode_SelectFile);
+            startActivityForResult(intent, operationId);
         } else {
-            // Aert user that no file browers app is available
+            // Alert user that no file browser app has been found on the device
             new AlertDialog.Builder(this)
                     .setTitle(R.string.connectedsettings_noexplorer_title)
                     .setMessage(R.string.connectedsettings_noexplorer_message)
@@ -288,21 +322,39 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
         }
     }
 
+    private static boolean kNeedsIniFile = true;
+
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
-        if (resultCode == RESULT_OK && requestCode == kActivityRequestCode_SelectFile) {
+        if (resultCode == RESULT_OK) {
             Uri uri = data.getData();
-            String uriScheme = uri.getScheme();
 
-            if (uriScheme.equalsIgnoreCase("file")) {       // if is a file in local storage bypass downloader and send the link directly to installer
-                final String path = uri.getPath();          // waning: this may need WRITE_EXTERNAL_STORAGE permission (for example if using Dropbox)
-                mFirmwareUpdater.installFirmware(this, path, null);
-            } else {
-                mFirmwareUpdater.downloadAndInstallFirmware(this, uri.toString());
+            if (requestCode == kActivityRequestCode_SelectFile_Hex) {
+                mApplicationFilesDialog.setHexFilename(uri);
+               // mApplicationFilesDialog.setPositiveButtonEnabled(uri!=null);
+            }
+            else  if (requestCode == kActivityRequestCode_SelectFile_Ini) {
+                mApplicationFilesDialog.setIniFilename(uri);
             }
         }
     }
 
+
+    private void startUpdate(Uri hexUri, Uri iniUri) {
+
+        if (hexUri != null) {           // hexUri should be defined
+            // Start the updates
+            mIsUpdating = true;
+
+            if (hexUri.getScheme().equalsIgnoreCase("file") && (iniUri == null || iniUri.getScheme().equalsIgnoreCase("file"))) {       // if is a file in local storage bypass downloader and send the link directly to installer
+                final String hexPath = hexUri.getPath();
+                final String iniPath = iniUri.getPath();
+                mFirmwareUpdater.installFirmware(this, hexPath, iniPath, null, null);
+            } else {
+                mFirmwareUpdater.downloadAndInstallFirmware(this, hexUri.toString(), iniUri != null ? iniUri.toString() : null);
+            }
+        }
+    }
 
     // endregion
 

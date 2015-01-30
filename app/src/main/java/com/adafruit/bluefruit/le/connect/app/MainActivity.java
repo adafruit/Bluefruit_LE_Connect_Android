@@ -747,11 +747,10 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
                                 public void onClick(DialogInterface dialog, int which) {
                                     showConnectionStatus(false);        // hide current dialogs because software update will display a dialog
                                     stopScanning();
-                                    BluetoothDevice device = mBleManager.getConnectedDevice();
+                                    //BluetoothDevice device = mBleManager.getConnectedDevice();
                                     mBleManager.disconnect();       // disconnect to let the dfu library connect to the device
                                     mBleManager.close();
                                     mFirmwareUpdater.downloadAndInstallFirmware(MainActivity.this, latestRelease);
-                                    //mFirmwareUpdater.installFirmware(MainActivity.this, null, latestRelease.hexFileUrl);
                                 }
                             })
                             .setNeutralButton(R.string.scan_softwareupdate_notnow, new DialogInterface.OnClickListener() {

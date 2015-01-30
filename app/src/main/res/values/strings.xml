@@ -146,12 +146,21 @@
     <string name="pref_updatesblefriendcheck">pref_updatesblefriendcheck</string>
 
     <!-- Firmware update -->
-    <string name="softwareupdate_downloading">Downloading new software version...</string>
-    <string name="softwareupdate_startupdate">Starting firmware update...</string>
-    <string name="softwareupdate_connectionnotavailable">No internet connection detected</string>
+    <string name="firmware_downloading">Downloading new software version...</string>
+    <string name="firmware_startupdate">Starting firmware update...</string>
+    <string name="firmware_connectionnotavailable">No internet connection detected</string>
+    <string name="firmware_noconnecteddevice">Error: Device is no longer connected. Can\'t update</string>
+
+    <string name="firmware_customfile_dialog_title">Select Custom Firmware</string>
+    <string name="firmware_customfile_dialog_done">Start Update</string>
+    <string name="firmware_customfile_hexundefined">At least an Hex file should be selected</string>
+    <string name="firmware_customfile_dialog_hexfile">Hex File:</string>
+    <string name="firmware_customfile_dialog_inifile">Ini File:</string>
+    <string name="firmware_customfile_dialog_empty">&#60;not selected&#62;</string>
+
     <string name="dfu_service_progress">%d%%</string>
     <string name="dfu_feature_title">Bluefruit Update</string>
-    <string name="softwareupdate_noconnecteddevice">Error: Device is no longer connected. Can\'t update</string>
+
 
     <!-- Common -->
     <string name="dialog_ok">Ok</string>
