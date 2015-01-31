@@ -124,7 +124,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:layout_weight="0"
-                    android:onClick="onClickCustomFirmware"
+                    android:onClick="onClickCustomBootloader"
                     android:text="@string/connectedsettings_usecustombootloader"/>
             </LinearLayout>
         </LinearLayout>

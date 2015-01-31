@@ -58,7 +58,8 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
     // Data
     private FirmwareUpdater mFirmwareUpdater;
     private boolean mIsUpdating;
-    FirmwareUpdater.BoardInfo mBoardRelease;
+    private FirmwareUpdater.BoardInfo mBoardRelease;
+    private FirmwareUpdater.DeviceInfoData mDeviceInfoData;
 
     private ApplicationFilesFragmentDialog mApplicationFilesDialog;
 
@@ -149,7 +150,9 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
             boolean hasDFUService = mFirmwareUpdater.hasCurrentConnectedDeviceDFUService();
             if (hasDFUService) {
                 showReleasesInfo(true, getString(R.string.connectedsettings_retrievinginfo), true);
-                mFirmwareUpdater.checkFirmwareUpdatesForTheCurrentConnectedDevice();            // continues on onFirmwareUpdatesChecked
+                if (mDeviceInfoData == null) {      // only do this check the first time
+                    mFirmwareUpdater.checkFirmwareUpdatesForTheCurrentConnectedDevice();            // continues on onFirmwareUpdatesChecked
+                }
             } else {
                 showReleasesInfo(true, getString(R.string.connectedsettings_dfunotfound), false);
                 mCustomFirmwareButton.setVisibility(View.GONE);
@@ -178,6 +181,7 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
     @Override
     public void onFirmwareUpdatesChecked(boolean isUpdateAvailable, FirmwareUpdater.FirmwareInfo latestRelease, FirmwareUpdater.DeviceInfoData deviceInfoData, Map<String, FirmwareUpdater.BoardInfo> allReleases) {
 
+        mDeviceInfoData = deviceInfoData;
         if (allReleases != null) {
             mBoardRelease = allReleases.get(deviceInfoData.modelNumber);
 
@@ -193,33 +197,6 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
                     updateUI();
                 }
             });
-            /*
-            // Get releases for the current board
-            mBoardRelease = allReleases.get(deviceInfoData.modelNumber);
-
-            if (mBoardRelease != null && mBoardRelease.firmwareReleases != null && mBoardRelease.firmwareReleases.size() > 0) {
-                mFirmwareReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, mBoardRelease.firmwareReleases);
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        //  Show releases
-                        mFirmwareReleasesListView.setAdapter(mFirmwareReleasesListAdapter);
-                        showReleasesInfo(false, null, false);
-                    }
-                });
-            } else {
-                // Current board was not found
-                final String message = String.format(getString(R.string.connectedsettings_retrievinginfoformat), deviceInfoData.modelNumber);
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        showReleasesInfo(true, message, false);
-                    }
-                });
-            }
-            */
         }
     }
 
@@ -304,31 +281,52 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
     public void onClickRelease(View view) {
         final FirmwareUpdater.BasicVersionInfo release = (FirmwareUpdater.BasicVersionInfo) view.getTag();
 
-
-        // Ask user if should update
         String message = null;
+        boolean areRequerimentsMet = true;
+
+        // Process firmware release
         if (release instanceof FirmwareUpdater.FirmwareInfo) {
-             message = String.format(getString(R.string.connectedsettings_firmwareinstall_messageformat), release.version);
+            // Check that the minimum bootloader version requirement is met
+            FirmwareUpdater.FirmwareInfo firmwareInfo = (FirmwareUpdater.FirmwareInfo)release;
+            if (mDeviceInfoData.dfuVersion.compareToIgnoreCase(firmwareInfo.minBootloaderVersion) >= 0) {
+                message = String.format(getString(R.string.connectedsettings_firmwareinstall_messageformat), release.version);
+            }
+            else {
+                areRequerimentsMet = false;
+
+                // Show 'requeriments not met' dialog
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                message = String.format(getString(R.string.firmware_bootloadertooold_format), firmwareInfo.minBootloaderVersion);
+                builder.setMessage(message)
+                        .setPositiveButton(android.R.string.ok, null)
+                        .create().show();
+            }
+
         }
+        // Process bootloader release
         else if (release instanceof FirmwareUpdater.BootloaderInfo) {
             message = String.format(getString(R.string.connectedsettings_bootloaderinstall_messageformat), release.version);
         }
 
-        if (message != null) {
-            new AlertDialog.Builder(this)
-                    .setMessage(message)
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            downloadAndInstallRelease(release);
-                        }
-                    })
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .setCancelable(true)
-                    .show();
-        } else
-        {
-            Log.d(TAG, "onClickRelease: unknown release type");
+        if (areRequerimentsMet) {
+            if (message != null) {
+                // Ask user if should update
+                new AlertDialog.Builder(this)
+                        .setMessage(message)
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                downloadAndInstallRelease(release);
+                            }
+                        })
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .setCancelable(true)
+                        .show();
+            } else {
+                Log.d(TAG, "onClickRelease: unknown release type");
+            }
+        }else {
+            Log.d(TAG, "onClickRelease: requeriments for update not met");
         }
     }
 
@@ -344,8 +342,20 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
 
     public void onClickCustomFirmware(View view) {
         mApplicationFilesDialog = new ApplicationFilesFragmentDialog();
+        Bundle arguments = new Bundle();
+        arguments.putString("message", getString(R.string.firmware_customfile_dialog_title_firmware));          // message should be set before oncreate
+        mApplicationFilesDialog.setArguments(arguments);
         mApplicationFilesDialog.show(getFragmentManager(), null);
     }
+
+    public void onClickCustomBootloader(View view) {
+        mApplicationFilesDialog = new ApplicationFilesFragmentDialog();
+        Bundle arguments = new Bundle();
+        arguments.putString("message", getString(R.string.firmware_customfile_dialog_title_bootloader));          // message should be set before oncreate
+        mApplicationFilesDialog.setArguments(arguments);
+        mApplicationFilesDialog.show(getFragmentManager(), null);
+    }
+
 
     public void onApplicationDialogChooseHex(View view) {
         openFileChooser(kActivityRequestCode_SelectFile_Hex);
@@ -367,7 +377,6 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
     }
 
     // region FileExplorer
-
 
     private void openFileChooser(int operationId) {
 
@@ -392,8 +401,6 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
                     .show();
         }
     }
-
-    private static boolean kNeedsIniFile = true;
 
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
@@ -431,6 +438,8 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
         private FirmwareUpdater mFirmwareUpdater;
         private boolean mIsUpdating;
         FirmwareUpdater.BoardInfo mBoardRelease;
+        private FirmwareUpdater.DeviceInfoData mDeviceInfoData;
+
         private ApplicationFilesFragmentDialog mApplicationFilesDialog;
 
         @Override
@@ -459,6 +468,7 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
             mFirmwareUpdater = mRetainedDataFragment.mFirmwareUpdater;
             mIsUpdating = mRetainedDataFragment.mIsUpdating;
             mBoardRelease = mRetainedDataFragment.mBoardRelease;
+            mDeviceInfoData = mRetainedDataFragment.mDeviceInfoData;
             mApplicationFilesDialog = mRetainedDataFragment.mApplicationFilesDialog;
 
             if (mFirmwareUpdater != null) {
@@ -471,6 +481,7 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
         mRetainedDataFragment.mFirmwareUpdater = mFirmwareUpdater;
         mRetainedDataFragment.mIsUpdating = mIsUpdating;
         mRetainedDataFragment.mBoardRelease = mBoardRelease;
+        mRetainedDataFragment.mDeviceInfoData = mDeviceInfoData;
         mRetainedDataFragment.mApplicationFilesDialog = mApplicationFilesDialog;
     }
     // endregion

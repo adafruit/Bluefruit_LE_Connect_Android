@@ -18,6 +18,7 @@ import java.io.File;
 
 public class ApplicationFilesFragmentDialog extends DialogFragment {
     // UI
+    private String mMessage;
     private TextView mHexTextView;
     private TextView mIniTextView;
     private AlertDialog mDialog;
@@ -53,9 +54,11 @@ public class ApplicationFilesFragmentDialog extends DialogFragment {
         mHexTextView = (TextView) contentView.findViewById(R.id.hexFileTextView);
         mIniTextView = (TextView) contentView.findViewById(R.id.iniFileTextView);
 
+        mMessage = getArguments().getString("message");
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setView(contentView);
-        builder.setMessage(R.string.firmware_customfile_dialog_title)
+        builder.setMessage(mMessage)
                 .setPositiveButton(R.string.firmware_customfile_dialog_done, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         if (getHexUri() == null) {
