@@ -136,7 +136,7 @@
     <string name="settingsaction_confirmenablewifi_message">Wifi was previously disabled to improve Bluetooth connections. Would you like to enable it again?</string>
     <string name="settings_category_update">Software updates</string>
     <string name="settings_updateenabled_title">Updates check enabled</string>
-    <string name="settings_updatesenabled_summary">Check for software updates when connecting to a device</string>
+    <string name="settings_updatesenabled_summary">Check for firmware updates when connecting to a device</string>
     <string name="settings_updateserver_title">Update server</string>
     <string name="settings_updateserver_summary">Edit update server URL</string>
     <string name="settings_updateserver_edittitle">Update file url</string>
@@ -156,7 +156,8 @@
 
 
     <!-- Firmware & Bootloader updates -->
-    <string name="firmware_downloading">Downloading new software version...</string>
+    <string name="firmware_downloading">Downloading firmware...</string>
+    <string name="bootloader_downloading">Downloading bootloader...</string>
     <string name="firmware_startupdate">Starting firmware update...</string>
     <string name="firmware_connectionnotavailable">No internet connection detected</string>
     <string name="firmware_noconnecteddevice">Error: Device is no longer connected. Can\'t update</string>

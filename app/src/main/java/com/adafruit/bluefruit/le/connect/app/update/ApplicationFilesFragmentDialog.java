@@ -22,10 +22,12 @@ public class ApplicationFilesFragmentDialog extends DialogFragment {
     private TextView mHexTextView;
     private TextView mIniTextView;
     private AlertDialog mDialog;
+    private int mFileType;
 
     // Data
     public interface ApplicationFilesDialogListener {
         public void onApplicationFilesDialogDoneClick();
+
         public void onApplicationFilesDialogCancelClick();
     }
 
@@ -55,6 +57,7 @@ public class ApplicationFilesFragmentDialog extends DialogFragment {
         mIniTextView = (TextView) contentView.findViewById(R.id.iniFileTextView);
 
         mMessage = getArguments().getString("message");
+        mFileType = getArguments().getInt("fileType");
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setView(contentView);
@@ -73,7 +76,7 @@ public class ApplicationFilesFragmentDialog extends DialogFragment {
                         mListener.onApplicationFilesDialogCancelClick();
                     }
                 });
-        mDialog =  builder.create();
+        mDialog = builder.create();
 
         updateUI();
 
@@ -81,8 +84,7 @@ public class ApplicationFilesFragmentDialog extends DialogFragment {
     }
 
     @Override
-    public void onDestroyView()
-    {
+    public void onDestroyView() {
         Dialog dialog = getDialog();
 
         // Work around bug: http://code.google.com/p/android/issues/detail?id=17423
@@ -91,11 +93,6 @@ public class ApplicationFilesFragmentDialog extends DialogFragment {
 
         super.onDestroyView();
     }
-    /*
-    public void setPositiveButtonEnabled(boolean enabled) {
-        ((AlertDialog)mDialog).getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(enabled);
-    }
-    */
 
     private String filenameFromUri(Uri uri) {
         String name = "";
@@ -131,5 +128,9 @@ public class ApplicationFilesFragmentDialog extends DialogFragment {
 
     public Uri getIniUri() {
         return mIniUri;
+    }
+
+    public int getFileType() {
+        return mFileType;
     }
 }

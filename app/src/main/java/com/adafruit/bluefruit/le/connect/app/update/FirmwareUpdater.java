@@ -24,39 +24,27 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.adafruit.bluefruit.le.connect.BuildConfig;
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ble.BleUtils;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import no.nordicsemi.android.error.GattError;
 
 
 public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleManager.BleManagerListener {
     // Config
-//    public static final String kDefaultUpdateServerUrl = "https://raw.githubusercontent.com/adafruit/Adafruit_BluefruitLE_Firmware/master/latest.txt";
-     public static final String kDefaultUpdateServerUrl = "https://raw.githubusercontent.com/adafruit/Adafruit_BluefruitLE_Firmware/master/releases.xml";
+    public static final String kDefaultUpdateServerUrl = "https://raw.githubusercontent.com/adafruit/Adafruit_BluefruitLE_Firmware/master/releases.xml";
 //    public static final String kDefaultUpdateServerUrl = "http://openroad.es/projects/bluefruit/firmware/releases.xml";
 
     private static final String kManufacturer = "Adafruit Industries";
@@ -86,15 +74,15 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     private Activity mParentActivity;
 
     public static interface FirmwareUpdaterListener {
-        void onFirmwareUpdatesChecked(boolean isUpdateAvailable, FirmwareInfo latestRelease, DeviceInfoData deviceInfoData, Map<String, BoardInfo> allReleases);
+        void onFirmwareUpdatesChecked(boolean isUpdateAvailable, ReleasesParser.FirmwareInfo latestRelease, DeviceInfoData deviceInfoData, Map<String, ReleasesParser.BoardInfo> allReleases);
 
-        void onFirmwareUpdateCancelled();
+        void onUpdateCancelled();
 
-        void onFirmwareUpdateCompleted();
+        void onUpdateCompleted();
 
-        void onFirmwareUpdateFailed(boolean isDownloadError);
+        void onUpdateFailed(boolean isDownloadError);
 
-        void onFirmwareUpdateDeviceDisconnected();          // Warning: this can be called from a non-ui thread
+        void onUpdateDeviceDisconnected();          // Warning: this can be called from a non-ui thread
     }
 
     public class DeviceInfoData {
@@ -174,7 +162,6 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                         bleManager.readCharacteristic(dfuService, kDfuVersionCharacteristic);
                     } else {
                         Log.d(TAG, "Device with no kDfuVersionCharacteristic. Default value set");
-                        //final byte[] noVersion = {0x00, 0x00, 0x00, 0x00};      // Some devices don't expose this characteristic, so we set this value as default
                         String noVersion = "0x0000";         // Some devices don't expose this characteristic, so we set this value as default
                         mDeviceInfoData.dfuVersion = noVersion;
                     }
@@ -202,10 +189,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         SharedPreferences.Editor sharedPreferencesEdit = sharedPreferences.edit();
         sharedPreferencesEdit.putString("pref_ignoredversion", version);
         sharedPreferencesEdit.apply();
-
-
     }
-
 
     public void changedParentActivity(Activity activity) {      // method to refresh parent activity if a configchange is detected
         if (mParentActivity != null) {      // only save the activity if we are using it
@@ -213,14 +197,15 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         }
     }
 
-    public void downloadAndInstallFirmware(Activity activity, String hexUri, String iniUri) {
-        FirmwareInfo release = new FirmwareInfo();
+    public void downloadAndInstall(Activity activity, int type, String hexUri, String iniUri) {
+        ReleasesParser.BasicVersionInfo release = new ReleasesParser.BasicVersionInfo();
+        release.fileType = type;
         release.hexFileUrl = hexUri;
         release.iniFileUrl = iniUri;
-        downloadAndInstallFirmware(activity, release);
+        downloadAndInstall(activity, release);
     }
 
-    public void downloadAndInstallFirmware(Activity activity, FirmwareInfo release) {
+    public void downloadAndInstall(Activity activity, ReleasesParser.BasicVersionInfo release) {
         if (mDownloadTask != null) {
             mDownloadTask.cancel(true);
         }
@@ -230,21 +215,19 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
 
             mProgressDialog = new ProgressFragmentDialog();
             Bundle arguments = new Bundle();
-            arguments.putString("message", mContext.getString(R.string.firmware_downloading));          // message should be set before oncreate
+            arguments.putString("message", mContext.getString(release.fileType==DfuService.TYPE_APPLICATION?R.string.firmware_downloading:R.string.bootloader_downloading));          // message should be set before oncreate
             mProgressDialog.setArguments(arguments);
 
             mProgressDialog.show(activity.getFragmentManager(), null);
             activity.getFragmentManager().executePendingTransactions();
-//            ProgressDialog progressDialog =  mProgressDialog.getDialog();
 
-            //mProgressDialog.setMessage(mContext.getString(R.string.firmware_downloading));
             mProgressDialog.setIndeterminate(true);
             mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                 @Override
                 public void onCancel(DialogInterface dialog) {
                     mDownloadTask.cancel(true);
                     cleanInstallationAttempt(false);
-                    mListener.onFirmwareUpdateCancelled();
+                    mListener.onUpdateCancelled();
                 }
             });
 
@@ -253,15 +236,15 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
             mDownloadTask.setTag(release);
             mDownloadTask.execute(release.hexFileUrl);          // calls onDownloadCompleted when finished
         } else {
-            Log.w(TAG, "Cant install latest version. Internet connection not found");
+            Log.w(TAG, "Can't install latest version. Internet connection not found");
             Toast.makeText(mContext, mContext.getString(R.string.firmware_connectionnotavailable), Toast.LENGTH_LONG).show();
         }
     }
 
 
-    public void installFirmware(Activity activity, String localHexPath, String localIniPath, String hexStreamUri, String iniStreamUri) {          // Set one of the parameters: either localPath if the file is in the local filesystem or fileStreamUri if the has to be downloaded
+    public void installSoftware(Activity activity, int fileType, String localHexPath, String localIniPath, String hexStreamUri, String iniStreamUri) {          // Set one of the parameters: either localPath if the file is in the local filesystem or fileStreamUri if the has to be downloaded
         if (localHexPath == null && hexStreamUri == null) {
-            Log.w(TAG, "Error: trying to installFirmware with null parameters");
+            Log.w(TAG, "Error: trying to installSoftware with null parameters");
             return;
         }
 
@@ -287,12 +270,11 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
 
                     // Cancel dialog
                     //cleanInstallationAttempt(false);      // cleaning is performed by the dfu-library listener
-                    mListener.onFirmwareUpdateCancelled();
+                    mListener.onUpdateCancelled();
                 }
             });
 
 
-            final int fileType = DfuService.TYPE_APPLICATION;
             Uri hexUriPath = null;
             Uri iniUriPath = null;
             if (hexStreamUri != null) {
@@ -302,7 +284,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                 }
             }
 
-            Log.d(TAG, "update from hex: " + (localHexPath != null ? localHexPath + (localIniPath != null ? " ini:" + localIniPath : "") : hexUriPath.toString() + (iniUriPath != null ? " ini:" + iniUriPath.toString() : "")));
+            Log.d(TAG, "update "+(fileType==DfuService.TYPE_APPLICATION?"firmware":"bootloader")+" from hex: " + (localHexPath != null ? localHexPath + (localIniPath != null ? " ini:" + localIniPath : "") : hexUriPath.toString() + (iniUriPath != null ? " ini:" + iniUriPath.toString() : "")));
 
             // take CPU lock to prevent CPU from going off if the user  presses the power button during download
             PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
@@ -321,7 +303,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
             service.putExtra(DfuService.EXTRA_FILE_TYPE, fileType);
             service.putExtra(DfuService.EXTRA_FILE_PATH, localHexPath);
             service.putExtra(DfuService.EXTRA_FILE_URI, hexUriPath);
-            service.putExtra(DfuService.EXTRA_RESTORE_BOND, true);          // Always try to restore bond if was there
+            service.putExtra(DfuService.EXTRA_RESTORE_BOND, true);          // Always try to restore bond if the device was bonded when the update starts
 
             if (localIniPath != null) {
                 service.putExtra(DfuService.EXTRA_INIT_FILE_PATH, localIniPath);
@@ -335,7 +317,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
             if (serviceName == null) {
                 Log.e(TAG, "Error starting DFU service " + service.getPackage() + ":" + service.getAction());
                 cleanInstallationAttempt(false);
-                mListener.onFirmwareUpdateFailed(false);
+                mListener.onUpdateFailed(false);
             }
         } else {
             Log.d(TAG, "Updates: bluetooth device not ready");
@@ -385,11 +367,15 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
 
             final boolean success = file != null;
             if (success) {
-                FirmwareInfo release = (FirmwareInfo) mDownloadTask.getTag();
-                if (release.iniFileUrl == null || release.iniFileUrl.length() == 0) {       // No init file so, go to install firmware
-                    installFirmware(mParentActivity, file.getAbsolutePath(), null, null, null);
+
+                // Check if we also need to download an ini file, or we are good
+                ReleasesParser.BasicVersionInfo release = (ReleasesParser.BasicVersionInfo) mDownloadTask.getTag();
+                if (release.iniFileUrl == null || release.iniFileUrl.length() == 0) {
+                    // No init file so, go to install firmware
+                    installSoftware(mParentActivity, release.fileType, file.getAbsolutePath(), null, null, null);
                     mDownloadTask = null;
-                } else {            // We have to download the ini file too
+                } else {
+                    // We have to download the ini file too
                     Log.d(TAG, "Downloading " + release.iniFileUrl);
                     mDownloadTask = new DownloadTask(mContext, this, kDownloadOperation_Software_Ini);
                     mDownloadTask.setTag(release);
@@ -397,28 +383,29 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                 }
             } else {
                 cleanInstallationAttempt(false);
-                mListener.onFirmwareUpdateFailed(true);
+                mListener.onUpdateFailed(true);
                 mDownloadTask = null;
             }
         } else if (operationId == kDownloadOperation_Software_Ini) {
             File file = onDownloadSoftwareCompleted(urlAddress, result, kDefaultIniFilename);
             final boolean success = file != null;
             if (success) {
+                // We already had the hex file downloaded, and now we also have the ini file. Let's go
+                ReleasesParser.BasicVersionInfo release = (ReleasesParser.BasicVersionInfo) mDownloadTask.getTag();
                 String hexLocalFile = new File(mContext.getCacheDir(), kDefaultHexFilename).getAbsolutePath();          // get path from the previously downloaded hex file
-                installFirmware(mParentActivity, hexLocalFile, file.getAbsolutePath(), null, null);
+                installSoftware(mParentActivity, release.fileType, hexLocalFile, file.getAbsolutePath(), null, null);
                 mDownloadTask = null;
             } else {
                 cleanInstallationAttempt(false);
-                mListener.onFirmwareUpdateFailed(true);
+                mListener.onUpdateFailed(true);
                 mDownloadTask = null;
             }
         }
-
     }
 
     private void onDownloadVersionsDatabaseCompleted(String urlAddress, ByteArrayOutputStream result) {
         if (result == null) {
-            Log.w(TAG, "Error downloading releases.xml");
+            Log.w(TAG, "Error downloading xml");
         } else {
 
             String contentString = null;
@@ -439,113 +426,24 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         }
     }
 
-    public class BoardInfo {
-        public List<FirmwareInfo> firmwareReleases = new ArrayList<>();
-        public List<BootloaderInfo> bootloaderReleases = new ArrayList<>();
-    }
 
-    public class BasicVersionInfo {
-        public String version;
-        public String hexFileUrl;
-        public String description;
-    }
-
-    public class BootloaderInfo extends BasicVersionInfo {
-    }
-
-    public class FirmwareInfo extends BasicVersionInfo {
-        //        public String version;
-//        public String hexFileUrl;
-//        public String description;
-        public String iniFileUrl;
-        public String minBootloaderVersion;
-    }
-
-
-    private Map<String, BoardInfo> getReleases() {
+    private Map<String, ReleasesParser.BoardInfo> getReleases() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         String releasesXml = sharedPreferences.getString("updatemanager_releasesxml", null);
 
-        return parseReleasesXml(releasesXml);
+        return ReleasesParser.parseReleasesXml(releasesXml);
     }
 
-    private Map<String, BoardInfo> parseReleasesXml(String xmlString) {
-        Map<String, BoardInfo> boardReleases = new LinkedHashMap<>();
-
-        Element blefruitleNode = null;
-        try {
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-            Document document = documentBuilder.parse(new InputSource(new StringReader(xmlString)));
-            blefruitleNode = (Element) document.getElementsByTagName("bluefruitle").item(0);
-
-        } catch (Exception e) {
-            Log.w(TAG, "Error reading xml: " + e.getMessage());
-        }
-
-        if (blefruitleNode != null) {
-            NodeList boardNodes = blefruitleNode.getElementsByTagName("board");
-
-            for (int i = 0; i < boardNodes.getLength(); i++) {
-                Node boardNode = boardNodes.item(i);
-                if (boardNode.getNodeType() == Node.ELEMENT_NODE) {
-                    Element boardElement = (Element) boardNode;
-                    String boardName = boardElement.getAttribute("name");
-                    //Log.d(TAG, "\tboard: " + boardName);
-
-                    BoardInfo boardInfo = new BoardInfo();
-                    boardReleases.put(boardName, boardInfo);
-
-                    // Read firmware releases
-                    NodeList firmwareNodes = boardElement.getElementsByTagName("firmwarerelease");
-                    for (int j = 0; j < firmwareNodes.getLength(); j++) {
-                        Node firmwareNode = firmwareNodes.item(j);
-                        if (firmwareNode.getNodeType() == Node.ELEMENT_NODE) {
-                            FirmwareInfo releaseInfo = new FirmwareInfo();
-
-                            Element firmwareElement = (Element) firmwareNode;
-                            releaseInfo.version = firmwareElement.getAttribute("version");
-                            releaseInfo.hexFileUrl = firmwareElement.getAttribute("hexfile");
-                            releaseInfo.iniFileUrl = firmwareElement.getAttribute("initfile");
-                            releaseInfo.minBootloaderVersion = firmwareElement.getAttribute("minbootloader");
-                            releaseInfo.description = boardName;
-
-                            boardInfo.firmwareReleases.add(releaseInfo);
-                        }
-                    }
-
-                    // Read bootloader releases
-                    NodeList bootloaderNodes = boardElement.getElementsByTagName("bootloaderrelease");
-                    for (int j = 0; j < bootloaderNodes.getLength(); j++) {
-                        Node booloaderNode = bootloaderNodes.item(j);
-                        if (booloaderNode.getNodeType() == Node.ELEMENT_NODE) {
-                            BootloaderInfo bootloaderInfo = new BootloaderInfo();
-
-                            Element bootloaderElement = (Element) booloaderNode;
-                            bootloaderInfo.version = bootloaderElement.getAttribute("version");
-                            bootloaderInfo.hexFileUrl = bootloaderElement.getAttribute("hexfile");
-                            bootloaderInfo.description = boardName;
-
-                            boardInfo.bootloaderReleases.add(bootloaderInfo);
-                        }
-                    }
-                }
-            }
-        }
-
-        return boardReleases;
-    }
 
     private File onDownloadSoftwareCompleted(String urlAddress, ByteArrayOutputStream result, String filename) {
         mProgressDialog.dismiss();
 
         File resultFile = null;
         if (result == null) {
-            Log.w(TAG, "Error downloading software version: " + urlAddress);
+            Log.w(TAG, "Error downloading: " + urlAddress);
             cleanInstallationAttempt(false);
-            mListener.onFirmwareUpdateFailed(true);
+            mListener.onUpdateFailed(true);
         } else {
-            FirmwareInfo release = (FirmwareInfo) mDownloadTask.getTag();
             Log.d(TAG, "Downloaded version: " + urlAddress + " size: " + result.size());
 
             File file = new File(mContext.getCacheDir(), filename);
@@ -562,14 +460,11 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
             }
 
             resultFile = success ? file : null;
-
         }
 
         return resultFile;
     }
-
     // endregion
-
 
     // region BleManagerListener
     @Override
@@ -585,7 +480,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     @Override
     public void onDisconnected() {
         if (mListener != null) {
-            mListener.onFirmwareUpdateDeviceDisconnected();
+            mListener.onUpdateDeviceDisconnected();
         }
     }
 
@@ -630,14 +525,14 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
             if (mListener != null) {
                 boolean isFirmwareUpdateAvailable = false;
 
-                Map<String, BoardInfo> allReleases = getReleases();
-                FirmwareInfo latestRelease = null;
+                Map<String, ReleasesParser.BoardInfo> allReleases = getReleases();
+                ReleasesParser.FirmwareInfo latestRelease = null;
 
                 boolean isManufacturerCorrect = mDeviceInfoData.manufacturer.equalsIgnoreCase(kManufacturer);
                 if (isManufacturerCorrect) {
-                    BoardInfo boardInfo = allReleases.get(mDeviceInfoData.modelNumber);
+                    ReleasesParser.BoardInfo boardInfo = allReleases.get(mDeviceInfoData.modelNumber);
                     if (boardInfo != null) {
-                        List<FirmwareInfo> modelReleases = boardInfo.firmwareReleases;
+                        List<ReleasesParser.FirmwareInfo> modelReleases = boardInfo.firmwareReleases;
                         if (modelReleases != null && modelReleases.size() > 0) {
                             // Get the latest release
                             latestRelease = modelReleases.get(0);
@@ -648,22 +543,22 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                                 // Check if the user chose to ignore this version
                                 SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
                                 String versionToIgnore = sharedPreferences.getString("pref_ignoredversion", "");
-                                if (versionCompare(latestRelease.version, versionToIgnore) != 0) {
+                                if (ReleasesParser.versionCompare(latestRelease.version, versionToIgnore) != 0) {
 
-                                    boolean isNewerVersion = versionCompare(latestRelease.version, mDeviceInfoData.firmwareRevision) > 0;
-
+                                    final boolean isNewerVersion = ReleasesParser.versionCompare(latestRelease.version, mDeviceInfoData.firmwareRevision) > 0;
                                     final boolean showUpdateOnlyForNewerVersions = sharedPreferences.getBoolean("pref_updatesversioncheck", true);
 
                                     isFirmwareUpdateAvailable = (isNewerVersion || !showUpdateOnlyForNewerVersions);
 
+                                    if (BuildConfig.DEBUG) {
+                                        if (isNewerVersion) {
+                                            Log.d(TAG, "Updates: New version found. Ask the user to install: " + latestRelease.version);
+                                        } else {
+                                            Log.d(TAG, "Updates: Device has already latest version: " + mDeviceInfoData.firmwareRevision);
 
-                                    if (isNewerVersion) {
-                                        Log.d(TAG, "Updates: New version found. Ask the user to install: " + latestRelease.version);
-                                    } else {
-                                        Log.d(TAG, "Updates: Device has already latest version: " + mDeviceInfoData.firmwareRevision);
-
-                                        if (isFirmwareUpdateAvailable) {
-                                            Log.d(TAG, "Updates: user asked to show old versions too");
+                                            if (isFirmwareUpdateAvailable) {
+                                                Log.d(TAG, "Updates: user asked to show old versions too");
+                                            }
                                         }
                                     }
                                 } else {
@@ -675,13 +570,14 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                         } else {
                             Log.d(TAG, "Updates: No firmware releases found for model: " + mDeviceInfoData.modelNumber);
                         }
-                    }else {
+                    } else {
                         Log.d(TAG, "Updates: No releases found for model: " + mDeviceInfoData.modelNumber);
                     }
                 } else {
                     Log.d(TAG, "Updates: No updates for unknown manufacturer " + mDeviceInfoData.manufacturer);
                 }
 
+                // Send results to listener
                 mListener.onFirmwareUpdatesChecked(isFirmwareUpdateAvailable, latestRelease, mDeviceInfoData, allReleases);
             } else {
                 Log.d(TAG, "Updates: No listener. Skipping version check...");
@@ -696,61 +592,13 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     }
     // endregion
 
+
     // region Utils
-
-    /**
-     * Compares two version strings.
-     * Based on http://stackoverflow.com/questions/6701948/efficient-way-to-compare-version-strings-in-java
-     * <p/>
-     * Use this instead of String.compareTo() for a non-lexicographical
-     * comparison that works for version strings. e.g. "1.10".compareTo("1.6").
-     *
-     * @param str1 a string of ordinal numbers separated by decimal points.
-     * @param str2 a string of ordinal numbers separated by decimal points.
-     * @return The result is a negative integer if str1 is _numerically_ less than str2.
-     * The result is a positive integer if str1 is _numerically_ greater than str2.
-     * The result is zero if the strings are _numerically_ equal.
-     * @note It does not work if "1.10" is supposed to be equal to "1.10.0".
-     */
-    private Integer versionCompare(String str1, String str2) {
-
-        // Remove chars after spaces
-        int spaceIndex1 = str1.indexOf(" ");
-        if (spaceIndex1 >= 0) str1 = str1.substring(0, spaceIndex1);
-        int spaceIndex2 = str2.indexOf(" ");
-        if (spaceIndex2 >= 0) str2 = str2.substring(0, spaceIndex2);
-
-        // Check version
-        String[] vals1 = str1.split("\\.");
-        String[] vals2 = str2.split("\\.");
-        int i = 0;
-        // set index to first non-equal ordinal or length of shortest version string
-        while (i < vals1.length && i < vals2.length && vals1[i].equals(vals2[i])) {
-            i++;
-        }
-        // compare first non-equal ordinal number
-        if (i < vals1.length && i < vals2.length) {
-            try {
-                int diff = Integer.valueOf(vals1[i].replaceAll("\\D+", "")).compareTo(Integer.valueOf(vals2[i].replaceAll("\\D+", "")));                  /// .replaceAll("\\D+","") to remove all characteres not numbers
-                return Integer.signum(diff);
-            } catch (NumberFormatException e) {
-                // Not a number: compare strings
-                return str1.compareToIgnoreCase(str2);
-            }
-        }
-        // the strings are equal or one string is a substring of the other
-        // e.g. "1.2.3" = "1.2.3" or "1.2.3" < "1.2.3.4"
-        else {
-            return Integer.signum(vals1.length - vals2.length);
-        }
-    }
-
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
-
     // endregion
 
     // region DFU library
@@ -832,7 +680,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                     @Override
                     public void run() {
                         cleanInstallationAttempt(true);
-                        mListener.onFirmwareUpdateCompleted();
+                        mListener.onUpdateCompleted();
 
                         // if this activity is still open and upload process was completed, cancel the notification
                         final NotificationManager manager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -850,7 +698,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                     @Override
                     public void run() {
                         cleanInstallationAttempt(false);
-                        mListener.onFirmwareUpdateCancelled();
+                        mListener.onUpdateCancelled();
 
                         // if this activity is still open and upload process was completed, cancel the notification
                         final NotificationManager manager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -866,7 +714,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                 if (error) {
                     Toast.makeText(mContext, "Upload failed: " + GattError.parse(progress) + " (" + (progress & ~(DfuService.ERROR_MASK | DfuService.ERROR_REMOTE_MASK)) + ")", Toast.LENGTH_LONG).show();
                     cleanInstallationAttempt(false);
-                    mListener.onFirmwareUpdateFailed(false);
+                    mListener.onUpdateFailed(false);
                 } else {
                     if (mProgressDialog != null) {
                         mProgressDialog.setProgress(progress);

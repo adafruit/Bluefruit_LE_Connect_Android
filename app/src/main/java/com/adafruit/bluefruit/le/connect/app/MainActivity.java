@@ -33,6 +33,7 @@ import android.widget.Toast;
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.app.settings.SettingsActivity;
 import com.adafruit.bluefruit.le.connect.app.update.FirmwareUpdater;
+import com.adafruit.bluefruit.le.connect.app.update.ReleasesParser;
 import com.adafruit.bluefruit.le.connect.ble.BleDevicesScanner;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ble.BleUtils;
@@ -730,7 +731,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
 
     // region SoftwareUpdateManagerListener
     @Override
-    public void onFirmwareUpdatesChecked(boolean isUpdateAvailable, final FirmwareUpdater.FirmwareInfo latestRelease, FirmwareUpdater.DeviceInfoData deviceInfoData, Map<String, FirmwareUpdater.BoardInfo> allReleases) {
+    public void onFirmwareUpdatesChecked(boolean isUpdateAvailable, final ReleasesParser.FirmwareInfo latestRelease, FirmwareUpdater.DeviceInfoData deviceInfoData, Map<String, ReleasesParser.BoardInfo> allReleases) {
         mBleManager.setBleListener(this);
 
         if (isUpdateAvailable) {
@@ -750,7 +751,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
                                     //BluetoothDevice device = mBleManager.getConnectedDevice();
                                     mBleManager.disconnect();       // disconnect to let the dfu library connect to the device
                                     mBleManager.close();
-                                    mFirmwareUpdater.downloadAndInstallFirmware(MainActivity.this, latestRelease);
+                                    mFirmwareUpdater.downloadAndInstall(MainActivity.this, latestRelease);
                                 }
                             })
                             .setNeutralButton(R.string.scan_softwareupdate_notnow, new DialogInterface.OnClickListener() {
@@ -777,7 +778,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
     }
 
     @Override
-    public void onFirmwareUpdateCancelled() {
+    public void onUpdateCancelled() {
         Log.d(TAG, "Software version installation cancelled");
 
         mLatestCheckedDeviceAddress = null;
@@ -787,7 +788,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
     }
 
     @Override
-    public void onFirmwareUpdateCompleted() {
+    public void onUpdateCompleted() {
         Log.d(TAG, "Software version installation completed successfully");
 
         Toast.makeText(this, R.string.scan_softwareupdate_completed, Toast.LENGTH_LONG).show();
@@ -797,7 +798,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
     }
 
     @Override
-    public void onFirmwareUpdateFailed(boolean isDownloadError) {
+    public void onUpdateFailed(boolean isDownloadError) {
         Log.d(TAG, "Software version installation failed");
         Toast.makeText(this, isDownloadError ? R.string.scan_softwareupdate_downloaderror : R.string.scan_softwareupdate_updateerror, Toast.LENGTH_LONG).show();
 
@@ -808,7 +809,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
     }
 
     @Override
-    public void onFirmwareUpdateDeviceDisconnected() {
+    public void onUpdateDeviceDisconnected() {
 
         // Update UI
         runOnUiThread(new Runnable() {
