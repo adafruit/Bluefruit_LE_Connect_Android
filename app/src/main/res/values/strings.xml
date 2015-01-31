@@ -101,14 +101,18 @@
 
     <!-- Connected Settings -->
     <string name="title_activity_connected_settings">Connected Settings</string>
-    <string name="connectedsettings_updatesheadertitle">FIRMWARE RELEASES</string>
+    <string name="connectedsettings_updatesheadertitle">UPDATES</string>
+    <string name="connectedsettings_firmwarereleasesheadertitle">FIRMWARE RELEASES</string>
+    <string name="connectedsettings_bootloaderreleasesheadertitle">BOOTLOADER RELEASES</string>
     <string name="connectedsettings_retrievinginfo">Retrieving device info...</string>
     <string name="connectedsettings_dfunotfound">Firmware Update Service not detected. Can\'t update this device</string>
     <string name="connectedsettings_usecustomfirmware">Use custom firmware</string>
+    <string name="connectedsettings_usecustombootloader">Use custom bootloader</string>
     <string name="connectedsettings_versionformat">Version %s</string>
     <string name="connectedsettings_retrievinginfoformat">No releases found for this device (%s)</string>
 
-    <string name="connectedsettings_install_messageformat">Download and install firmware version %s</string>
+    <string name="connectedsettings_firmwareinstall_messageformat">Download and install firmware version %s</string>
+    <string name="connectedsettings_bootloaderinstall_messageformat">Download and install bootloader version %s</string>
 
     <string name="connectedsettings_noexplorer_title">Unavailable</string>
     <string name="connectedsettings_noexplorer_message">File browser app not has not been found on your device. You should install an app like Dropbox, GoogleDrive...</string>
@@ -131,19 +135,25 @@
     <string name="settingsaction_confirmenablewifi_title">Wifi status</string>
     <string name="settingsaction_confirmenablewifi_message">Wifi was previously disabled to improve Bluetooth connections. Would you like to enable it again?</string>
     <string name="settings_category_update">Software updates</string>
-    <string name="settings_updateenabled_title">Updates enabled</string>
+    <string name="settings_updateenabled_title">Updates check enabled</string>
     <string name="settings_updatesenabled_summary">Check for software updates when connecting to a device</string>
     <string name="settings_updateserver_title">Update server</string>
     <string name="settings_updateserver_summary">Edit update server URL</string>
     <string name="settings_updateserver_edittitle">Update file url</string>
     <string name="settings_pref_updatesversioncheck_title">Version check</string>
-    <string name="settings_pref_updatesversioncheck_summary">Show updates only for newer versions</string>
-    <string name="settings_pref_updatesblefriendcheck_title">Only update Blefriend</string>
-    <string name="settings_pref_updatesblefriendcheck_summary">Verify that the device is a Blefriend</string>
+    <string name="settings_pref_updatesversioncheck_summary">Recommend updates only for newer versions</string>
+    <string name="settings_ignoredversion_title">Ignored firmware version</string>
+    <string name="settings_ignoredversion_summary">Don\'t ask user about this version</string>
+    <string name="settings_ignoredversion_edittitle">Version to ignore</string>
+    <string name="settings_pref_bootloaders_summary">Enable bootloader updates</string>
+    <string name="settings_pref_bootloaders_title">Show bootloaders</string>
+
     <string name="pref_key_update_settings">pref_key_update_settings</string>
     <string name="pref_updateserver">pref_updateserver</string>
     <string name="pref_updatesversioncheck">pref_updatesversioncheck</string>
-    <string name="pref_updatesblefriendcheck">pref_updatesblefriendcheck</string>
+    <string name="pref_ignoredversion">pref_ignoredversion</string>
+    <string name="pref_showbootloaders">pref_showbootloaders</string>
+
 
     <!-- Firmware update -->
     <string name="firmware_downloading">Downloading new software version...</string>

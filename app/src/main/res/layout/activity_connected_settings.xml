@@ -1,75 +1,132 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/default_background"
-                android:paddingBottom="@dimen/activity_vertical_margin"
-                android:paddingLeft="@dimen/activity_horizontal_margin"
-                android:paddingRight="@dimen/activity_horizontal_margin"
-                android:paddingTop="@dimen/activity_vertical_margin"
-                tools:context="com.adafruit.bluefruit.le.connect.app.settings.ConnectedSettingsActivity">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@drawable/default_background"
+              android:orientation="vertical"
+              android:paddingBottom="@dimen/activity_vertical_margin"
+              android:paddingLeft="@dimen/activity_horizontal_margin"
+              android:paddingRight="@dimen/activity_horizontal_margin"
+              android:paddingTop="@dimen/activity_vertical_margin"
+              tools:context="com.adafruit.bluefruit.le.connect.app.settings.ConnectedSettingsActivity">
 
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-
-        android:orientation="vertical">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:text="@string/connectedsettings_updatesheadertitle"
-            android:textColor="@drawable/default_textcolor"/>
-
+        android:layout_height="wrap_content">
 
         <LinearLayout
-            android:id="@+id/releasesDialogView"
-            android:layout_width="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="20dp"
-            android:layout_marginTop="20dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
-            <ProgressBar
-                android:id="@+id/releasesDialogWaitView"
-                style="@android:style/Widget.ProgressBar.Small"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="4dp"/>
-
-            <TextView
-                android:id="@+id/releasesDialogTextView"
+            <LinearLayout
+                android:id="@+id/updatesWaitView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/connectedsettings_retrievinginfo"
-                android:textColor="@drawable/default_textcolor"/>
+
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:text="@string/connectedsettings_updatesheadertitle"
+                    android:textColor="@drawable/default_textcolor"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="30dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginTop="10dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ProgressBar
+                        android:id="@+id/updatesWaitIndicatorView"
+
+                        style="@android:style/Widget.ProgressBar.Small"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="4dp"/>
+
+                    <TextView
+                        android:id="@+id/updatesWaitTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/connectedsettings_retrievinginfo"
+                        android:textColor="@drawable/default_textcolor"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/firmwareReleasesView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:text="@string/connectedsettings_firmwarereleasesheadertitle"
+                    android:textColor="@drawable/default_textcolor"/>
+
+                <com.adafruit.bluefruit.le.connect.ui.ExpandableHeightListView
+                    android:id="@+id/firmwareReleasesListView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@android:color/white">
+                </com.adafruit.bluefruit.le.connect.ui.ExpandableHeightListView>
+
+                <Button
+                    android:id="@+id/customFirmwareButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_weight="0"
+                    android:onClick="onClickCustomFirmware"
+                    android:text="@string/connectedsettings_usecustomfirmware"/>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:id="@+id/bootloaderReleasesView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:text="@string/connectedsettings_bootloaderreleasesheadertitle"
+                    android:textColor="@drawable/default_textcolor"/>
+
+
+                <com.adafruit.bluefruit.le.connect.ui.ExpandableHeightListView
+                    android:id="@+id/bootloaderReleasesListView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@android:color/white">
+                </com.adafruit.bluefruit.le.connect.ui.ExpandableHeightListView>
+
+                <Button
+                    android:id="@+id/customBootloaderButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_weight="0"
+                    android:onClick="onClickCustomFirmware"
+                    android:text="@string/connectedsettings_usecustombootloader"/>
+            </LinearLayout>
         </LinearLayout>
-
-        <ListView
-            android:id="@+id/releasesListView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@android:color/white">
-        </ListView>
-
-        <Button
-            android:id="@+id/customFirmwareButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_alignParentBottom="true"
-            android:layout_weight="0"
-            android:onClick="onClickCustomFirmware"
-            android:text="@string/connectedsettings_usecustomfirmware"/>
-
-    </LinearLayout>
-
-
-</RelativeLayout>
+    </ScrollView>
+</LinearLayout>

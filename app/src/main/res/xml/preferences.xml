@@ -56,6 +56,17 @@
             android:summary="@string/settings_pref_updatesversioncheck_summary"
             android:title="@string/settings_pref_updatesversioncheck_title"/>
 
+        <EditTextPreference
+            android:key="@string/pref_ignoredversion"
+            android:summary="@string/settings_ignoredversion_summary"
+            android:title="@string/settings_ignoredversion_title"
+            android:dialogTitle="@string/settings_ignoredversion_edittitle"/>
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="@string/pref_showbootloaders"
+            android:summary="@string/settings_pref_bootloaders_summary"
+            android:title="@string/settings_pref_bootloaders_title"/>
 
         <EditTextPreference
             android:key="@string/pref_updateserver"

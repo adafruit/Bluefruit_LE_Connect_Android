@@ -42,7 +42,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -462,14 +461,19 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
         stopScanning();
 
         final int scannedDeviceIndex = (Integer) view.getTag();
-        BluetoothDeviceData deviceData = mScannedDevices.get(scannedDeviceIndex);
-        BluetoothDevice device = deviceData.device;
+        if (scannedDeviceIndex < mScannedDevices.size()) {
+            BluetoothDeviceData deviceData = mScannedDevices.get(scannedDeviceIndex);
+            BluetoothDevice device = deviceData.device;
 
-        if (deviceData.isUart()) {      // if is uart, show all the available activities
-            showChooseDeviceServiceDialog(device);
-        } else {                          // if no uart, then go directly to info
-            mComponentToStartWhenConnected = InfoActivity.class;
-            connect(device);
+            if (deviceData.isUart()) {      // if is uart, show all the available activities
+                showChooseDeviceServiceDialog(device);
+            } else {                          // if no uart, then go directly to info
+                mComponentToStartWhenConnected = InfoActivity.class;
+                connect(device);
+            }
+        }
+        else {
+            Log.w(TAG, "onClickDeviceConnect index does not exist: "+scannedDeviceIndex);
         }
     }
 
@@ -726,7 +730,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
 
     // region SoftwareUpdateManagerListener
     @Override
-    public void onFirmwareUpdatesChecked(boolean isUpdateAvailable, final FirmwareUpdater.ReleaseInfo latestRelease, FirmwareUpdater.DeviceInfoData deviceInfoData, Map<String, List<FirmwareUpdater.ReleaseInfo>> allReleases) {
+    public void onFirmwareUpdatesChecked(boolean isUpdateAvailable, final FirmwareUpdater.FirmwareInfo latestRelease, FirmwareUpdater.DeviceInfoData deviceInfoData, Map<String, FirmwareUpdater.BoardInfo> allReleases) {
         mBleManager.setBleListener(this);
 
         if (isUpdateAvailable) {
@@ -805,12 +809,21 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
 
     @Override
     public void onFirmwareUpdateDeviceDisconnected() {
-        onDisconnected();
 
-        mLatestCheckedDeviceAddress = null;
+        // Update UI
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                onDisconnected();
 
-        mScannedDevices.clear();
-        startScan(null, null);
+                mLatestCheckedDeviceAddress = null;
+
+                mScannedDevices.clear();
+                startScan(null, null);
+
+            }
+        });
+
     }
     // endregion
 
