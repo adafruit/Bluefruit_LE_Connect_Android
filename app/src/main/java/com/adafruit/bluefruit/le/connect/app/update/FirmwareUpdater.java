@@ -56,8 +56,8 @@ import no.nordicsemi.android.error.GattError;
 public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleManager.BleManagerListener {
     // Config
 //    public static final String kDefaultUpdateServerUrl = "https://raw.githubusercontent.com/adafruit/Adafruit_BluefruitLE_Firmware/master/latest.txt";
-//    public static final String kDefaultUpdateServerUrl = "https://raw.githubusercontent.com/adafruit/Adafruit_BluefruitLE_Firmware/master/releases.xml";
-    public static final String kDefaultUpdateServerUrl = "http://openroad.es/projects/bluefruit/firmware/releases.xml";
+     public static final String kDefaultUpdateServerUrl = "https://raw.githubusercontent.com/adafruit/Adafruit_BluefruitLE_Firmware/master/releases.xml";
+//    public static final String kDefaultUpdateServerUrl = "http://openroad.es/projects/bluefruit/firmware/releases.xml";
 
     private static final String kManufacturer = "Adafruit Industries";
 
@@ -480,7 +480,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
             blefruitleNode = (Element) document.getElementsByTagName("bluefruitle").item(0);
 
         } catch (Exception e) {
-            Log.w(TAG, "Error reading versions.xml: " + e.getMessage());
+            Log.w(TAG, "Error reading xml: " + e.getMessage());
         }
 
         if (blefruitleNode != null) {

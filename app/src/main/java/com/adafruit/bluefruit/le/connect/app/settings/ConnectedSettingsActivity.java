@@ -98,6 +98,10 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
         mBootloaderReleasesListView.setAdapter(mBootloaderReleasesListAdapter);
 
         // Start
+        if (mDeviceInfoData == null) {      // only do this check the first time
+            mFirmwareUpdater.checkFirmwareUpdatesForTheCurrentConnectedDevice();            // continues on onFirmwareUpdatesChecked
+        }
+
         updateUI();
     }
 
@@ -145,18 +149,20 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
 
     private void updateUI() {
         if (mBoardRelease != null) {
-            showReleasesInfo(false, null, false);
+            showReleasesInfo(false, null, false);           // Show releases
         } else {
-            boolean hasDFUService = mFirmwareUpdater.hasCurrentConnectedDeviceDFUService();
-            if (hasDFUService) {
-                showReleasesInfo(true, getString(R.string.connectedsettings_retrievinginfo), true);
-                if (mDeviceInfoData == null) {      // only do this check the first time
-                    mFirmwareUpdater.checkFirmwareUpdatesForTheCurrentConnectedDevice();            // continues on onFirmwareUpdatesChecked
+            if (mDeviceInfoData != null) {
+                boolean hasDFUService = mFirmwareUpdater.hasCurrentConnectedDeviceDFUService();
+                if (hasDFUService) {
+                    showReleasesInfo(false, null, false);       // No releases for this device, but show custom buttons
+                } else {
+                    showReleasesInfo(true, getString(R.string.connectedsettings_dfunotfound), false);
+                    mCustomFirmwareButton.setVisibility(View.GONE);
+                    mCustomBootloaderButton.setVisibility(View.GONE);
                 }
-            } else {
-                showReleasesInfo(true, getString(R.string.connectedsettings_dfunotfound), false);
-                mCustomFirmwareButton.setVisibility(View.GONE);
-                mCustomBootloaderButton.setVisibility(View.GONE);
+            }
+            else {
+                showReleasesInfo(true, getString(R.string.connectedsettings_retrievinginfo), true);
             }
         }
     }
@@ -194,6 +200,13 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
                         mBootloaderReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, mBoardRelease.bootloaderReleases);
                         mBootloaderReleasesListView.setAdapter(mBootloaderReleasesListAdapter);
                     }
+                    updateUI();
+                }
+            });
+        } else {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
                     updateUI();
                 }
             });
@@ -287,11 +300,10 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
         // Process firmware release
         if (release instanceof FirmwareUpdater.FirmwareInfo) {
             // Check that the minimum bootloader version requirement is met
-            FirmwareUpdater.FirmwareInfo firmwareInfo = (FirmwareUpdater.FirmwareInfo)release;
+            FirmwareUpdater.FirmwareInfo firmwareInfo = (FirmwareUpdater.FirmwareInfo) release;
             if (mDeviceInfoData.dfuVersion.compareToIgnoreCase(firmwareInfo.minBootloaderVersion) >= 0) {
                 message = String.format(getString(R.string.connectedsettings_firmwareinstall_messageformat), release.version);
-            }
-            else {
+            } else {
                 areRequerimentsMet = false;
 
                 // Show 'requeriments not met' dialog
@@ -325,7 +337,7 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
             } else {
                 Log.d(TAG, "onClickRelease: unknown release type");
             }
-        }else {
+        } else {
             Log.d(TAG, "onClickRelease: requeriments for update not met");
         }
     }
@@ -333,9 +345,8 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
     private void downloadAndInstallRelease(FirmwareUpdater.BasicVersionInfo release) {
         if (release instanceof FirmwareUpdater.FirmwareInfo) {
             mIsUpdating = true;
-            mFirmwareUpdater.downloadAndInstallFirmware(this, (FirmwareUpdater.FirmwareInfo)release);
-        }
-        else {
+            mFirmwareUpdater.downloadAndInstallFirmware(this, (FirmwareUpdater.FirmwareInfo) release);
+        } else {
             Log.d(TAG, "downloadAndInstallRelease type not implemented");
         }
     }
