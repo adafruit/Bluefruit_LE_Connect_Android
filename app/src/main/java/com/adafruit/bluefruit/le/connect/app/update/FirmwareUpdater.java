@@ -212,6 +212,12 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         }
 
         if (isNetworkAvailable()) {
+            /*
+            BleManager mBleManager = BleManager.getInstance(mContext);
+            mBleManager.disconnect();       // disconnect to let the dfu library connect to the device
+            mBleManager.close();
+*/
+
             mParentActivity = activity;
 
             mProgressDialog = new ProgressFragmentDialog();

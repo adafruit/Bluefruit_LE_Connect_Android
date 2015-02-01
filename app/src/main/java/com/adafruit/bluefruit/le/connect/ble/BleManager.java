@@ -338,20 +338,20 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
     // region BleExecutorListener
     @Override
     public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-        if (status == BluetoothGatt.GATT_SUCCESS) {
+       // if (status == BluetoothGatt.GATT_SUCCESS) {
             // Call listener
             if (mBleListener != null)
                 mBleListener.onServicesDiscovered();
-        }
+       // }
     }
 
     @Override
     public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-        if (status == BluetoothGatt.GATT_SUCCESS) {
+       // if (status == BluetoothGatt.GATT_SUCCESS) {
             if (mBleListener != null) {
                 mBleListener.onDataAvailable(characteristic);
             }
-        }
+       // }
     }
 
     @Override
@@ -363,11 +363,11 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
 
     @Override
     public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-        if (status == BluetoothGatt.GATT_SUCCESS) {
+     //   if (status == BluetoothGatt.GATT_SUCCESS) {
             if (mBleListener != null) {
                 mBleListener.onDataAvailable(descriptor);
             }
-        }
+     //   }
     }
     //endregion
 

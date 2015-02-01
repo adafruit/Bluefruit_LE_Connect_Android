@@ -37,7 +37,7 @@
             android:defaultValue="false"
             android:key="pref_gattautoconnect"
             android:summary="@string/settings_gattautoconnect_summary"
-            android:title="@string/settings_gattautoconnect_title" />
+            android:title="@string/settings_gattautoconnect_title"/>
 
     </PreferenceCategory>
 
@@ -57,10 +57,10 @@
             android:title="@string/settings_pref_updatesversioncheck_title"/>
 
         <EditTextPreference
+            android:dialogTitle="@string/settings_ignoredversion_edittitle"
             android:key="@string/pref_ignoredversion"
             android:summary="@string/settings_ignoredversion_summary"
-            android:title="@string/settings_ignoredversion_title"
-            android:dialogTitle="@string/settings_ignoredversion_edittitle"/>
+            android:title="@string/settings_ignoredversion_title"/>
 
         <CheckBoxPreference
             android:defaultValue="false"
@@ -69,11 +69,19 @@
             android:title="@string/settings_pref_bootloaders_title"/>
 
         <EditTextPreference
+            android:dialogTitle="@string/settings_updateserver_edittitle"
             android:key="@string/pref_updateserver"
             android:summary="@string/settings_updateserver_summary"
-            android:title="@string/settings_updateserver_title"
-            android:dialogTitle="@string/settings_updateserver_edittitle"/>
+            android:title="@string/settings_updateserver_title"/>
+    </PreferenceCategory>
 
-
+    <PreferenceCategory
+        android:key="@string/pref_key_reset_settings"
+        android:title="@string/settings_category_reset">
+        <Preference
+            android:key="@string/pref_reset"
+            android:title="@string/settings_pref_reset_title"
+            android:summary="@string/settings_pref_reset_summmary"
+            />
     </PreferenceCategory>
 </PreferenceScreen>

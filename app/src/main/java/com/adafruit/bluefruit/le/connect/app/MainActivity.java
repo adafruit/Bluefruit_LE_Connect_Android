@@ -413,6 +413,12 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
 
     private void showStatusDialog(boolean enable, int stringId) {
         if (enable) {
+
+            // Remove if a previous dialog was open (maybe because was clicked 2 times really quick)
+            if (mConnectingDialog != null) {
+                mConnectingDialog.cancel();
+            }
+
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage(stringId);
 
@@ -664,7 +670,6 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
             public void run() {
                 showConnectionStatus(false);
 
-
                 // Launch activity
                 if (mComponentToStartWhenConnected != null) {
                     Intent intent = new Intent(MainActivity.this, mComponentToStartWhenConnected);
@@ -749,8 +754,6 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
                                     showConnectionStatus(false);        // hide current dialogs because software update will display a dialog
                                     stopScanning();
                                     //BluetoothDevice device = mBleManager.getConnectedDevice();
-                                    mBleManager.disconnect();       // disconnect to let the dfu library connect to the device
-                                    mBleManager.close();
                                     mFirmwareUpdater.downloadAndInstall(MainActivity.this, latestRelease);
                                 }
                             })
