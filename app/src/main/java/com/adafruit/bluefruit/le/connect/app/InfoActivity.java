@@ -259,7 +259,9 @@ public class InfoActivity extends ActionBarActivity implements BleManager.BleMan
     public void onDataAvailable(BluetoothGattCharacteristic characteristic) {
         BluetoothGattService service = characteristic.getService();
         String key = new ElementPath(service.getUuid().toString(), service.getInstanceId(), characteristic.getUuid().toString(), null, null, null).getKey();
-        mValuesMap.put(key, characteristic.getValue());
+
+        byte[] data = characteristic.getValue();
+        mValuesMap.put(key, data);
 
         // Update UI
         runOnUiThread(new Runnable() {
@@ -306,7 +308,7 @@ public class InfoActivity extends ActionBarActivity implements BleManager.BleMan
         public String uuid;
         public boolean isShowingName = true;
 
-        public int dataFormat = 0;
+        public int dataFormat = kDataFormat_Auto;       // will try to display as string, if is not visible then display it as hex
 
         public ElementPath(String serviceUUID, int serviceInstance, String characteristicUUID, String descriptorUUID, String name, String uuid) {
             this.serviceUUID = serviceUUID;
@@ -420,7 +422,7 @@ public class InfoActivity extends ActionBarActivity implements BleManager.BleMan
             // Value
             TextView valueTextView = (TextView) convertView.findViewById(R.id.valueTextView);
             byte[] value = mValuesMap.get(elementPath.getKey());
-            String valueString = getValueFormatted(value, elementPath.dataFormat);
+            String valueString = getValueFormattedInGraphicCharacters(value, elementPath);
             valueTextView.setText(valueString);
             valueTextView.setVisibility(valueString == null ? View.GONE : View.VISIBLE);
 
@@ -479,7 +481,7 @@ public class InfoActivity extends ActionBarActivity implements BleManager.BleMan
             // Value
             TextView valueTextView = (TextView) convertView.findViewById(R.id.valueTextView);
             byte[] value = mValuesMap.get(elementPath.getKey());
-            String valueString = getValueFormatted(value, elementPath.dataFormat);
+            String valueString = getValueFormattedInGraphicCharacters(value, elementPath);
             valueTextView.setText(valueString);
             valueTextView.setVisibility(valueString == null ? View.GONE : View.VISIBLE);
 
@@ -493,13 +495,27 @@ public class InfoActivity extends ActionBarActivity implements BleManager.BleMan
     //endregion
 
     //region Utils
+    private final static int kDataFormat_Auto = -1;
+    private final static int kDataFormat_String = 0;
+    private final static int kDataFormat_Hex = 1;
+
+    private String getValueFormattedInGraphicCharacters(byte[] value, ElementPath elementPath) {
+        String valueString = getValueFormatted(value, elementPath.dataFormat);
+            // if format is auto and the result is not visible, change the format to hex
+            if (elementPath.dataFormat == kDataFormat_Auto && (valueString == null || !TextUtils.isGraphic(valueString))) {
+                elementPath.dataFormat = kDataFormat_Hex;
+                valueString = getValueFormatted(value, elementPath.dataFormat);
+            }
+        return valueString;
+    }
+
     private String getValueFormatted(byte[] value, int dataFormat) {
 
         String valueString = null;
         if (value != null) {
-            if (dataFormat == 0) {
+            if (dataFormat == kDataFormat_String || dataFormat == kDataFormat_Auto) {
                 valueString = new String(value);
-            } else {
+            } else if (dataFormat == kDataFormat_Hex) {
                 String hexString = BleUtils.bytesToHex(value);
                 String[] hexGroups = splitStringEvery(hexString, 2);
                 valueString = TextUtils.join("-", hexGroups);
@@ -583,7 +599,12 @@ public class InfoActivity extends ActionBarActivity implements BleManager.BleMan
 
         if (elementPath != null) {
             Log.d(TAG, "Toggle data format");
-            elementPath.dataFormat = (elementPath.dataFormat + 1) % kDataFormatCount;
+            if (elementPath.dataFormat == kDataFormat_Auto) {       // Special case for auto (the data format as not been set yet)
+                elementPath.dataFormat = kDataFormat_Hex;
+            }
+            else {
+                elementPath.dataFormat = (elementPath.dataFormat + 1) % kDataFormatCount;
+            }
 
             mInfoListAdapter.notifyDataSetChanged();
         }

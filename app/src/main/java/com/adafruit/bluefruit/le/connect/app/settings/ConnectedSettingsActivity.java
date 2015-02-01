@@ -28,6 +28,7 @@ import com.adafruit.bluefruit.le.connect.app.update.ApplicationFilesFragmentDial
 import com.adafruit.bluefruit.le.connect.app.update.DfuService;
 import com.adafruit.bluefruit.le.connect.app.update.FirmwareUpdater;
 import com.adafruit.bluefruit.le.connect.app.update.ReleasesParser;
+import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ui.ExpandableHeightListView;
 
 import java.util.List;
@@ -216,11 +217,14 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
 
     @Override
     public void onUpdateCancelled() {
+        Log.d(TAG, "onUpdateCancelled");
         mIsUpdating = false;
     }
 
     @Override
     public void onUpdateCompleted() {
+        Log.d(TAG, "onUpdateCompleted");
+
         mIsUpdating = false;
         Toast.makeText(this, R.string.scan_softwareupdate_completed, Toast.LENGTH_LONG).show();
         setResult(Activity.RESULT_OK);
@@ -230,11 +234,20 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
     @Override
     public void onUpdateFailed(boolean isDownloadError) {
         mIsUpdating = false;
+        Log.w(TAG, "onUpdateFailed");
         Toast.makeText(this, isDownloadError ? R.string.scan_softwareupdate_downloaderror : R.string.scan_softwareupdate_updateerror, Toast.LENGTH_LONG).show();
+
+        if (!isDownloadError) {
+            // if is a software update error, the bluetooth state could be corrupted so we force a disconnect
+            BleManager.getInstance(this).disconnect();
+            setResult(Activity.RESULT_OK);
+            finish();
+        }
     }
 
     @Override
     public void onUpdateDeviceDisconnected() {
+        Log.w(TAG, "onUpdateDeviceDisconnected");
         if (!mIsUpdating) {         // Is normal no be disconnected during updates, so we don't take those disconnections into account
             runOnUiThread(new Runnable() {
                 @Override
