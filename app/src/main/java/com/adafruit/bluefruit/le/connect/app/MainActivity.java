@@ -58,9 +58,9 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
     private final static int kComponentsNameIds[] = {
             R.string.scan_connectservice_info,
             R.string.scan_connectservice_uart,
-            //          R.string.scan_connectservice_pinio,
+//            R.string.scan_connectservice_pinio,
             R.string.scan_connectservice_controller,
-            R.string.scan_connectservice_beacon,
+//            R.string.scan_connectservice_beacon,
     };
 
     // Activity request codes (used for onActivityResult)
@@ -652,7 +652,6 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
             }
         }
 
-
         deviceData.uuids = uuids;
     }
 
@@ -662,7 +661,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
         mScanButton.setText(getString(isScanning ? R.string.scan_scanbutton_scanning : R.string.scan_scanbutton_scan));
 
         // Show list and hide "no devices" label
-        final boolean isListEmpty = mScannedDevices.size() == 0;
+        final boolean isListEmpty = mScannedDevices == null || mScannedDevices.size() == 0;
         mNoDevicesTextView.setVisibility(isListEmpty ? View.VISIBLE : View.GONE);
         mDevicesScrollView.setVisibility(isListEmpty ? View.GONE : View.VISIBLE);
 
