@@ -1,12 +1,22 @@
 apply plugin: 'com.android.library'
 
+ext {
+    PUBLISH_GROUP_ID = 'no.nordicsemi.android'
+    PUBLISH_ARTIFACT_ID = 'dfu-library'
+    PUBLISH_VERSION = '0.5.0'
+}
+
+
 android {
     compileSdkVersion 21
-    buildToolsVersion "19.1.0"
+    buildToolsVersion "21.1.2"
 
     defaultConfig {
         minSdkVersion 18
         targetSdkVersion 21
+
+        versionCode 1
+        versionName "0.5"
     }
 
     buildTypes {
@@ -18,6 +28,6 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:21+'
-    compile files('libs/nrf-logger-v2.0.jar')
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:support-v4:21.0.3'
 }

@@ -142,6 +142,13 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
     }
 
 
+    public void testATParser() {
+        String uartCommand = "AT\\r\\n";
+        Log.d(TAG, "send command: "+uartCommand);
+        sendData(uartCommand);
+
+    }
+
     public void onClickEnable(View view) {
         String manufacturerId = "0x"+mVendorEditText.getText().toString();
         String uuid = mUuidEditText.getText().toString();
@@ -149,13 +156,13 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
         String minor = "0x"+mMinorEditText.getText().toString();
         String rssi = mRssiEditText.getText().toString();
 
-        String uartCommand = String.format("AT+BLEBEACON=%s,%s,%s,%s,%s\n", manufacturerId, uuid, major, minor, rssi);
+        String uartCommand = String.format("+++\r\nAT+BLEBEACON=%s,%s,%s,%s,%s\r\n+++\r\n", manufacturerId, uuid, major, minor, rssi);
         Log.d(TAG, "send command: "+uartCommand);
         sendData(uartCommand);
     }
 
     public void onClickDisable(View view) {
-        String uartCommand = "AT+FACTORYRESET\n";
+        String uartCommand = "+++\r\nAT+FACTORYRESET\r\n+++\r\n";
         Log.d(TAG, "send command: "+uartCommand);
         sendData(uartCommand);
 
@@ -212,6 +219,9 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
     public void onServicesDiscovered() {
         mUartService = mBleManager.getGattService(UUID_SERVICE);
         mBleManager.enableService(mUartService, UUID_RX, true);
+
+        // Test AT parser
+        testATParser();
     }
 
     @Override

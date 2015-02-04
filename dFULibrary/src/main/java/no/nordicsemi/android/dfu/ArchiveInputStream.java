@@ -1,3 +1,25 @@
+/*************************************************************************************************************************************************
+ * Copyright (c) 2015, Nordic Semiconductor
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this
+ * software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ ************************************************************************************************************************************************/
+
 package no.nordicsemi.android.dfu;
 
 import java.io.ByteArrayOutputStream;
@@ -6,7 +28,7 @@ import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class ZipHexInputStream extends ZipInputStream {
+public class ArchiveInputStream extends ZipInputStream {
 	private static final String SOFTDEVICE_NAME = "softdevice.(hex|bin)";
 	private static final String BOOTLOADER_NAME = "bootloader.(hex|bin)";
 	private static final String APPLICATION_NAME = "application.(hex|bin)";
@@ -27,9 +49,9 @@ public class ZipHexInputStream extends ZipInputStream {
 
 	/**
 	 * <p>
-	 * The {@link ZipHexInputStream} read HEX files from the Zip stream. It may skip some of them, depending on the value of types parameter. This is useful if the service wants to send the Soft
-	 * Device and Bootloader only, and then Application in the next connection despite that ZIP file contains all 3 HEX files. When types is equal to {@link DfuBaseService#TYPE_AUTO} all present files
-	 * are read.
+	 * The ArchiveInputStream read HEX or BIN files from the Zip stream. It may skip some of them, depending on the value of types parameter.
+	 * This is useful if the service wants to send the Soft Device and Bootloader only, and then Application in the next connection despite that ZIP file contains all 3 HEX/BIN files.
+	 * When types is equal to {@link DfuBaseService#TYPE_AUTO} all present files are read.
 	 * </p>
 	 * <p>
 	 * Use bit combination of the following types:
@@ -43,14 +65,13 @@ public class ZipHexInputStream extends ZipInputStream {
 	 * 
 	 * @param stream
 	 *            the Zip Input Stream
+	 * @param mbrSize
+	 *            The size of the MRB segment (Master Boot Record) on the device. The parser will cut data from addresses below that number from all HEX files.
 	 * @param types
-	 *            files to read
-	 * @param trim
-	 *            if <code>true</code> the bin data will be trimmed. All data from addresses < 0x1000 will be skipped. In the Soft Device 7.0.0 it's MBR space and this HEX fragment should not be
-	 *            transmitted. However, other DFU implementations (f.e. without Soft Device) may require uploading the whole file.
-	 * @throws IOException
+	 *            File types that are to be read from the ZIP. Use {@link DfuBaseService#TYPE_APPLICATION} etc.
+	 * @throws java.io.IOException
 	 */
-	public ZipHexInputStream(final InputStream stream, final int mbrSize, final int types) throws IOException {
+	public ArchiveInputStream(final InputStream stream, final int mbrSize, final int types) throws IOException {
 		super(stream);
 
 		this.bytesRead = 0;
@@ -127,7 +148,7 @@ public class ZipHexInputStream extends ZipInputStream {
 						currentSource = source;
 				} else if (systemInit) {
 					systemInitBytes = source;
-				} else if (applicationInit) {
+				} else { // if (applicationInit) - always true
 					applicationInitBytes = source;
 				}
 			}
@@ -220,7 +241,7 @@ public class ZipHexInputStream extends ZipInputStream {
 	 * @return the new source, the same as {@link #currentSource}
 	 */
 	private byte[] startNextFile() {
-		byte[] ret = null;
+		byte[] ret;
 		if (currentSource == softDeviceBytes && bootloaderBytes != null) {
 			ret = currentSource = bootloaderBytes;
 		} else if (currentSource != applicationBytes && applicationBytes != null) {

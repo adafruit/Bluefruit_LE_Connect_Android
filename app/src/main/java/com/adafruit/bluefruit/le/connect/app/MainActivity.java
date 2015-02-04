@@ -596,7 +596,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
         byte[] advertisedData = Arrays.copyOf(scanRecord, scanRecord.length);
         int offset = 0;
         while (offset < advertisedData.length - 2) {
-            // Lenght
+            // Length
             int len = advertisedData[offset++];
             if (len == 0) break;
 

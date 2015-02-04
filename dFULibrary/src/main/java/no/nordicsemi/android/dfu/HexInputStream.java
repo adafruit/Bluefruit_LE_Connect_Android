@@ -1,11 +1,25 @@
-/*******************************************************************************
- * Copyright (c) 2013 Nordic Semiconductor. All Rights Reserved.
- * 
- * The information contained herein is property of Nordic Semiconductor ASA.
- * Terms and conditions of usage are described in detail in NORDIC SEMICONDUCTOR STANDARD SOFTWARE LICENSE AGREEMENT.
- * Licensees are granted free, non-transferable use of the information. NO WARRANTY of ANY KIND is provided.
- * This heading must NOT be removed from the file.
- ******************************************************************************/
+/*************************************************************************************************************************************************
+ * Copyright (c) 2015, Nordic Semiconductor
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this
+ * software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ ************************************************************************************************************************************************/
+
 package no.nordicsemi.android.dfu;
 
 import java.io.BufferedInputStream;
@@ -33,19 +47,18 @@ public class HexInputStream extends FilterInputStream {
 	private int size;
 	private int lastAddress;
 	private int available, bytesRead;
-	private int MBRsize;
+	private final int MBRSize;
 
 	/**
 	 * Creates the HEX Input Stream. The constructor calculates the size of the BIN content which is available through {@link #sizeInBytes()}. If HEX file is invalid then the bin size is 0.
 	 * 
 	 * @param in
 	 *            the input stream to read from
-	 * @param trim
-	 *            if <code>true</code> the bin data will be trimmed. All data from addresses < 0x1000 will be skipped. In the Soft Device 7.0.0 it's MBR space and this HEX fragment should not be
-	 *            transmitted. However, other DFU implementations (f.e. without Soft Device) may require uploading the whole file.
+	 * @param mbrSize
+	 *            The MBR (Master Boot Record) size in bytes. Data with addresses below than number will be trimmed and not transferred to DFU target.
 	 * @throws HexFileValidationException
 	 *             if HEX file is invalid. F.e. there is no semicolon (':') on the beginning of each line.
-	 * @throws IOException
+	 * @throws java.io.IOException
 	 *             if the stream is closed or another IOException occurs.
 	 */
 	protected HexInputStream(final InputStream in, final int mbrSize) throws HexFileValidationException, IOException {
@@ -54,7 +67,7 @@ public class HexInputStream extends FilterInputStream {
 		this.localPos = LINE_LENGTH; // we are at the end of the local buffer, new one must be obtained
 		this.size = localBuf.length;
 		this.lastAddress = 0;
-		this.MBRsize = mbrSize;
+		this.MBRSize = mbrSize;
 
 		this.available = calculateBinSize(mbrSize);
 	}
@@ -65,7 +78,7 @@ public class HexInputStream extends FilterInputStream {
 		this.localPos = LINE_LENGTH; // we are at the end of the local buffer, new one must be obtained
 		this.size = localBuf.length;
 		this.lastAddress = 0;
-		this.MBRsize = mbrSize;
+		this.MBRSize = mbrSize;
 
 		this.available = calculateBinSize(mbrSize);
 	}
@@ -77,7 +90,7 @@ public class HexInputStream extends FilterInputStream {
 
 		int b, lineSize, offset, type;
 		int lastBaseAddress = 0; // last Base Address, default 0 
-		int lastAddress = 0;
+		int lastAddress;
 		try {
 			b = in.read();
 			while (true) {
@@ -145,7 +158,7 @@ public class HexInputStream extends FilterInputStream {
 	 * Fills the buffer with next bytes from the stream.
 	 * 
 	 * @return the size of the buffer
-	 * @throws IOException
+	 * @throws java.io.IOException
 	 */
 	public int readPacket(byte[] buffer) throws HexFileValidationException, IOException {
 		int i = 0;
@@ -192,7 +205,7 @@ public class HexInputStream extends FilterInputStream {
 	 * @param packetSize
 	 *            the maximum packet size
 	 * @return the number of packets needed to get all the content
-	 * @throws IOException
+	 * @throws java.io.IOException
 	 */
 	public int sizeInPackets(final int packetSize) throws IOException {
 		final int sizeInBytes = sizeInBytes();
@@ -204,7 +217,7 @@ public class HexInputStream extends FilterInputStream {
 	 * Reads new line from the input stream. Input stream must be a HEX file. The first line is always skipped.
 	 * 
 	 * @return the number of data bytes in the new line. 0 if end of file.
-	 * @throws IOException
+	 * @throws java.io.IOException
 	 *             if this stream is closed or another IOException occurs.
 	 */
 	private int readLine() throws IOException {
@@ -214,7 +227,7 @@ public class HexInputStream extends FilterInputStream {
 		final InputStream in = this.in;
 
 		// temporary value
-		int b = 0;
+		int b;
 
 		int lineSize, type, offset;
 		do {
@@ -249,7 +262,7 @@ public class HexInputStream extends FilterInputStream {
 			switch (type) {
 			case 0x00:
 				// data type
-				if (lastAddress + offset < MBRsize) { // skip MBR
+				if (lastAddress + offset < MBRSize) { // skip MBR
 					type = -1; // some other than 0
 					pos += in.skip(lineSize * 2 /* 2 hex per one byte */+ 2 /* check sum */);
 				}
