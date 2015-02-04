@@ -27,7 +27,7 @@
                 android:textColor="@drawable/default_textcolor"
                 android:text="@string/pinio_sectiontitle_digital" />
 
-            <com.adafruit.bluefruit.le.connect.ui.ExpandableHeightExpandableListView
+            <com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightExpandableListView
                 android:id="@+id/digitalPinListView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -43,7 +43,7 @@
                 android:layout_marginTop="20dp"
                 android:text="@string/pinio_sectiontitle_analog" />
 
-            <com.adafruit.bluefruit.le.connect.ui.ExpandableHeightExpandableListView
+            <com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightExpandableListView
                 android:id="@+id/analogPinListView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

@@ -30,7 +30,7 @@ import android.widget.ToggleButton;
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.app.settings.ConnectedSettingsActivity;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
-import com.adafruit.bluefruit.le.connect.ui.ExpandableHeightExpandableListView;
+import com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightExpandableListView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;

@@ -76,13 +76,13 @@
                     android:text="@string/connectedsettings_firmwarereleasesheadertitle"
                     android:textColor="@drawable/default_textcolor"/>
 
-                <com.adafruit.bluefruit.le.connect.ui.ExpandableHeightListView
+                <com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightListView
                     android:id="@+id/firmwareReleasesListView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:background="@android:color/white">
-                </com.adafruit.bluefruit.le.connect.ui.ExpandableHeightListView>
+                </com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightListView>
 
                 <Button
                     android:id="@+id/customFirmwareButton"
@@ -110,13 +110,13 @@
                     android:textColor="@drawable/default_textcolor"/>
 
 
-                <com.adafruit.bluefruit.le.connect.ui.ExpandableHeightListView
+                <com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightListView
                     android:id="@+id/bootloaderReleasesListView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:background="@android:color/white">
-                </com.adafruit.bluefruit.le.connect.ui.ExpandableHeightListView>
+                </com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightListView>
 
                 <Button
                     android:id="@+id/customBootloaderButton"

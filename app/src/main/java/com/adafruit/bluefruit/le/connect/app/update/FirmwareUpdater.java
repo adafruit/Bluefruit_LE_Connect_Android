@@ -41,7 +41,11 @@ import java.util.UUID;
 
 import no.nordicsemi.android.error.GattError;
 
+/*
+    Manages updates for firmware and bootloader
+    Note: during updates is important that Activity that starts the update process calls changedParentActivity if is destroyed and recreated (for example on config changes)
 
+ */
 public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleManager.BleManagerListener {
     // Config
     public static final String kDefaultUpdateServerUrl = "https://raw.githubusercontent.com/adafruit/Adafruit_BluefruitLE_Firmware/master/releases.xml";
@@ -222,7 +226,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
 
             mProgressDialog = new ProgressFragmentDialog();
             Bundle arguments = new Bundle();
-            arguments.putString("message", mContext.getString(release.fileType==DfuService.TYPE_APPLICATION?R.string.firmware_downloading:R.string.bootloader_downloading));          // message should be set before oncreate
+            arguments.putString("message", mContext.getString(release.fileType == DfuService.TYPE_APPLICATION ? R.string.firmware_downloading : R.string.bootloader_downloading));          // message should be set before oncreate
             mProgressDialog.setArguments(arguments);
 
             mProgressDialog.show(activity.getFragmentManager(), null);
@@ -291,7 +295,9 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                 }
             }
 
-            Log.d(TAG, "update "+(fileType==DfuService.TYPE_APPLICATION?"firmware":"bootloader")+" from hex: " + (localHexPath != null ? localHexPath + (localIniPath != null ? " ini:" + localIniPath : "") : hexUriPath.toString() + (iniUriPath != null ? " ini:" + iniUriPath.toString() : "")));
+            Log.d(TAG, "update " + (fileType == DfuService.TYPE_APPLICATION ? "firmware" : "bootloader") + " from hex: " + (localHexPath != null ? localHexPath + (localIniPath != null ? " ini:" + localIniPath : "") : hexUriPath.toString() + (iniUriPath != null ? " ini:" + iniUriPath.toString() : "")));
+
+            saveFailedInstallationRecoveryParams(mContext, device.getAddress(), fileType, localHexPath, localIniPath);        // Save info to retry update if something fails
 
             // take CPU lock to prevent CPU from going off if the user  presses the power button during download
             PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
@@ -324,6 +330,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
             if (serviceName == null) {
                 Log.e(TAG, "Error starting DFU service " + service.getPackage() + ":" + service.getAction());
                 cleanInstallationAttempt(false);
+                clearFailedInstallationRecoveryParams(mContext);
                 mListener.onUpdateFailed(false);
             }
         } else {
@@ -350,6 +357,58 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         mParentActivity = null;
     }
 
+
+    // region Recover Failed udpates
+    private static final String kFailedDeviceAddressPrefKey = "updatemanager_failedDeviceAddress";
+    private static final String kFailedTypePrefKey = "updatemanager_failedType";
+    private static final String kFailedHexPrefKey = "updatemanager_failedHex";
+    private static final String kFailedIniPrefKey = "updatemanager_failedInit";
+
+    private static void saveFailedInstallationRecoveryParams(Context context, String deviceAddress, int type, String hexFilename, String iniFilename) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor sharedPreferencesEdit = sharedPreferences.edit();
+        sharedPreferencesEdit.putString(kFailedDeviceAddressPrefKey, deviceAddress);
+        sharedPreferencesEdit.putInt(kFailedTypePrefKey, type);
+        sharedPreferencesEdit.putString(kFailedHexPrefKey, hexFilename);
+        sharedPreferencesEdit.putString(kFailedIniPrefKey, iniFilename);
+        sharedPreferencesEdit.apply();
+    }
+
+    public static void clearFailedInstallationRecoveryParams(Context context) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor sharedPreferencesEdit = sharedPreferences.edit();
+        sharedPreferencesEdit.putString(kFailedDeviceAddressPrefKey, null);
+        sharedPreferencesEdit.putInt(kFailedTypePrefKey, -1);
+        sharedPreferencesEdit.putString(kFailedHexPrefKey, null);
+        sharedPreferencesEdit.putString(kFailedIniPrefKey, null);
+        sharedPreferencesEdit.apply();
+    }
+
+    public static boolean isFailedInstallationRecoveryAvailable(Context context, String deviceAddress) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        String storedDeviceAddress = sharedPreferences.getString(kFailedDeviceAddressPrefKey, null);
+        return storedDeviceAddress != null && storedDeviceAddress.equalsIgnoreCase(deviceAddress);
+    }
+
+    public boolean startFailedInstallationRecovery(Activity activity) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        String deviceAddress = sharedPreferences.getString(kFailedDeviceAddressPrefKey, null);
+        int type = sharedPreferences.getInt(kFailedTypePrefKey, -1);
+        String hexFile = sharedPreferences.getString(kFailedHexPrefKey, null);
+        String iniFile = sharedPreferences.getString(kFailedIniPrefKey, null);
+
+        if (deviceAddress != null && type >= 0 && hexFile != null && iniFile != null) {
+            installSoftware(activity, type, hexFile, iniFile, null, null);
+            return true;
+        } else {
+            Log.w(TAG, "Error: no data to startFailedInstallationRecovery");
+            return false;
+        }
+    }
+
+
+    // endregion
+
     // region DownloadTaskListener
     @Override
     public void onDownloadProgress(int operationId, int progress) {
@@ -370,7 +429,8 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
             onDownloadVersionsDatabaseCompleted(urlAddress, result);
             mDownloadTask = null;
         } else if (operationId == kDownloadOperation_Software_Hex) {
-            File file = onDownloadSoftwareCompleted(urlAddress, result, kDefaultHexFilename);
+            clearFailedInstallationRecoveryParams(mContext);
+            File file = writeSoftwareDownload(urlAddress, result, kDefaultHexFilename);
 
             final boolean success = file != null;
             if (success) {
@@ -394,7 +454,8 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                 mDownloadTask = null;
             }
         } else if (operationId == kDownloadOperation_Software_Ini) {
-            File file = onDownloadSoftwareCompleted(urlAddress, result, kDefaultIniFilename);
+            clearFailedInstallationRecoveryParams(mContext);
+            File file = writeSoftwareDownload(urlAddress, result, kDefaultIniFilename);
             final boolean success = file != null;
             if (success) {
                 // We already had the hex file downloaded, and now we also have the ini file. Let's go
@@ -442,7 +503,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     }
 
 
-    private File onDownloadSoftwareCompleted(String urlAddress, ByteArrayOutputStream result, String filename) {
+    private File writeSoftwareDownload(String urlAddress, ByteArrayOutputStream result, String filename) {
         mProgressDialog.dismiss();
 
         File resultFile = null;
@@ -496,6 +557,16 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
 
     }
 
+
+    private String readCharacteristicValueAsString(BluetoothGattCharacteristic characteristic) {
+        String string = "";     // Not null
+        try {
+           string = characteristic.getStringValue(0);
+        }catch(Exception e){
+            Log.w(TAG, "readCharacteristicValueAsString" +e);
+        }
+        return string;
+    }
     @Override
     public void onDataAvailable(BluetoothGattCharacteristic characteristic) {
 
@@ -503,16 +574,16 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         if (characteristic.getService().getUuid().toString().equalsIgnoreCase(kDeviceInformationService)) {
             final String charUuid = characteristic.getUuid().toString();
             if (charUuid.equalsIgnoreCase(kManufacturerNameCharacteristic)) {
-                mDeviceInfoData.manufacturer = characteristic.getStringValue(0);
+                mDeviceInfoData.manufacturer = readCharacteristicValueAsString(characteristic);
                 Log.d(TAG, "Updates: received manufacturer:" + mDeviceInfoData.manufacturer);
             } else if (charUuid.equalsIgnoreCase(kModelNumberCharacteristic)) {
-                mDeviceInfoData.modelNumber = characteristic.getStringValue(0);
+                mDeviceInfoData.modelNumber = readCharacteristicValueAsString(characteristic);
                 Log.d(TAG, "Updates: received modelNumber:" + mDeviceInfoData.modelNumber);
             } else if (charUuid.equalsIgnoreCase(kSoftwareRevisionCharacteristic)) {
-                mDeviceInfoData.firmwareRevision = characteristic.getStringValue(0);
+                mDeviceInfoData.firmwareRevision =  readCharacteristicValueAsString(characteristic);
                 Log.d(TAG, "Updates: received firmwareRevision:" + mDeviceInfoData.firmwareRevision);
             } else if (charUuid.equalsIgnoreCase(kSoftwareRevisionCharacteristic)) {
-                mDeviceInfoData.firmwareRevision = characteristic.getStringValue(0);
+                mDeviceInfoData.firmwareRevision =  readCharacteristicValueAsString(characteristic);
                 Log.d(TAG, "Updates: received firmwareRevision:" + mDeviceInfoData.firmwareRevision);
             }
         }
@@ -614,13 +685,13 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         public void onReceive(final Context context, final Intent intent) {
             // DFU is in progress or an error occurred
             final String action = intent.getAction();
-            Log.d(TAG, "Update broadcast action received:" + action);
+            //Log.d(TAG, "Update broadcast action received:" + action);
 
             if (DfuService.BROADCAST_PROGRESS.equals(action)) {
                 final int progress = intent.getIntExtra(DfuService.EXTRA_DATA, 0);
                 final int currentPart = intent.getIntExtra(DfuService.EXTRA_PART_CURRENT, 1);
                 final int totalParts = intent.getIntExtra(DfuService.EXTRA_PARTS_TOTAL, 1);
-                Log.d(TAG, "Update broadcast progress received " + progress + " (" + currentPart + "/" + totalParts + ")");
+                //Log.d(TAG, "Update broadcast progress received " + progress + " (" + currentPart + "/" + totalParts + ")");
                 updateProgressBar(progress, currentPart, totalParts, false);
             } else if (DfuService.BROADCAST_ERROR.equals(action)) {
                 final int error = intent.getIntExtra(DfuService.EXTRA_DATA, 0);
@@ -687,6 +758,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                     @Override
                     public void run() {
                         cleanInstallationAttempt(true);
+                        clearFailedInstallationRecoveryParams(mContext);
                         mListener.onUpdateCompleted();
 
                         // if this activity is still open and upload process was completed, cancel the notification
@@ -705,6 +777,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                     @Override
                     public void run() {
                         cleanInstallationAttempt(false);
+                        clearFailedInstallationRecoveryParams(mContext);
                         mListener.onUpdateCancelled();
 
                         // if this activity is still open and upload process was completed, cancel the notification
@@ -719,7 +792,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                     mProgressDialog.setIndeterminate(false);
                 }
                 if (error) {
-                    String message = String.format(mContext.getString(R.string.firmware_updatefailed_format),  GattError.parse(progress) + " (" + (progress & ~(DfuService.ERROR_MASK | DfuService.ERROR_REMOTE_MASK)) + ")");
+                    String message = String.format(mContext.getString(R.string.firmware_updatefailed_format), GattError.parse(progress) + " (" + (progress & ~(DfuService.ERROR_MASK | DfuService.ERROR_REMOTE_MASK)) + ")");
                     Toast.makeText(mContext, message, Toast.LENGTH_LONG).show();
                     cleanInstallationAttempt(false);
                     mListener.onUpdateFailed(false);

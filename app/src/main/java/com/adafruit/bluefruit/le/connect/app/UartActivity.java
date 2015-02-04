@@ -254,7 +254,6 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
             return true;
         }
 
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -335,7 +334,6 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         spanBuffer.append(text);
         spanBuffer.setSpan(new ForegroundColorSpan(color), from, from + text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
-
 
     private void updateUI() {
 

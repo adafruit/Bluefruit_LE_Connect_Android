@@ -24,7 +24,7 @@ import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.app.settings.ConnectedSettingsActivity;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ble.BleUtils;
-import com.adafruit.bluefruit.le.connect.ui.ExpandableHeightExpandableListView;
+import com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightExpandableListView;
 
 public class PinIOActivity extends UartInterfaceActivity implements BleManager.BleManagerListener {
     // Log
@@ -246,6 +246,7 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
     @Override
     public void onServicesDiscovered() {
         mUartService = mBleManager.getGattService(UUID_SERVICE);
+        mBleManager.enableService(mUartService, UUID_RX, true);
 
         // PinIo init
         if (mIsActivityFirstRun) {
@@ -257,7 +258,7 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
     public void onDataAvailable(BluetoothGattCharacteristic characteristic) {
         byte[] data = characteristic.getValue();
 
-        if (data.length <= 20) {
+        if (data.length <= UartInterfaceActivity.kTxMaxCharacters) {
             processInputData(data);
         } else {
             Log.w(TAG, "unexpected received data length: " + data.length);

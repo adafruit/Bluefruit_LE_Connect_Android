@@ -27,7 +27,7 @@ import com.adafruit.bluefruit.le.connect.app.settings.ConnectedSettingsActivity;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ble.BleUtils;
 import com.adafruit.bluefruit.le.connect.ble.KnownUUIDs;
-import com.adafruit.bluefruit.le.connect.ui.ExpandableHeightListView;
+import com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightListView;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -243,7 +243,6 @@ public class InfoActivity extends ActionBarActivity implements BleManager.BleMan
                 mDescriptorsMap.put(characteristicElementPath.getKey(), descriptorNamesList);
             }
             mCharacteristicsMap.put(serviceElementPath.getKey(), characteristicNamesList);
-
         }
 
         runOnUiThread(new Runnable() {
@@ -306,8 +305,8 @@ public class InfoActivity extends ActionBarActivity implements BleManager.BleMan
         public String descriptorUUID;
         public String name;
         public String uuid;
-        public boolean isShowingName = true;
 
+        public boolean isShowingName = true;
         public int dataFormat = kDataFormat_Auto;       // will try to display as string, if is not visible then display it as hex
 
         public ElementPath(String serviceUUID, int serviceInstance, String characteristicUUID, String descriptorUUID, String name, String uuid) {
@@ -502,7 +501,7 @@ public class InfoActivity extends ActionBarActivity implements BleManager.BleMan
     private String getValueFormattedInGraphicCharacters(byte[] value, ElementPath elementPath) {
         String valueString = getValueFormatted(value, elementPath.dataFormat);
             // if format is auto and the result is not visible, change the format to hex
-            if (elementPath.dataFormat == kDataFormat_Auto && (valueString == null || !TextUtils.isGraphic(valueString))) {
+            if (valueString != null && elementPath.dataFormat == kDataFormat_Auto && !TextUtils.isGraphic(valueString)) {
                 elementPath.dataFormat = kDataFormat_Hex;
                 valueString = getValueFormatted(value, elementPath.dataFormat);
             }
@@ -510,7 +509,6 @@ public class InfoActivity extends ActionBarActivity implements BleManager.BleMan
     }
 
     private String getValueFormatted(byte[] value, int dataFormat) {
-
         String valueString = null;
         if (value != null) {
             if (dataFormat == kDataFormat_String || dataFormat == kDataFormat_Auto) {

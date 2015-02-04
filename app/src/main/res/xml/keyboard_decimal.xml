@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Keyboard xmlns:android="http://schemas.android.com/apk/res/android"
+    android:keyWidth="25%p"
+    android:keyHeight="@fraction/hexadecimalKeyboardKeyHeight" >
+
+    <Row>
+        <Key android:keyLabel="1" android:keyEdgeFlags="left" />
+        <Key android:keyLabel="2" />
+        <Key android:keyLabel="3" />
+        <Key android:keyLabel="4" android:keyEdgeFlags="right"/>
+    </Row>
+
+    <Row>
+        <Key android:keyLabel="5" android:keyEdgeFlags="left" />
+        <Key android:keyLabel="6" />
+        <Key android:keyLabel="7" />
+        <Key android:codes="-1" android:keyIcon="@drawable/sym_keyboard_delete_holo_dark" android:isRepeatable="true"  android:keyEdgeFlags="right" />
+    </Row>
+
+    <Row>
+        <Key android:keyLabel="8" android:keyEdgeFlags="left" />
+        <Key android:keyLabel="9" />
+        <Key android:keyLabel="0" />
+        <Key android:codes="-2" android:keyIcon="@drawable/sym_keyboard_return_holo_dark" android:keyEdgeFlags="right" />
+    </Row>
+</Keyboard>

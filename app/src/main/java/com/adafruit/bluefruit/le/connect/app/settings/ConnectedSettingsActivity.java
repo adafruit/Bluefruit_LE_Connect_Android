@@ -29,7 +29,7 @@ import com.adafruit.bluefruit.le.connect.app.update.DfuService;
 import com.adafruit.bluefruit.le.connect.app.update.FirmwareUpdater;
 import com.adafruit.bluefruit.le.connect.app.update.ReleasesParser;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
-import com.adafruit.bluefruit.le.connect.ui.ExpandableHeightListView;
+import com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightListView;
 
 import java.util.List;
 import java.util.Map;

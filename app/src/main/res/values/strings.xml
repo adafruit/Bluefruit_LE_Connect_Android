@@ -29,14 +29,11 @@
     <string name="scan_connectto_dialog_title_format">Choose mode to connect to %s</string>
     <string name="scan_unexpecteddisconnect">Peripheral disconnected</string>
     <string name="scan_tag_id">Id</string>
-
-    <string-array name="scan_connectservice_items">
-        <item>Info</item>
-        <item>UART</item>
-        <!-- <item>Pin I/O</item> -->
-        <item>Controller</item>
-    </string-array>
-
+    <string name="scan_connectservice_info">Info</string>
+    <string name="scan_connectservice_uart">UART</string>
+    <string name="scan_connectservice_pinio">Pin I/O</string>
+    <string name="scan_connectservice_controller">Controller</string>
+    <string name="scan_connectservice_beacon">Beacon</string>
     <string name="scan_softwareupdate_title">Update available</string>
     <string name="scan_softwareupdate_messageformat">Software version %s is available</string>
     <string name="scan_softwareupdate_install">Install</string>
@@ -45,6 +42,12 @@
     <string name="scan_softwareupdate_downloaderror">Software download error</string>
     <string name="scan_softwareupdate_updateerror">Software update error</string>
     <string name="scan_softwareupdate_completed">Software updated successfully</string>
+
+
+    <string name="scan_failedupdatedetected_title">Failed update detected</string>
+    <string name="scan_failedupdatedetected_message">A failed update for this device has been detected.\nIt is strongly recommended to retry updating the device now</string>
+    <string name="scan_failedupdatedetected_ok">Update now</string>
+
 
     <!-- Scan Help Activity -->
     <string name="title_activity_mainhelp">Help</string>
@@ -99,6 +102,18 @@
     <!-- Pad Activity -->
     <string name="title_activity_pad">Control Pad</string>
 
+    <!-- Beacon -->
+    <string name="beacon_manufacturer_choose_title">Choose Manufacturer</string>
+    <string-array name="beacon_manufacturers_names">
+        <item>Apple</item>
+        <item>Nordic</item>
+    </string-array>
+
+    <string-array name="beacon_manufacturers_ids">
+        <item>004C</item>
+        <item>0059</item>
+    </string-array>
+
     <!-- Connected Settings -->
     <string name="title_activity_connected_settings">Connected Settings</string>
     <string name="connectedsettings_updatesheadertitle">UPDATES</string>
@@ -110,13 +125,10 @@
     <string name="connectedsettings_usecustombootloader">Use custom bootloader</string>
     <string name="connectedsettings_versionformat">Version %s</string>
     <string name="connectedsettings_retrievinginfoformat">No releases found for this device (%s)</string>
-
     <string name="connectedsettings_firmwareinstall_messageformat">Download and install firmware version %s</string>
     <string name="connectedsettings_bootloaderinstall_messageformat">Download and install bootloader version %s</string>
-
     <string name="connectedsettings_noexplorer_title">Unavailable</string>
     <string name="connectedsettings_noexplorer_message">File browser app not has not been found on your device. You should install an app like Dropbox, GoogleDrive...</string>
-
 
     <!-- Settings -->
     <string name="title_activity_settings">Settings</string>
@@ -150,17 +162,13 @@
     <string name="pref_key_reset_settings">pref_key_reset_settings</string>
     <string name="settings_category_reset">Reset</string>
     <string name="settings_pref_reset_title">Reset Preferences</string>
-    <string name="settings_pref_reset_summmary">Restore default value for all settings</string>
-
+    <string name="settings_pref_reset_summmary">Restore default values for all settings</string>
     <string name="pref_key_update_settings">pref_key_update_settings</string>
     <string name="pref_updateserver">pref_updateserver</string>
     <string name="pref_updatesversioncheck">pref_updatesversioncheck</string>
     <string name="pref_ignoredversion">pref_ignoredversion</string>
     <string name="pref_showbootloaders">pref_showbootloaders</string>
     <string name="pref_reset">pref_reset</string>
-
-
-
 
     <!-- Firmware & Bootloader updates -->
     <string name="firmware_downloading">Downloading firmware...</string>
@@ -169,24 +177,23 @@
     <string name="firmware_connectionnotavailable">No internet connection detected</string>
     <string name="firmware_noconnecteddevice">Error: Device is no longer connected. Can\'t update</string>
     <string name="firmware_updatefailed_format">Update failed: %s</string>
-
     <string name="firmware_customfile_dialog_title_firmware">Select Custom Firmware</string>
     <string name="firmware_customfile_dialog_title_bootloader">Select Custom Bootloader</string>
     <string name="firmware_customfile_dialog_done">Start Update</string>
     <string name="firmware_customfile_hexundefined">At least an Hex file should be selected</string>
     <string name="firmware_customfile_dialog_hexfile">Hex File:</string>
     <string name="firmware_customfile_dialog_inifile">Ini File:</string>
-    <string name="firmware_customfile_dialog_empty">&#60;not selected&#62;</string>
-
+    <string name="firmware_customfile_dialog_empty">&lt;not selected></string>
     <string name="firmware_bootloadertooold_format">This firmware update is not compatible with your bootloader. You need to update your bootloader to version %s before installing this firmware release</string>
-
     <string name="dfu_service_progress">%d%%</string>
     <string name="dfu_feature_title">Bluefruit Update</string>
-
 
     <!-- Common -->
     <string name="dialog_ok">Ok</string>
 
     <!-- Debug -->
+
+    <string name="title_activity_beacon">BeaconActivity</string>
+    <string name="hello_world">Hello world!</string>
 
 </resources>
