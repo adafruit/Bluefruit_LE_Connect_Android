@@ -41,6 +41,7 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
     BeaconPagerAdapter mAdapterViewPager;
     private int mCurrentTab;
     private int mCurrentOperation = kOperation_BeaconNoOperation;
+    private AlertDialog mDialog;
 
     private DataFragment mRetainedDataFragment;
 
@@ -103,6 +104,11 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
 
     @Override
     public void onDestroy() {
+        if (mDialog != null) {
+            mDialog.dismiss();
+            mDialog = null;
+        }
+
         // Retain data
         saveRetainedDataFragment();
 
@@ -227,15 +233,17 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
 
                 String message = null;
                 if (data.equalsIgnoreCase("OK")) {      // All good!
+
                     switch(mCurrentOperation) {
-                        case kOperation_BeaconDisable: message = getString(R.string.beacon_beacon_disabled); break;
-                        case kOperation_iBeaconEnable: message = getString(R.string.beacon_beacon_enabled); break;
-                        case kOperation_UriBeaconEnable: message = getString(R.string.beacon_beacon_enabled); break;
+                        case kOperation_BeaconDisable: break;//message = getString(R.string.beacon_beacon_disabled); break;
+                        case kOperation_iBeaconEnable: onBeaconEnabled(); break;//message = getString(R.string.beacon_beacon_enabled); break;
+                        case kOperation_UriBeaconEnable: onBeaconEnabled(); break;//message = getString(R.string.beacon_beacon_enabled); break;
                         default:
                             break;
                     }
                 } else  // Error received
                 {
+                    mCurrentOperation = kOperation_BeaconNoOperation;
                     message = data;
                 }
 
@@ -245,16 +253,26 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            if (mDialog != null)
+                            {
+                                mDialog.dismiss();
+                            }
+
                             // Alert
                             AlertDialog.Builder builder = new AlertDialog.Builder(BeaconActivity.this);
                             builder.setMessage(finalMessage).setPositiveButton(android.R.string.ok, null);
-                            builder.create().show();
+                            mDialog = builder.create();
+                            mDialog.show();
 
                         }
                     });
                 }
             }
         }
+    }
+
+    private void onBeaconEnabled() {
+        finish();
     }
 
     @Override
@@ -321,10 +339,18 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
         mCurrentOperation = kOperation_iBeaconEnable;
 
         // iBeacon Enable
-        String uartCommand = String.format("+++\r\nAT+BLEBEACON=%s,%s,%s,%s,%s\r\n+++\r\n", vendor, uuid, major, minor, rssi);
+        String uartCommand = String.format("+++\r\nAT+BLEBEACON=%s,%s,%s,%s,%s\r\nATZ\r\n+++\r\n", vendor, uuid, major, minor, rssi);
         Log.d(TAG, "send command: " + uartCommand);
         sendData(uartCommand);
 
+        // Alert
+        if (mDialog != null) {
+            mDialog.dismiss();
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(BeaconActivity.this);
+        builder.setMessage(R.string.beacon_beacon_enabling);//.setPositiveButton(android.R.string.ok, null);
+        mDialog = builder.create();
+        mDialog.show();
     }
 
     @Override
@@ -332,9 +358,18 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
         mCurrentOperation = kOperation_UriBeaconEnable;
 
         // URIBeacon enable
-        String uartCommand = String.format("+++\r\nAT+BLEURIBEACON=%s\r\n+++\r\n", encodedUri);
+        String uartCommand = String.format("+++\r\nAT+BLEURIBEACON=%s\r\nATZ\n+++\r\n", encodedUri);
         Log.d(TAG, "send command: " + uartCommand);
         sendData(uartCommand);
+
+        // Alert
+        if (mDialog != null) {
+            mDialog.dismiss();
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(BeaconActivity.this);
+        builder.setMessage(R.string.beacon_beacon_enabling);//.setPositiveButton(android.R.string.ok, null);
+        mDialog = builder.create();
+        mDialog.show();
 
     }
 

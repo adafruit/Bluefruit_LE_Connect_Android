@@ -203,6 +203,7 @@
                     android:text="@string/beacon_beacon_enable"/>
 
                 <Button
+                    android:visibility="gone"
                     android:id="@+id/disableButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"

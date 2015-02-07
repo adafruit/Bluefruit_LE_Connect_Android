@@ -131,9 +131,11 @@
 
     <string name="beacon_beacon_enabled">Beacon Enabled</string>
     <string name="beacon_beacon_disabled">Beacon Disabled</string>
+    <string name="beacon_beacon_enabling">Resetting into Beacon Mode</string>
 
     <string name="beacon_ibeacon_subtitle">iBeacon Data</string>
     <string name="beacon_uribeacon_subtitle">UriBeacon Data</string>
+
 
     <!-- Connected Settings -->
     <string name="title_activity_connected_settings">Connected Settings</string>
