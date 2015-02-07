@@ -165,6 +165,8 @@
     <string name="settings_forcecloseconnection_summary">Force close connection before connect</string>
     <string name="settings_gattautoconnect_title">Reconnect</string>
     <string name="settings_gattautoconnect_summary">Try to reconnect when the connection to a device fails</string>
+    <string name="settings_blerefresh_title">Refresh cache</string>
+    <string name="settings_blerefresh_summary">Refresh bluetooth cache when scanning</string>
     <string name="settingsaction_confirmenablewifi_title">Wifi status</string>
     <string name="settingsaction_confirmenablewifi_message">Wifi was previously disabled to improve Bluetooth connections. Would you like to enable it again?</string>
     <string name="settings_category_update">Software updates</string>

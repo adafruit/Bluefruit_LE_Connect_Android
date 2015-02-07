@@ -39,6 +39,13 @@
             android:summary="@string/settings_gattautoconnect_summary"
             android:title="@string/settings_gattautoconnect_title"/>
 
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pref_refreshdevicecache"
+            android:summary="@string/settings_blerefresh_summary"
+            android:title="@string/settings_blerefresh_title"/>
+
+
     </PreferenceCategory>
 
     <PreferenceCategory

@@ -125,12 +125,14 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
         }
 
         final boolean gattAutoconnect = sharedPreferences.getBoolean("pref_gattautoconnect", false);
-        final boolean refreshDeviceCache = sharedPreferences.getBoolean("pref_refreshdevicecache", true);
-
         mGatt = mDevice.connectGatt(mContext, gattAutoconnect, mExecutor);
+
+        /*
+        final boolean refreshDeviceCache = sharedPreferences.getBoolean("pref_refreshdevicecache", true);
         if (refreshDeviceCache) {
-            refreshDeviceCache(mGatt);          // hack to force refresh the device cache and avoid problems with characteristic services read from cache and not updated
+            refreshDeviceCache();          // hack to force refresh the device cache and avoid problems with characteristic services read from cache and not updated
         }
+        */
 
         Log.d(TAG, "Trying to create a new connection.");
         mDeviceAddress = address;
@@ -146,12 +148,15 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
     * This method does actually clear the cache from a bluetooth device. But the problem is that we don't have access to it. But in java we have reflection, so we can access this method. Here is my code to connect a bluetooth device refreshing the cache.
     * http://stackoverflow.com/questions/22596951/how-to-programmatically-force-bluetooth-low-energy-service-discovery-on-android
     */
-    private boolean refreshDeviceCache(BluetoothGatt gatt){
+    public boolean refreshDeviceCache(){
         try {
-            BluetoothGatt localBluetoothGatt = gatt;
+            BluetoothGatt localBluetoothGatt = mGatt;
             Method localMethod = localBluetoothGatt.getClass().getMethod("refresh", new Class[0]);
             if (localMethod != null) {
                 boolean result = ((Boolean) localMethod.invoke(localBluetoothGatt, new Object[0])).booleanValue();
+                if (result) {
+                    Log.d(TAG, "Bluetooth refresh cache");
+                }
                 return result;
             }
         }

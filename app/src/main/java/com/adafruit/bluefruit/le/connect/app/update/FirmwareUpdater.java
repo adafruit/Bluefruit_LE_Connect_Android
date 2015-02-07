@@ -793,6 +793,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                 }
                 if (error) {
                     String message = String.format(mContext.getString(R.string.firmware_updatefailed_format), GattError.parse(progress) + " (" + (progress & ~(DfuService.ERROR_MASK | DfuService.ERROR_REMOTE_MASK)) + ")");
+                    Log.w(TAG, message);
                     Toast.makeText(mContext, message, Toast.LENGTH_LONG).show();
                     cleanInstallationAttempt(false);
                     mListener.onUpdateFailed(false);

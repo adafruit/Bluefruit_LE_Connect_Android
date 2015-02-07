@@ -220,7 +220,6 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
         updateUI();
     }
 
-
     @Override
     public void onPause() {
         // Stop scanning
@@ -516,6 +515,14 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
         // Stop current scanning (if needed)
         stopScanning();
 
+        if (mBleManager != null) {
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            final boolean refreshDeviceCache = sharedPreferences.getBoolean("pref_refreshdevicecache", true);
+            if (refreshDeviceCache) {
+                mBleManager.refreshDeviceCache();
+            }
+        }
+
         // Configure scanning
         BluetoothAdapter bluetoothAdapter = BleUtils.getBluetoothAdapter(getApplicationContext());
         if (BleUtils.getBleStatus(this) != BleUtils.STATUS_BLE_ENABLED) {
@@ -629,7 +636,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
                             long leastSignificantBit = buffer.getLong();
                             uuids.add(new UUID(leastSignificantBit, mostSignificantBit));
                         } catch (IndexOutOfBoundsException e) {
-                            Log.e("BlueToothDeviceFilter.parseUUID", e.toString());
+                            Log.e(TAG, "BlueToothDeviceFilter.parseUUID: "+ e.toString());
                         } finally {
                             // Move the offset to read the next uuid.
                             offset += 15;
