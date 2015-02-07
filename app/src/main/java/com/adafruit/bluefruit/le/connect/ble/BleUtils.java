@@ -191,17 +191,11 @@ public class BleUtils {
         }
     }
 
+    public static String stringToHex(String string) {
+        return bytesToHex(string.getBytes());
+    }
+
     public static String bytesToHexWithSpaces(byte[] bytes) {
-        /*
-        String hex = bytesToHex(bytes);
-
-        StringBuilder newString = new StringBuilder();
-        for (char c : hex.toCharArray()) {
-            newString.append(c).append(" ");
-        }
-        return newString.toString().trim();
-        */
-
         StringBuilder newString = new StringBuilder();
         for (int i=0; i<bytes.length; i++) {
             String byteHex = String.format("0x%02X", (byte)bytes[i]);

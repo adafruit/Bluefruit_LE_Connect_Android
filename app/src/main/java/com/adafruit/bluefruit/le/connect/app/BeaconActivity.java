@@ -3,93 +3,94 @@ package com.adafruit.bluefruit.le.connect.app;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.content.DialogInterface;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 
 import com.adafruit.bluefruit.le.connect.R;
+import com.adafruit.bluefruit.le.connect.app.settings.ConnectedSettingsActivity;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
-import com.adafruit.bluefruit.le.connect.ui.keyboard.CustomEditTextFormatter;
-import com.adafruit.bluefruit.le.connect.ui.keyboard.CustomKeyboard;
+import com.adafruit.bluefruit.le.connect.ui.tabs.SlidingTabLayout;
 
 import java.nio.charset.Charset;
-import java.util.Random;
 
-public class BeaconActivity extends UartInterfaceActivity implements BleManager.BleManagerListener {
+public class BeaconActivity extends UartInterfaceActivity implements BleManager.BleManagerListener, IBeaconFragment.OnFragmentInteractionListener, URIBeaconFragment.OnFragmentInteractionListener {
     // Log
     private final static String TAG = BeaconActivity.class.getSimpleName();
 
-    // UI
-    private EditText mVendorEditText;
-    private EditText mUuidEditText;
-    private EditText mMajorEditText;
-    private EditText mMinorEditText;
-    private EditText mRssiEditText;
+    // Constants
+    private final static int kOperation_BeaconNoOperation = -1;
+    private final static int kOperation_BeaconDisable = 0;
+    private final static int kOperation_iBeaconEnable = 1;
+    private final static int kOperation_UriBeaconEnable = 2;
 
-    // Keyboard
-    private CustomKeyboard mCustomKeyboard;
+    // Activity request codes (used for onActivityResult)
+    private static final int kActivityRequestCode_ConnectedSettingsActivity = 0;
 
     // Data
-    private int mRssi;
+    BeaconPagerAdapter mAdapterViewPager;
+    private int mCurrentTab;
+    private int mCurrentOperation = kOperation_BeaconNoOperation;
+
+    private DataFragment mRetainedDataFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_beacon);
 
-        // Get params
-        Intent intent = getIntent();
-        mRssi = intent.getIntExtra("rssi", 0);
-
         // Ble
         mBleManager = BleManager.getInstance(this);
+        restoreRetainedDataFragment();
+
+        // Setup when activity is created for the first time
+//        if (savedInstanceState == null) {
+        // Get params
+        Intent intent = getIntent();
+        int rssi = intent.getIntExtra("rssi", 0);
+        //      }
 
         // UI
-        mVendorEditText = (EditText)findViewById(R.id.vendorEditText);
-        mUuidEditText = (EditText)findViewById(R.id.uuidEditText);
-        mMajorEditText = (EditText)findViewById(R.id.majorEditText);
-        mMinorEditText = (EditText)findViewById(R.id.minorEditText);
-        mRssiEditText = (EditText)findViewById(R.id.rssiEditText);
+        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
+        mAdapterViewPager = new BeaconPagerAdapter(getSupportFragmentManager(), getApplicationContext(), rssi);
+        viewPager.setAdapter(mAdapterViewPager);
 
-        // Custom keyboard
-        if (mCustomKeyboard == null) {
-            mCustomKeyboard = new CustomKeyboard(this);
-        }
+        SlidingTabLayout slidingTabLayout = (SlidingTabLayout) findViewById(R.id.sliding_tabs);
+        slidingTabLayout.setDistributeEvenly(true);
+        slidingTabLayout.setViewPager(viewPager);
 
-        mCustomKeyboard.attachToEditText(mVendorEditText, R.xml.keyboard_hexadecimal);
-        CustomEditTextFormatter.attachToEditText(mVendorEditText, 4, "", 4);
 
-        mCustomKeyboard.attachToEditText(mUuidEditText, R.xml.keyboard_hexadecimal);
-        CustomEditTextFormatter.attachToEditText(mUuidEditText, 32, "-", 2);
+        // Attach the page change listener inside the activity
+        slidingTabLayout.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 
-        mCustomKeyboard.attachToEditText(mMajorEditText, R.xml.keyboard_hexadecimal);
-        CustomEditTextFormatter.attachToEditText(mMajorEditText, 4, "", 4);
+            @Override
+            public void onPageSelected(int position) {
+                mCurrentTab = position;
+                dismissKeyboard();
+            }
 
-        mCustomKeyboard.attachToEditText(mMinorEditText, R.xml.keyboard_hexadecimal);
-        CustomEditTextFormatter.attachToEditText(mMinorEditText, 4, "", 4);
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
-        mCustomKeyboard.attachToEditText(mRssiEditText, R.xml.keyboard_decimal);
-        CustomEditTextFormatter.attachToEditText(mRssiEditText, 3, "", 3);
+            }
 
-        // Generate initial state
-        String manufacturers[] = getResources().getStringArray(R.array.beacon_manufacturers_ids);
-        String manufacturerId = manufacturers[1];
-        mVendorEditText.setText(manufacturerId);
-        onClickRandomUuid(null);
-        mMajorEditText.setText("0000");
-        mMinorEditText.setText("0000");
-        mRssiEditText.setText(""+mRssi);
+            @Override
+            public void onPageScrollStateChanged(int state) {
+            }
+        });
 
         // Start services
         onServicesDiscovered();
-
     }
 
     @Override
@@ -100,16 +101,29 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
         mBleManager.setBleListener(this);
     }
 
+    @Override
+    public void onDestroy() {
+        // Retain data
+        saveRetainedDataFragment();
+
+        super.onDestroy();
+    }
 
     @Override
     public void onBackPressed() {
-        if (mCustomKeyboard.isCustomKeyboardVisible()) {
-            mCustomKeyboard.hideCustomKeyboard();
+        boolean result = false;
+
+        if (mCurrentTab == 0) {
+            // if pressed back check if we need to dimiss custom keyboard used on iBeacon Activity
+            Fragment currentFragment = mAdapterViewPager.getCurrentFragment();
+            result = ((IBeaconFragment) currentFragment).onBackPressed();
         }
-        else {
+
+        if (result == false) {
             super.onBackPressed();
         }
     }
+
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -136,65 +150,44 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        } else if (id == R.id.action_connected_settings) {
+            startConnectedSettings();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    private void startConnectedSettings() {
+        // Launch connected settings activity
+        Intent intent = new Intent(this, ConnectedSettingsActivity.class);
+        startActivityForResult(intent, kActivityRequestCode_ConnectedSettingsActivity);
+    }
 
-    public void testATParser() {
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent intent) {
+        if (resultCode == RESULT_OK && requestCode == kActivityRequestCode_ConnectedSettingsActivity) {
+            finish();
+        }
+    }
+
+    private void testATParser() {
         String uartCommand = "AT\\r\\n";
-        Log.d(TAG, "send command: "+uartCommand);
+        Log.d(TAG, "send command: " + uartCommand);
         sendData(uartCommand);
 
     }
 
-    public void onClickEnable(View view) {
-        String manufacturerId = "0x"+mVendorEditText.getText().toString();
-        String uuid = mUuidEditText.getText().toString();
-        String major = "0x"+mMajorEditText.getText().toString();
-        String minor = "0x"+mMinorEditText.getText().toString();
-        String rssi = mRssiEditText.getText().toString();
+    private void dismissKeyboard() {
 
-        String uartCommand = String.format("+++\r\nAT+BLEBEACON=%s,%s,%s,%s,%s\r\n+++\r\n", manufacturerId, uuid, major, minor, rssi);
-        Log.d(TAG, "send command: "+uartCommand);
-        sendData(uartCommand);
-    }
+        try {
+            InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 
-    public void onClickDisable(View view) {
-        String uartCommand = "+++\r\nAT+FACTORYRESET\r\n+++\r\n";
-        Log.d(TAG, "send command: "+uartCommand);
-        sendData(uartCommand);
-
-    }
-
-    public void onClickChooseVendorId(View view) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.beacon_manufacturer_choose_title)
-                .setItems(R.array.beacon_manufacturers_names, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String manufacturers[] = getResources().getStringArray(R.array.beacon_manufacturers_ids);
-                        String manufacturerId = manufacturers[which];
-                        mVendorEditText.setText(manufacturerId);
-                    }
-                });
-        builder.create().show();
-    }
-
-    public void onClickRandomUuid(View view) {
-
-        final String kAllowedChars ="0123456789ABCDEF";
-        final int kNumChars = 32;
-
-            final Random random = new Random();
-            final StringBuilder randomString = new StringBuilder(kNumChars);
-            for(int i = 0; i < kNumChars; i++) {
-                randomString.append(kAllowedChars.charAt(random.nextInt(kAllowedChars.length())));
+            if (imm != null && imm.isAcceptingText()) { // verify if the soft keyboard is open
+                imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
             }
-
-        String result = CustomEditTextFormatter.formatText(randomString.toString(), 32, "-", 2);
-        mUuidEditText.setText(result);
+        } catch (Exception e) {
+        }
     }
 
     // region BleManagerListener
@@ -227,11 +220,39 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
     @Override
     public void onDataAvailable(BluetoothGattCharacteristic characteristic) {
         // UART RX
-        Log.d(TAG, "onDataAvailable");
         if (characteristic.getService().getUuid().toString().equalsIgnoreCase(UUID_SERVICE)) {
             if (characteristic.getUuid().toString().equalsIgnoreCase(UUID_RX)) {
-                String data = new String(characteristic.getValue(), Charset.forName("UTF-8"));
-                Log.d(TAG, "received: "+data);
+                final String data = new String(characteristic.getValue(), Charset.forName("UTF-8")).trim();
+                Log.d(TAG, "received: " + data);
+
+                String message = null;
+                if (data.equalsIgnoreCase("OK")) {      // All good!
+                    switch(mCurrentOperation) {
+                        case kOperation_BeaconDisable: message = getString(R.string.beacon_beacon_disabled); break;
+                        case kOperation_iBeaconEnable: message = getString(R.string.beacon_beacon_enabled); break;
+                        case kOperation_UriBeaconEnable: message = getString(R.string.beacon_beacon_enabled); break;
+                        default:
+                            break;
+                    }
+                } else  // Error received
+                {
+                    message = data;
+                }
+
+                if (message != null) {
+                    final String finalMessage = message;
+                    // Update UI
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Alert
+                            AlertDialog.Builder builder = new AlertDialog.Builder(BeaconActivity.this);
+                            builder.setMessage(finalMessage).setPositiveButton(android.R.string.ok, null);
+                            builder.create().show();
+
+                        }
+                    });
+                }
             }
         }
     }
@@ -242,11 +263,121 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
     }
     // endregion
 
-    private void dismissKeyboard() {
-        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 
-        if (imm.isAcceptingText()) { // verify if the soft keyboard is open
-            imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+    public static class BeaconPagerAdapter extends FragmentPagerAdapter {
+        private static int kNumItems = 2;
+
+        private Context mContext;
+        private int mRssi;
+        private Fragment mCurrentFragment;
+
+        public BeaconPagerAdapter(FragmentManager fragmentManager, Context context, int rssi) {
+            super(fragmentManager);
+
+            mContext = context;
+            mRssi = rssi;
+        }
+
+        public Fragment getCurrentFragment() {
+            return mCurrentFragment;
+        }
+
+        @Override
+        public void setPrimaryItem(ViewGroup container, int position, Object object) {
+            if (getCurrentFragment() != object) {
+                mCurrentFragment = ((Fragment) object);
+            }
+            super.setPrimaryItem(container, position, object);
+        }
+
+        // Returns total number of pages
+        @Override
+        public int getCount() {
+            return kNumItems;
+        }
+
+        // Returns the fragment to display for that page
+        @Override
+        public Fragment getItem(int position) {
+            switch (position) {
+                case 0: // Fragment # 0
+                    return IBeaconFragment.newInstance(mRssi);
+                case 1: // Fragment # 1
+                    return URIBeaconFragment.newInstance();
+                default:
+                    return null;
+            }
+        }
+
+        // Returns the page title for the top indicator
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return mContext.getResources().getStringArray(R.array.beacon_page_titles)[position];
         }
     }
+
+    @Override
+    public void onEnable(String vendor, String uuid, String major, String minor, String rssi) {
+        mCurrentOperation = kOperation_iBeaconEnable;
+
+        // iBeacon Enable
+        String uartCommand = String.format("+++\r\nAT+BLEBEACON=%s,%s,%s,%s,%s\r\n+++\r\n", vendor, uuid, major, minor, rssi);
+        Log.d(TAG, "send command: " + uartCommand);
+        sendData(uartCommand);
+
+    }
+
+    @Override
+    public void onEnable(String encodedUri) {
+        mCurrentOperation = kOperation_UriBeaconEnable;
+
+        // URIBeacon enable
+        String uartCommand = String.format("+++\r\nAT+BLEURIBEACON=%s\r\n+++\r\n", encodedUri);
+        Log.d(TAG, "send command: " + uartCommand);
+        sendData(uartCommand);
+
+    }
+
+    @Override
+    public void onDisable() {
+        mCurrentOperation = kOperation_BeaconDisable;
+
+        // Disable
+        String uartCommand = "+++\r\nAT+FACTORYRESET\r\n+++\r\n";
+        Log.d(TAG, "send command: " + uartCommand);
+        sendData(uartCommand);
+    }
+
+    // region DataFragment
+    public static class DataFragment extends android.app.Fragment {
+
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setRetainInstance(true);
+        }
+    }
+
+    private void restoreRetainedDataFragment() {
+        // find the retained fragment
+        android.app.FragmentManager fm = getFragmentManager();
+        mRetainedDataFragment = (DataFragment) fm.findFragmentByTag(TAG);
+
+        if (mRetainedDataFragment == null) {
+            // Create
+            mRetainedDataFragment = new DataFragment();
+            fm.beginTransaction().add(mRetainedDataFragment, TAG).commit();
+
+
+        } else {
+            // Restore status
+
+        }
+    }
+
+    private void saveRetainedDataFragment() {
+
+    }
+    // endregion
 }

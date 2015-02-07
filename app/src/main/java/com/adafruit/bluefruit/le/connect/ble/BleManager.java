@@ -14,6 +14,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.UUID;
 
@@ -124,8 +125,13 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
         }
 
         final boolean gattAutoconnect = sharedPreferences.getBoolean("pref_gattautoconnect", false);
+        final boolean refreshDeviceCache = sharedPreferences.getBoolean("pref_refreshdevicecache", true);
 
         mGatt = mDevice.connectGatt(mContext, gattAutoconnect, mExecutor);
+        if (refreshDeviceCache) {
+            refreshDeviceCache(mGatt);          // hack to force refresh the device cache and avoid problems with characteristic services read from cache and not updated
+        }
+
         Log.d(TAG, "Trying to create a new connection.");
         mDeviceAddress = address;
         mConnectionState = STATE_CONNECTING;
@@ -133,6 +139,26 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
             mBleListener.onConnecting();
         }
         return true;
+    }
+
+    /**
+    * Call to private Android method 'refresh'
+    * This method does actually clear the cache from a bluetooth device. But the problem is that we don't have access to it. But in java we have reflection, so we can access this method. Here is my code to connect a bluetooth device refreshing the cache.
+    * http://stackoverflow.com/questions/22596951/how-to-programmatically-force-bluetooth-low-energy-service-discovery-on-android
+    */
+    private boolean refreshDeviceCache(BluetoothGatt gatt){
+        try {
+            BluetoothGatt localBluetoothGatt = gatt;
+            Method localMethod = localBluetoothGatt.getClass().getMethod("refresh", new Class[0]);
+            if (localMethod != null) {
+                boolean result = ((Boolean) localMethod.invoke(localBluetoothGatt, new Object[0])).booleanValue();
+                return result;
+            }
+        }
+        catch (Exception localException) {
+            Log.e(TAG, "An exception occurred while refreshing device");
+        }
+        return false;
     }
 
     /**

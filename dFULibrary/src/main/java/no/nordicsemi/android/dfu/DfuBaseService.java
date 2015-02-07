@@ -2524,6 +2524,7 @@ public abstract class DfuBaseService extends IntentService {
 		broadcast.putExtra(EXTRA_LOG_MESSAGE, fullMessage);
 		broadcast.putExtra(EXTRA_LOG_LEVEL, level);
 		broadcast.putExtra(EXTRA_DEVICE_ADDRESS, mDeviceAddress);
+//        Log.d(TAG, ""+level+":"+message);
 		LocalBroadcastManager.getInstance(this).sendBroadcast(broadcast);
 	}
 

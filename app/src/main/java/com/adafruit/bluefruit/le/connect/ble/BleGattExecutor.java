@@ -23,7 +23,6 @@ public class BleGattExecutor extends BluetoothGattCallback {
     // Constants
     private static String CHARACTERISTIC_CONFIG = "00002902-0000-1000-8000-00805f9b34fb";
 
-
     public interface ServiceAction {
         public static final ServiceAction NULL = new ServiceAction() {
             @Override

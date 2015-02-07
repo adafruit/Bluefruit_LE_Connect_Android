@@ -60,7 +60,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
             R.string.scan_connectservice_uart,
 //            R.string.scan_connectservice_pinio,
             R.string.scan_connectservice_controller,
-//            R.string.scan_connectservice_beacon,
+            R.string.scan_connectservice_beacon,
     };
 
     // Activity request codes (used for onActivityResult)
