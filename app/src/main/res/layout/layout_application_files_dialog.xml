@@ -30,6 +30,7 @@
 
                 <TextView
                     android:id="@+id/hexFileTextView"
+                    android:ellipsize="middle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:singleLine="true"
@@ -75,6 +76,8 @@
                     android:id="@+id/iniFileTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:ellipsize="middle"
+
                     android:singleLine="true"
                     android:text="@string/firmware_customfile_dialog_empty"
                     android:textColor="@color/primary_dark_material_dark"

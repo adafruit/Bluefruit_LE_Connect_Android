@@ -399,6 +399,11 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
     public void onDataAvailable(BluetoothGattDescriptor descriptor) {
 
     }
+
+    @Override
+    public void onReadRemoteRssi(int rssi) {
+
+    }
     // endregion
 
     // region Google API Callbacks

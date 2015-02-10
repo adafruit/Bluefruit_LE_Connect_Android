@@ -289,6 +289,11 @@ public class InfoActivity extends ActionBarActivity implements BleManager.BleMan
 
     }
 
+    @Override
+    public void onReadRemoteRssi(int rssi) {
+
+    }
+
     private void updateUI() {
         mInfoListAdapter.notifyDataSetChanged();
 

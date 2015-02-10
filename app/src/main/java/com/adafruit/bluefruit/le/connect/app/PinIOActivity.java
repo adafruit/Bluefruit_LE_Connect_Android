@@ -353,6 +353,11 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
     public void onDataAvailable(BluetoothGattDescriptor descriptor) {
 
     }
+
+    @Override
+    public void onReadRemoteRssi(int rssi) {
+
+    }
     // endregion
 
 

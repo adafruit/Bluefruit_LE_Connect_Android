@@ -2,12 +2,12 @@
              xmlns:tools="http://schemas.android.com/tools"
              android:layout_width="match_parent"
              android:layout_height="match_parent"
+             android:background="@drawable/default_background"
              android:paddingBottom="@dimen/activity_vertical_margin"
              android:paddingLeft="@dimen/activity_horizontal_margin"
              android:paddingRight="@dimen/activity_horizontal_margin"
-             android:paddingTop="@dimen/activity_vertical_margin"
 
-             android:background="@drawable/default_background"
+             android:paddingTop="@dimen/activity_vertical_margin"
              tools:context="com.adafruit.bluefruit.le.connect.app.URIBeaconFragment">
 
     <ScrollView
@@ -71,9 +71,36 @@
 
                     <EditText
                         android:id="@+id/uriEditText"
+                        android:imeOptions="actionDone"
+                        android:singleLine="true"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:singleLine="false"/>
+                        />
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginBottom="10dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/uriEncodeMessage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        />
+
+                    <TextView
+                        android:visibility="gone"
+                        android:id="@+id/uriShortenedUrl"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        />
+
                 </LinearLayout>
 
             </LinearLayout>
@@ -92,13 +119,13 @@
                     android:text="@string/beacon_beacon_enable"/>
 
                 <Button
-                    android:visibility="gone"
                     android:id="@+id/disableButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:layout_weight="1"
-                    android:text="@string/beacon_beacon_disable"/>
+                    android:text="@string/beacon_beacon_disable"
+                    android:visibility="gone"/>
 
             </LinearLayout>
         </LinearLayout>

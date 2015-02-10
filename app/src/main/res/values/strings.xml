@@ -122,9 +122,10 @@
     <string name="beacon_ibeacon_vendor">Vendor:</string>
     <string name="beacon_ibeacon_choose">Choose</string>
     <string name="beacon_ibeacon_random">Random</string>
+    <string name="beacon_ibeacon_refreshrssi">Refresh</string>
     <string name="beacon_ibeacon_major">Major:</string>
     <string name="beacon_ibeacon_minor">Minor:</string>
-    <string name="beacon_ibeacon_rssi">Rssi:</string>
+    <string name="beacon_ibeacon_rssi">Rssi@1m:</string>
     <string name="beacon_uribeacon_uri">Uri:</string>
     <string name="beacon_beacon_enable">Enable</string>
     <string name="beacon_beacon_disable">Disable</string>
@@ -133,9 +134,13 @@
     <string name="beacon_beacon_disabled">Beacon Disabled</string>
     <string name="beacon_beacon_enabling">Resetting into Beacon Mode</string>
 
+    <string name="beacon_aterror">Device not responding to commands.\nPlease check that you have a firmware version that supports Beacons</string>
+
+
     <string name="beacon_ibeacon_subtitle">iBeacon Data</string>
     <string name="beacon_uribeacon_subtitle">UriBeacon Data</string>
 
+    <string name="beacon_uribeacon_invalidprefix">Prefix must be one of the following values: http://www. https://www.  http:// https://  urn:uuid:</string>
 
     <!-- Connected Settings -->
     <string name="title_activity_connected_settings">Connected Settings</string>

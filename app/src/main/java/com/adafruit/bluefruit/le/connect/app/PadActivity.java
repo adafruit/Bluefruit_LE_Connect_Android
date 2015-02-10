@@ -168,4 +168,9 @@ public class PadActivity extends UartInterfaceActivity implements BleManager.Ble
     @Override
     public void onDataAvailable(BluetoothGattDescriptor descriptor) {
     }
+
+    @Override
+    public void onReadRemoteRssi(int rssi) {
+
+    }
 }

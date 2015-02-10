@@ -327,6 +327,11 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
     }
 
+    @Override
+    public void onReadRemoteRssi(int rssi) {
+
+    }
+
     // endregion
 
     private void addTextToSpanBuffer(SpannableStringBuilder spanBuffer, String text, int color) {

@@ -85,7 +85,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
     private BleDevicesScanner mScanner;
     private FirmwareUpdater mFirmwareUpdater;
 
-    private boolean mWasScanningBeforeOnPause = true;       // used to track previous status when activity is recreated (i.e. orientation change)
+ //   private boolean mWasScanningBeforeOnPause = true;       // used to track previous status when activity is recreated (i.e. orientation change)
     private ArrayList<BluetoothDeviceData> mScannedDevices;
     private BluetoothDeviceData mSelectedDeviceData;
     private Class<?> mComponentToStartWhenConnected;
@@ -209,11 +209,16 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
             // If was connected, disconnect
             mBleManager.disconnect();
 
+            // Force restart scanning
+            mScannedDevices.clear();
+            startScan(null, null);
+            /*
             // Resume scanning if was active previously
             if (mWasScanningBeforeOnPause) {
                 startScan(null, null);
                 mIsScanPaused = mScanner == null;
             }
+            */
         }
 
         // Update UI
@@ -224,11 +229,11 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
     public void onPause() {
         // Stop scanning
         if (mScanner != null && mScanner.isScanning()) {
-            mWasScanningBeforeOnPause = true;
+           // mWasScanningBeforeOnPause = true;
             mIsScanPaused = true;
             stopScanning();
         } else {
-            mWasScanningBeforeOnPause = false;
+          //  mWasScanningBeforeOnPause = false;
         }
 
         super.onPause();
@@ -783,6 +788,11 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
     @Override
     public void onDataAvailable(BluetoothGattDescriptor descriptor) {
     }
+
+    @Override
+    public void onReadRemoteRssi(int rssi) {
+
+    }
     // endregion
 
     // region SoftwareUpdateManagerListener
@@ -1117,7 +1127,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
         } else {
             // Restore status
             mScannedDevices = mRetainedDataFragment.mScannedDevices;
-            mWasScanningBeforeOnPause = mRetainedDataFragment.mWasScanningBeforeOnPause;
+         //   mWasScanningBeforeOnPause = mRetainedDataFragment.mWasScanningBeforeOnPause;
             mComponentToStartWhenConnected = mRetainedDataFragment.mComponentToStartWhenConnected;
             mShouldEnableWifiOnQuit = mRetainedDataFragment.mShouldEnableWifiOnQuit;
             mFirmwareUpdater = mRetainedDataFragment.mFirmwareUpdater;
@@ -1132,7 +1142,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
 
     private void saveRetainedDataFragment() {
         mRetainedDataFragment.mScannedDevices = mScannedDevices;
-        mRetainedDataFragment.mWasScanningBeforeOnPause = mWasScanningBeforeOnPause;
+    //    mRetainedDataFragment.mWasScanningBeforeOnPause = mWasScanningBeforeOnPause;
         mRetainedDataFragment.mComponentToStartWhenConnected = mComponentToStartWhenConnected;
         mRetainedDataFragment.mShouldEnableWifiOnQuit = mShouldEnableWifiOnQuit;
         mRetainedDataFragment.mFirmwareUpdater = mFirmwareUpdater;

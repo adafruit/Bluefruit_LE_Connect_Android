@@ -192,6 +192,16 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
         }
     }
 
+
+    public boolean readRssi() {
+        if (mGatt != null) {
+            return mGatt.readRemoteRssi();  // if true: Caller should wait for onReadRssi callback
+        }
+        else {
+            return false;           // Rsii read is not available
+        }
+    }
+
     public void readCharacteristic(BluetoothGattService service, String characteristicUUID) {
         readService(service, characteristicUUID, null);
     }
@@ -400,6 +410,13 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
             }
      //   }
     }
+
+    @Override
+    public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
+        if (mBleListener != null) {
+            mBleListener.onReadRemoteRssi(rssi);
+        }
+    }
     //endregion
 
     public static interface BleManagerListener {
@@ -411,5 +428,7 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
 
         public void onDataAvailable(BluetoothGattCharacteristic characteristic);
         public void onDataAvailable(BluetoothGattDescriptor descriptor);
+
+        public void onReadRemoteRssi(int rssi);
     }
 }

@@ -200,6 +200,11 @@ public class BleGattExecutor extends BluetoothGattCallback {
         execute(gatt);
     }
 
+    @Override
+    public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
+    }
+
+
 
     // Helper function to create a Gatt Executor with a custom listener
     protected static BleGattExecutor createExecutor(final BleExecutorListener listener) {
@@ -233,6 +238,13 @@ public class BleGattExecutor extends BluetoothGattCallback {
                 super.onDescriptorRead(gatt, descriptor, status);
                 listener.onDescriptorRead(gatt, descriptor, status);
             }
+
+            @Override
+            public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
+                super.onReadRemoteRssi(gatt, rssi, status);
+                listener.onReadRemoteRssi(gatt, rssi, status);
+            }
+
         };
     }
 
@@ -247,6 +259,8 @@ public class BleGattExecutor extends BluetoothGattCallback {
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic);
 
         public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status);
+
+        public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status);
 
     }
 }

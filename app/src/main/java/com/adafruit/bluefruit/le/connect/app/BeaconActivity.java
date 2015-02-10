@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -16,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Toast;
 
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.app.settings.ConnectedSettingsActivity;
@@ -33,6 +35,12 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
     private final static int kOperation_BeaconDisable = 0;
     private final static int kOperation_iBeaconEnable = 1;
     private final static int kOperation_UriBeaconEnable = 2;
+    private final static int kOperation_BeaconTestMode = 3;
+
+    private final static int kTab_iBeacon = 0;
+    private final static int kTab_uriBeacon = 1;
+
+    private final static int kSendTimeout = 1000;   // in milliseconds
 
     // Activity request codes (used for onActivityResult)
     private static final int kActivityRequestCode_ConnectedSettingsActivity = 0;
@@ -40,10 +48,24 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
     // Data
     BeaconPagerAdapter mAdapterViewPager;
     private int mCurrentTab;
-    private int mCurrentOperation = kOperation_BeaconNoOperation;
+    private int mCurrentOperation;
     private AlertDialog mDialog;
+    private Handler mCommandTimeoutHandler;
 
     private DataFragment mRetainedDataFragment;
+
+    private Runnable commandTimeoutRunnable = new Runnable() {
+        @Override
+        public void run() {
+            // Alert
+            AlertDialog.Builder builder = new AlertDialog.Builder(BeaconActivity.this);
+            builder.setTitle(android.R.string.dialog_alert_title).setMessage(R.string.beacon_aterror).setPositiveButton(android.R.string.ok, null);
+            mDialog = builder.create();
+            mDialog.show();
+
+            mCommandTimeoutHandler = null;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,7 +141,7 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
     public void onBackPressed() {
         boolean result = false;
 
-        if (mCurrentTab == 0) {
+        if (mCurrentTab == kTab_iBeacon) {
             // if pressed back check if we need to dimiss custom keyboard used on iBeacon Activity
             Fragment currentFragment = mAdapterViewPager.getCurrentFragment();
             result = ((IBeaconFragment) currentFragment).onBackPressed();
@@ -178,10 +200,25 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
     }
 
     private void testATParser() {
-        String uartCommand = "AT\\r\\n";
+        mCurrentOperation = kOperation_BeaconTestMode;
+        String uartCommand = "AT\r\n";
         Log.d(TAG, "send command: " + uartCommand);
-        sendData(uartCommand);
 
+        mCommandTimeoutHandler = new Handler();
+        mCommandTimeoutHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "device not responding to commands. lets change the mode and try again...");
+                String uartCommand = "+++\r\nAT\r\n";
+                Log.d(TAG, "send command: " + uartCommand);
+                mCommandTimeoutHandler = new Handler();
+                mCommandTimeoutHandler.postDelayed(commandTimeoutRunnable, kSendTimeout);
+                sendData(uartCommand);
+
+            }
+        }, kSendTimeout);
+
+        sendData(uartCommand);
     }
 
     private void dismissKeyboard() {
@@ -228,16 +265,28 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
         // UART RX
         if (characteristic.getService().getUuid().toString().equalsIgnoreCase(UUID_SERVICE)) {
             if (characteristic.getUuid().toString().equalsIgnoreCase(UUID_RX)) {
+
+                // Cancel the timer if was set
+                if (mCommandTimeoutHandler != null) {
+                    mCommandTimeoutHandler.removeCallbacksAndMessages(null);
+                    mCommandTimeoutHandler = null;
+                }
+
                 final String data = new String(characteristic.getValue(), Charset.forName("UTF-8")).trim();
                 Log.d(TAG, "received: " + data);
 
                 String message = null;
                 if (data.equalsIgnoreCase("OK")) {      // All good!
 
-                    switch(mCurrentOperation) {
-                        case kOperation_BeaconDisable: break;//message = getString(R.string.beacon_beacon_disabled); break;
-                        case kOperation_iBeaconEnable: onBeaconEnabled(); break;//message = getString(R.string.beacon_beacon_enabled); break;
-                        case kOperation_UriBeaconEnable: onBeaconEnabled(); break;//message = getString(R.string.beacon_beacon_enabled); break;
+                    switch (mCurrentOperation) {
+                        case kOperation_BeaconDisable:
+                            break;//message = getString(R.string.beacon_beacon_disabled); break;
+                        case kOperation_iBeaconEnable:
+                            onBeaconEnabled();
+                            break;//message = getString(R.string.beacon_beacon_enabled); break;
+                        case kOperation_UriBeaconEnable:
+                            onBeaconEnabled();
+                            break;//message = getString(R.string.beacon_beacon_enabled); break;
                         default:
                             break;
                     }
@@ -253,8 +302,7 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (mDialog != null)
-                            {
+                            if (mDialog != null) {
                                 mDialog.dismiss();
                             }
 
@@ -271,16 +319,40 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
         }
     }
 
-    private void onBeaconEnabled() {
-        finish();
-    }
 
     @Override
     public void onDataAvailable(BluetoothGattDescriptor descriptor) {
 
     }
+
+    @Override
+    public void onReadRemoteRssi(final int rssi) {
+        if (mCurrentTab == kTab_iBeacon) {
+            final Fragment currentFragment = mAdapterViewPager.getCurrentFragment();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ((IBeaconFragment) currentFragment).setRssi(rssi);
+                }
+            });
+        }
+    }
     // endregion
 
+    private void onBeaconEnabled() {
+        // Reset device
+        String uartCommand = String.format("ATZ\r\n");
+        Log.d(TAG, "send command: " + uartCommand);
+        sendData(uartCommand);
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(BeaconActivity.this, R.string.beacon_beacon_enabled, Toast.LENGTH_LONG).show();
+                finish();
+            }
+        });
+    }
 
     public static class BeaconPagerAdapter extends FragmentPagerAdapter {
         private static int kNumItems = 2;
@@ -338,9 +410,12 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
     public void onEnable(String vendor, String uuid, String major, String minor, String rssi) {
         mCurrentOperation = kOperation_iBeaconEnable;
 
+
         // iBeacon Enable
-        String uartCommand = String.format("+++\r\nAT+BLEBEACON=%s,%s,%s,%s,%s\r\nATZ\r\n+++\r\n", vendor, uuid, major, minor, rssi);
+        String uartCommand = String.format("AT+BLEBEACON=%s,%s,%s,%s,%s\r\n", vendor, uuid, major, minor, rssi);
         Log.d(TAG, "send command: " + uartCommand);
+        mCommandTimeoutHandler = new Handler();
+        mCommandTimeoutHandler.postDelayed(commandTimeoutRunnable, kSendTimeout);
         sendData(uartCommand);
 
         // Alert
@@ -358,8 +433,10 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
         mCurrentOperation = kOperation_UriBeaconEnable;
 
         // URIBeacon enable
-        String uartCommand = String.format("+++\r\nAT+BLEURIBEACON=%s\r\nATZ\n+++\r\n", encodedUri);
+        String uartCommand = String.format("AT+BLEURIBEACON=%s\r\n", encodedUri);
         Log.d(TAG, "send command: " + uartCommand);
+        mCommandTimeoutHandler = new Handler();
+        mCommandTimeoutHandler.postDelayed(commandTimeoutRunnable, kSendTimeout);
         sendData(uartCommand);
 
         // Alert
@@ -385,7 +462,9 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
 
     // region DataFragment
     public static class DataFragment extends android.app.Fragment {
-
+        private Handler mCommandTimeoutHandler;
+        private int mCurrentTab;
+        private int mCurrentOperation = kOperation_BeaconNoOperation;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -407,12 +486,17 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
 
         } else {
             // Restore status
+            mCommandTimeoutHandler = mRetainedDataFragment.mCommandTimeoutHandler;
+            mCurrentTab = mRetainedDataFragment.mCurrentTab;
+            mCurrentOperation = mRetainedDataFragment.mCurrentOperation;
 
         }
     }
 
     private void saveRetainedDataFragment() {
-
+        mRetainedDataFragment.mCommandTimeoutHandler = mCommandTimeoutHandler;
+        mRetainedDataFragment.mCurrentTab = mCurrentTab;
+        mRetainedDataFragment.mCurrentOperation = mCurrentOperation;
     }
     // endregion
 }

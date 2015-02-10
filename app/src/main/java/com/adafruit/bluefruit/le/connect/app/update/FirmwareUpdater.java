@@ -387,7 +387,10 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     public static boolean isFailedInstallationRecoveryAvailable(Context context, String deviceAddress) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         String storedDeviceAddress = sharedPreferences.getString(kFailedDeviceAddressPrefKey, null);
-        return storedDeviceAddress != null && storedDeviceAddress.equalsIgnoreCase(deviceAddress);
+        int type = sharedPreferences.getInt(kFailedTypePrefKey, -1);
+        String hexFile = sharedPreferences.getString(kFailedHexPrefKey, null);
+
+        return storedDeviceAddress != null && storedDeviceAddress.equalsIgnoreCase(deviceAddress) && type >=0 && hexFile != null;
     }
 
     public boolean startFailedInstallationRecovery(Activity activity) {
@@ -397,7 +400,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         String hexFile = sharedPreferences.getString(kFailedHexPrefKey, null);
         String iniFile = sharedPreferences.getString(kFailedIniPrefKey, null);
 
-        if (deviceAddress != null && type >= 0 && hexFile != null && iniFile != null) {
+        if (deviceAddress != null && type >= 0 && hexFile != null) {
             installSoftware(activity, type, hexFile, iniFile, null, null);
             return true;
         } else {
@@ -666,6 +669,11 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
 
     @Override
     public void onDataAvailable(BluetoothGattDescriptor descriptor) {
+
+    }
+
+    @Override
+    public void onReadRemoteRssi(int rssi) {
 
     }
     // endregion

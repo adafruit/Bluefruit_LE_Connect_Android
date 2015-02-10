@@ -24,6 +24,7 @@ public class UartInterfaceActivity extends ActionBarActivity {
     protected BleManager mBleManager;
     protected BluetoothGattService mUartService;
 
+
     protected void sendData(String text) {
         final byte[] value = text.getBytes(Charset.forName("UTF-8"));
         sendData(value);

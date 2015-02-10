@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.adafruit.bluefruit.le.connect.R;
+import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ui.keyboard.CustomEditTextFormatter;
 import com.adafruit.bluefruit.le.connect.ui.keyboard.CustomKeyboard;
 
@@ -19,6 +20,7 @@ import java.util.Random;
 
 
 public class IBeaconFragment extends Fragment {
+
 
     // UI
     private EditText mVendorEditText;
@@ -94,6 +96,15 @@ public class IBeaconFragment extends Fragment {
             }
         });
 
+
+        Button rssiRefreshButton = (Button) rootView.findViewById(R.id.rssiButton);
+        rssiRefreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onClickRefreshRssi(v);
+            }
+        });
+
         Button enableButton = (Button) rootView.findViewById(R.id.enableButton);
         enableButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -161,7 +172,6 @@ public class IBeaconFragment extends Fragment {
 
 
     public void onClickRandomUuid(View view) {
-
         final String kAllowedChars = "0123456789ABCDEF";
         final int kNumChars = 32;
 
@@ -173,6 +183,14 @@ public class IBeaconFragment extends Fragment {
 
         String result = CustomEditTextFormatter.formatText(randomString.toString(), 32, "-", 2);
         mUuidEditText.setText(result);
+    }
+
+    public void onClickRefreshRssi(View view) {
+        BleManager bleManager = BleManager.getInstance(getActivity());
+        boolean waiting = bleManager.readRssi(); // Wait for callback
+        if (waiting) {
+
+        }
     }
 
     public void onChooseVendor(final View view) {
@@ -219,6 +237,8 @@ public class IBeaconFragment extends Fragment {
     public String getRssi() {
         return mRssiEditText.getText().toString();
     }
+
+    public void setRssi(int rssi) {mRssiEditText.setText(""+rssi); }
 
     public interface OnFragmentInteractionListener {
         public void onEnable(String vendor, String uuid, String major, String minor, String rssi);
