@@ -44,9 +44,9 @@ import java.net.URLEncoder;
 public class URIBeaconFragment extends Fragment {
     // Log
     private final static String TAG = URIBeaconFragment.class.getSimpleName();
-    private final static boolean kPersistValues = true;
 
     // Constants
+    private final static boolean kPersistValues = true;
     private final static String kPreferences = "URIBeaconFragment_prefs";
     private final static String kPreferences_uri = "uri";
 

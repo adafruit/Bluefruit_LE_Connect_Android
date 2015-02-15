@@ -2,7 +2,9 @@ package com.adafruit.bluefruit.le.connect.app;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -16,11 +18,20 @@ import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ui.keyboard.CustomEditTextFormatter;
 import com.adafruit.bluefruit.le.connect.ui.keyboard.CustomKeyboard;
 
-import java.util.Random;
 import java.util.UUID;
 
 
 public class IBeaconFragment extends Fragment {
+    // Log
+    private final static String TAG = IBeaconFragment.class.getSimpleName();
+
+    // Constants
+    private final static boolean kPersistValues = true;
+    private final static String kPreferences = "IBeaconFragment_prefs";
+    private final static String kPreferences_vendor = "vendor";
+    private final static String kPreferences_uuid = "uuid";
+    private final static String kPreferences_major = "major";
+    private final static String kPreferences_minor = "minor";
 
 
     // UI
@@ -145,12 +156,28 @@ public class IBeaconFragment extends Fragment {
 
         // Generate initial state
         String manufacturers[] = getResources().getStringArray(R.array.beacon_manufacturers_ids);
+        /*
         String manufacturerId = manufacturers[0];
         mVendorEditText.setText(manufacturerId);
         onClickRandomUuid(null);
         mMajorEditText.setText("0000");
         mMinorEditText.setText("0000");
         mRssiEditText.setText("" + mRssi);
+        */
+
+        SharedPreferences preferences = getActivity().getSharedPreferences(kPreferences, Context.MODE_PRIVATE);
+        mVendorEditText.setText(preferences.getString(kPreferences_vendor, manufacturers[0]));
+        String uuid = preferences.getString(kPreferences_uuid, null);
+        if (uuid == null) {
+            onClickRandomUuid(null);
+        }
+        else {
+            mUuidEditText.setText(uuid);
+        }
+        mMajorEditText.setText(preferences.getString(kPreferences_major, "0000"));
+        mMinorEditText.setText(preferences.getString(kPreferences_minor, "0000"));
+        mRssiEditText.setText("" + mRssi);
+
 
         return rootView;
     }
@@ -169,6 +196,17 @@ public class IBeaconFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+
+        // Preserver values
+        if (kPersistValues) {
+            SharedPreferences settings = getActivity().getSharedPreferences(kPreferences, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putString(kPreferences_vendor, mVendorEditText.getText().toString());
+            editor.putString(kPreferences_uuid, mUuidEditText.getText().toString());
+            editor.putString(kPreferences_major, mMajorEditText.getText().toString());
+            editor.putString(kPreferences_minor, mMinorEditText.getText().toString());
+            editor.commit();
+        }
     }
 
 
@@ -235,10 +273,13 @@ public class IBeaconFragment extends Fragment {
         return mRssiEditText.getText().toString();
     }
 
-    public void setRssi(int rssi) {mRssiEditText.setText(""+rssi); }
+    public void setRssi(int rssi) {
+        mRssiEditText.setText("" + rssi);
+    }
 
     public interface OnFragmentInteractionListener {
         public void onEnable(String vendor, String uuid, String major, String minor, String rssi);
+
         public void onDisable();
     }
 
