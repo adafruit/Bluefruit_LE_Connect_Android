@@ -148,6 +148,11 @@ public class BleGattExecutor extends BluetoothGattCallback {
         };
     }
 
+    protected void clear() {
+        mCurrentAction = null;
+        mQueue.clear();
+    }
+
     protected void execute(BluetoothGatt gatt) {
         if (mCurrentAction == null) {
             while (!mQueue.isEmpty()) {

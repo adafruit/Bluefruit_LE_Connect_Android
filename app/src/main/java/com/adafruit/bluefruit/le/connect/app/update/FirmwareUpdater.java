@@ -169,13 +169,21 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                 if (hasDISService) {
                     bleManager.setBleListener(this);
 
-                    bleManager.readCharacteristic(deviceInformationService, kManufacturerNameCharacteristic);
-                    bleManager.readCharacteristic(deviceInformationService, kModelNumberCharacteristic);
-                    bleManager.readCharacteristic(deviceInformationService, kSoftwareRevisionCharacteristic);
-                    bleManager.readCharacteristic(deviceInformationService, kFirmwareRevisionCharacteristic);
+                    final boolean isDISReadable = bleManager.isCharacteristicReadable(deviceInformationService, kManufacturerNameCharacteristic)
+                            && bleManager.isCharacteristicReadable(deviceInformationService, kModelNumberCharacteristic)
+                            && bleManager.isCharacteristicReadable(deviceInformationService, kSoftwareRevisionCharacteristic)
+                            && bleManager.isCharacteristicReadable(deviceInformationService, kFirmwareRevisionCharacteristic);
 
-                    // Data will be received asynchronously (onDataAvailable)
-                    return true;        // returns true that means that the process is still working
+                    if (isDISReadable) {
+
+                        bleManager.readCharacteristic(deviceInformationService, kManufacturerNameCharacteristic);
+                        bleManager.readCharacteristic(deviceInformationService, kModelNumberCharacteristic);
+                        bleManager.readCharacteristic(deviceInformationService, kSoftwareRevisionCharacteristic);
+                        bleManager.readCharacteristic(deviceInformationService, kFirmwareRevisionCharacteristic);
+
+                        // Data will be received asynchronously (onDataAvailable)
+                        return true;        // returns true that means that the process is still working
+                    }
                 } else {
                     Log.d(TAG, "Updates: No DIS service found");
                 }

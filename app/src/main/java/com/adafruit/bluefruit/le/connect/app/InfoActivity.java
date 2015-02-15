@@ -237,7 +237,9 @@ public class InfoActivity extends ActionBarActivity implements BleManager.BleMan
                     descriptorNamesList.add(new ElementPath(serviceUuid, instanceId, characteristicUuid, descriptorUuid, finalDescriptorName, descriptorUuid));
 
                     // Read descriptor
-                    mBleManager.readDescriptor(service, characteristicUuid, descriptorUuid);
+                    if (mBleManager.isDescriptorReadable(service, characteristicUuid, descriptorUuid)) {
+                        mBleManager.readDescriptor(service, characteristicUuid, descriptorUuid);
+                    }
                 }
 
                 mDescriptorsMap.put(characteristicElementPath.getKey(), descriptorNamesList);

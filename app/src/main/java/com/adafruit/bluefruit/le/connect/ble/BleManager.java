@@ -62,6 +62,9 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
 
     public void setBleListener(BleManagerListener listener) {
         mBleListener = listener;
+
+        // Force clear current command queue to prevent a weird state where the executor is waiting for actions that never finish
+        mExecutor.clear();
     }
     public BleManagerListener getBleListener()  {return mBleListener; }
 
@@ -393,6 +396,10 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
             if (mBleListener != null)
                 mBleListener.onServicesDiscovered();
        // }
+
+        if (status != BluetoothGatt.GATT_SUCCESS) {
+            Log.d(TAG, "onServicesDiscovered status: "+status);
+        }
     }
 
     @Override
@@ -402,6 +409,10 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
                 mBleListener.onDataAvailable(characteristic);
             }
        // }
+
+        if (status != BluetoothGatt.GATT_SUCCESS) {
+            Log.d(TAG, "onCharacteristicRead status: "+status);
+        }
     }
 
     @Override
@@ -418,6 +429,10 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
                 mBleListener.onDataAvailable(descriptor);
             }
      //   }
+
+        if (status != BluetoothGatt.GATT_SUCCESS) {
+            Log.d(TAG, "onDescriptorRead status: "+status);
+        }
     }
 
     @Override
@@ -425,6 +440,11 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
         if (mBleListener != null) {
             mBleListener.onReadRemoteRssi(rssi);
         }
+
+        if (status != BluetoothGatt.GATT_SUCCESS) {
+            Log.d(TAG, "onReadRemoteRssi status: "+status);
+        }
+
     }
     //endregion
 
