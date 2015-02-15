@@ -21,32 +21,41 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:text="@string/beacon_uribeacon_subtitle"
-                android:textColor="@drawable/default_textcolor"/>
+                android:orientation="horizontal">
 
-            <RadioGroup
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:visibility="gone">
-
-                <RadioButton
+                <TextView
+                    android:layout_gravity="center_vertical"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="iBeacon (Apple)"
+                    android:text="@string/beacon_uribeacon_subtitle"
                     android:textColor="@drawable/default_textcolor"/>
 
-                <RadioButton
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Uri Beacon (Google)"
-                    android:textColor="@drawable/default_textcolor"/>
-            </RadioGroup>
+                    android:gravity="right"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Use shortener"
+                        android:textColor="@drawable/default_textcolor"/>
+
+                    <Switch
+                        android:id="@+id/shortenerSwitch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"/>
+
+                </LinearLayout>
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -71,10 +80,10 @@
 
                     <EditText
                         android:id="@+id/uriEditText"
-                        android:imeOptions="actionDone"
-                        android:singleLine="true"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:imeOptions="actionDone"
+                        android:singleLine="true"
                         />
                 </LinearLayout>
 
@@ -94,10 +103,10 @@
                         />
 
                     <TextView
-                        android:visibility="gone"
                         android:id="@+id/uriShortenedUrl"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:visibility="gone"
 
                         />
 
