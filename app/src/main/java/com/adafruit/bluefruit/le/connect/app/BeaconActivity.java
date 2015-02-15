@@ -81,12 +81,9 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
         mBleManager = BleManager.getInstance(this);
         restoreRetainedDataFragment();
 
-        // Setup when activity is created for the first time
-//        if (savedInstanceState == null) {
         // Get params
         Intent intent = getIntent();
         int rssi = intent.getIntExtra("rssi", 0);
-        //      }
 
         // UI
         ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);

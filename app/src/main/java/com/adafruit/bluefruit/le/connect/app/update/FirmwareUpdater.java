@@ -47,10 +47,10 @@ import no.nordicsemi.android.error.GattError;
 public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleManager.BleManagerListener {
     // Config
     public static final String kDefaultUpdateServerUrl = "https://raw.githubusercontent.com/adafruit/Adafruit_BluefruitLE_Firmware/master/releases.xml";
-//    public static final String kDefaultUpdateServerUrl = "http://openroad.es/projects/bluefruit/firmware/releases.xml";
 
     private final static String kPreferences = "FirmwareUpdater_prefs";
     private static final String kManufacturer = "Adafruit Industries";
+    private static final String kDefaultBootloaderVersion = "0.0";
 
     // Constants
     private final static String TAG = FirmwareUpdater.class.getSimpleName();
@@ -97,7 +97,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         public String softwareRevision;
 
         public String getBootloaderVersion() {
-            String result = "0.0";
+            String result = kDefaultBootloaderVersion;
             if (firmwareRevision != null) {
                 int index = firmwareRevision.indexOf(", ");
                 if (index >= 0) {
@@ -174,17 +174,6 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                     bleManager.readCharacteristic(deviceInformationService, kSoftwareRevisionCharacteristic);
                     bleManager.readCharacteristic(deviceInformationService, kFirmwareRevisionCharacteristic);
 
-                    /*
-                    boolean dfuVersionAvailable = dfuService.getCharacteristic(UUID.fromString(kDfuVersionCharacteristic)) != null;
-                    if (dfuVersionAvailable) {
-                        bleManager.readCharacteristic(dfuService, kDfuVersionCharacteristic);
-                    } else {
-                        Log.d(TAG, "Device with no kDfuVersionCharacteristic. Default value set");
-                        String noVersion = "0x0000";         // Some devices don't expose this characteristic, so we set this value as default
-                        mDeviceInfoData.dfuVersion = noVersion;
-                    }
-                    */
-
                     // Data will be received asynchronously (onDataAvailable)
                     return true;        // returns true that means that the process is still working
                 } else {
@@ -225,7 +214,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     public void downloadAndInstall(Activity activity, ReleasesParser.BasicVersionInfo originalRelease) {
         // Hack to use only hex files if the detected bootloader version is 0x0000
         String bootloaderVersion = mDeviceInfoData.getBootloaderVersion();
-        boolean useHexOnly = bootloaderVersion.equals("0.0") || bootloaderVersion.equals("0x0000");
+        boolean useHexOnly = bootloaderVersion.equals(kDefaultBootloaderVersion);
 
         ReleasesParser.BasicVersionInfo release;
         if (useHexOnly) {
@@ -380,7 +369,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     }
 
 
-    // region Recover Failed udpates
+    // region Recover Failed updates
     private static final String kFailedDeviceAddressPrefKey = "updatemanager_failedDeviceAddress";
     private static final String kFailedTypePrefKey = "updatemanager_failedType";
     private static final String kFailedHexPrefKey = "updatemanager_failedHex";
@@ -430,8 +419,6 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
             return false;
         }
     }
-
-
     // endregion
 
     // region DownloadTaskListener
@@ -613,18 +600,6 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                 Log.d(TAG, "Updates: received firmwareRevision:" + mDeviceInfoData.firmwareRevision);
             }
         }
-
-        /*
-        // Process DFU characteristics
-        if (characteristic.getService().getUuid().toString().equalsIgnoreCase(kNordicDeviceFirmwareUpdateService)) {
-            final String charUuid = characteristic.getUuid().toString();
-            if (charUuid.equalsIgnoreCase(kDfuVersionCharacteristic)) {
-                byte[] dfuVersionData = characteristic.getValue();
-                mDeviceInfoData.dfuVersion = "0x" + BleUtils.bytesToHex(dfuVersionData);
-                Log.d(TAG, "Updates: received dfu version:" + mDeviceInfoData.dfuVersion);
-            }
-        }
-        */
 
         // Check if we have all data required to check if a software update is needed
         if (mDeviceInfoData.manufacturer != null && mDeviceInfoData.modelNumber != null && mDeviceInfoData.firmwareRevision != null && mDeviceInfoData.softwareRevision != null) {
