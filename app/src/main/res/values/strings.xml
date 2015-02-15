@@ -162,7 +162,7 @@
 
     <string name="beacon_uribeacon_invalidprefix">Prefix must be one of the following values: http://www. https://www.  http:// https://  urn:uuid:</string>
     <string name="beacon_uribeacon_uritoolong">Uri too long</string>
-    <string name="beacon_uribeacon_shorteneduriformat">Shortened uri: </string>
+    <string name="beacon_uribeacon_shorteneduriformat">Shortened uri: %s</string>
     <string name="beacon_uribeacon_shorteningerror">Shortening error</string>
     <string name="beacon_uribeacon_shortening">Shortening...</string>
     <string name="beacon_uribeacon_validuri">Valid URI</string>
