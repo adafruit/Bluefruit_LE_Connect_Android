@@ -168,7 +168,7 @@
     <string name="beacon_uribeacon_validuri">Valid URI</string>
 
     <!-- Connected Settings -->
-    <string name="title_activity_connected_settings">Connected Settings</string>
+    <string name="title_activity_connected_settings">Firmware Updates</string>
     <string name="connectedsettings_updatesheadertitle">UPDATES</string>
     <string name="connectedsettings_firmwarereleasesheadertitle">FIRMWARE RELEASES</string>
     <string name="connectedsettings_bootloaderreleasesheadertitle">BOOTLOADER RELEASES</string>
