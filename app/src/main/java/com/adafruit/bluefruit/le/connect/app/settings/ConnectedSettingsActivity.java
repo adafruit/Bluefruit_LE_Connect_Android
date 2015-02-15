@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -309,18 +310,18 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
         final ReleasesParser.BasicVersionInfo release = (ReleasesParser.BasicVersionInfo) view.getTag();
 
         String message = null;
-        boolean areRequerimentsMet = true;
+        boolean areRequirementsMet = true;
 
         // Process firmware release
         if (release.fileType == DfuService.TYPE_APPLICATION) {
             // Check that the minimum bootloader version requirement is met
             ReleasesParser.FirmwareInfo firmwareInfo = (ReleasesParser.FirmwareInfo) release;
-            if (mDeviceInfoData.dfuVersion.compareToIgnoreCase(firmwareInfo.minBootloaderVersion) >= 0) {
+            if (mDeviceInfoData.getBootloaderVersion().compareToIgnoreCase(firmwareInfo.minBootloaderVersion) >= 0) {
                 message = String.format(getString(R.string.connectedsettings_firmwareinstall_messageformat), release.version);
             } else {
-                areRequerimentsMet = false;
+                areRequirementsMet = false;
 
-                // Show 'requeriments not met' dialog
+                // Show 'requirements not met' dialog
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 message = String.format(getString(R.string.firmware_bootloadertooold_format), firmwareInfo.minBootloaderVersion);
                 builder.setMessage(message)
@@ -334,7 +335,7 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
         }
 
         // Continue the process with the selected release
-        if (areRequerimentsMet) {
+        if (areRequirementsMet) {
             if (message != null) {
                 // Ask user if should update
                 new AlertDialog.Builder(this)
@@ -352,7 +353,7 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
                 Log.d(TAG, "onClickRelease: unknown release type");
             }
         } else {
-            Log.d(TAG, "onClickRelease: requeriments for update not met");
+            Log.d(TAG, "onClickRelease: requirements for update not met");
         }
     }
 
@@ -378,7 +379,6 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
         mApplicationFilesDialog.setArguments(arguments);
         mApplicationFilesDialog.show(getFragmentManager(), null);
     }
-
 
     public void onApplicationDialogChooseHex(View view) {
         openFileChooser(kActivityRequestCode_SelectFile_Hex);

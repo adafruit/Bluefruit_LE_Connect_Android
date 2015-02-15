@@ -4,6 +4,11 @@
       tools:context="com.adafruit.bluefruit.le.connect.app.BeaconActivity">
 
 
+    <item
+        android:id="@+id/action_help"
+        android:title="@string/action_info"
+        android:icon="@android:drawable/ic_menu_info_details"
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/action_connected_settings"

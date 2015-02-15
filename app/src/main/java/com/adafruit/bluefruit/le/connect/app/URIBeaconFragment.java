@@ -2,6 +2,7 @@ package com.adafruit.bluefruit.le.connect.app;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -43,10 +44,14 @@ import java.net.URLEncoder;
 public class URIBeaconFragment extends Fragment {
     // Log
     private final static String TAG = URIBeaconFragment.class.getSimpleName();
+    private final static boolean kPersistValues = true;
+
+    // Constants
+    private final static String kPreferences = "URIBeaconFragment_prefs";
+    private final static String kPreferences_uri = "uri";
 
     // Bitly
     private static final String kBitlyApiKey = "38bc9301550f6eeec36db33334701e3a551f580d";
-
 
     // UI
     private EditText mUriEditText;
@@ -93,7 +98,6 @@ public class URIBeaconFragment extends Fragment {
 
             public void afterTextChanged(Editable s) {
                 onUriChanged(mUriEditText.getText().toString(), false);
-
             }
 
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -119,6 +123,13 @@ public class URIBeaconFragment extends Fragment {
             }
         });
 
+        if (kPersistValues) {
+            SharedPreferences preferences = getActivity().getSharedPreferences(kPreferences, Context.MODE_PRIVATE);
+            String savedUri = preferences.getString(kPreferences_uri, "http://");
+            mUriEditText.setText(savedUri);
+            onUriChanged(savedUri, false);
+        }
+
         return rootView;
     }
 
@@ -136,6 +147,14 @@ public class URIBeaconFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+
+        // Preserver values
+        if (kPersistValues) {
+            SharedPreferences settings = getActivity().getSharedPreferences(kPreferences, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putString(kPreferences_uri, mCurrentUri);
+            editor.commit();
+        }
     }
 
     private void onEnable(View view) {

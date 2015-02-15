@@ -36,6 +36,8 @@
     <string name="scan_connectservice_beacon">Beacon</string>
     <string name="scan_softwareupdate_title">Update available</string>
     <string name="scan_softwareupdate_messageformat">Software version %s is available</string>
+    <string name="scan_bootloaderandfirmwareupdate_messageformat">Software version %1$s and Bootloader version %2$s are available. This is a two-step process: bootloader will be updated first and firmware the next time you connect to the device</string>
+
     <string name="scan_softwareupdate_install">Install</string>
     <string name="scan_softwareupdate_notnow">Ask later</string>
     <string name="scan_softwareupdate_dontask">Ignore</string>
@@ -47,6 +49,11 @@
     <string name="scan_failedupdatedetected_title">Failed update detected</string>
     <string name="scan_failedupdatedetected_message">A failed update for this device has been detected.\nIt is strongly recommended to retry updating the device now</string>
     <string name="scan_failedupdatedetected_ok">Update now</string>
+
+
+    <string name="scan_secondphaseupdatedetected_title">Continue update</string>
+    <string name="scan_secondphaseupdatedetected_message">Firmware will be updated now</string>
+    <string name="scan_secondphaseupdatedetected_ok">Continue</string>
 
 
     <!-- Scan Help Activity -->
@@ -103,10 +110,13 @@
     <string name="title_activity_pad">Control Pad</string>
 
     <!-- Beacon -->
+    <string name="beacon_help_title">Beacons Help</string>
+
+
     <string name="beacon_manufacturer_choose_title">Choose Manufacturer</string>
     <string-array name="beacon_manufacturers_names">
-        <item>Apple</item>
-        <item>Nordic</item>
+        <item>Apple  (004C)</item>
+        <item>Nordic (0059)</item>
     </string-array>
 
     <string-array name="beacon_manufacturers_ids">
@@ -134,7 +144,7 @@
     <string name="beacon_beacon_disabled">Beacon Disabled</string>
     <string name="beacon_beacon_enabling">Resetting into Beacon Mode</string>
 
-    <string name="beacon_aterror">Device not responding to commands.\nPlease check that you have a firmware version that supports Beacons</string>
+    <string name="beacon_aterror">Device not responding to commands.\nPlease ensure that you are running firmware version 0.4.7 or higher</string>
 
 
     <string name="beacon_ibeacon_subtitle">iBeacon Data</string>

@@ -60,6 +60,11 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
             // Alert
             AlertDialog.Builder builder = new AlertDialog.Builder(BeaconActivity.this);
             builder.setTitle(android.R.string.dialog_alert_title).setMessage(R.string.beacon_aterror).setPositiveButton(android.R.string.ok, null);
+
+            if (mDialog != null) {
+                mDialog.dismiss();
+            }
+
             mDialog = builder.create();
             mDialog.show();
 
@@ -91,7 +96,6 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
         SlidingTabLayout slidingTabLayout = (SlidingTabLayout) findViewById(R.id.sliding_tabs);
         slidingTabLayout.setDistributeEvenly(true);
         slidingTabLayout.setViewPager(viewPager);
-
 
         // Attach the page change listener inside the activity
         slidingTabLayout.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -133,6 +137,12 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
 
         // Retain data
         saveRetainedDataFragment();
+
+        // Cancel the timer if was set
+        if (mCommandTimeoutHandler != null) {
+            mCommandTimeoutHandler.removeCallbacksAndMessages(null);
+            mCommandTimeoutHandler = null;
+        }
 
         super.onDestroy();
     }
@@ -176,7 +186,8 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_help) {
+            startHelp();
             return true;
         } else if (id == R.id.action_connected_settings) {
             startConnectedSettings();
@@ -190,6 +201,14 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
         // Launch connected settings activity
         Intent intent = new Intent(this, ConnectedSettingsActivity.class);
         startActivityForResult(intent, kActivityRequestCode_ConnectedSettingsActivity);
+    }
+
+    private void startHelp() {
+        // Launch app help activity
+        Intent intent = new Intent(this, CommonHelpActivity.class);
+        intent.putExtra("title", getString(R.string.beacon_help_title));
+        intent.putExtra("help", "beacon_help.html");
+        startActivity(intent);
     }
 
     @Override
@@ -409,7 +428,6 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
     @Override
     public void onEnable(String vendor, String uuid, String major, String minor, String rssi) {
         mCurrentOperation = kOperation_iBeaconEnable;
-
 
         // iBeacon Enable
         String uartCommand = String.format("AT+BLEBEACON=%s,%s,%s,%s,%s\r\n", vendor, uuid, major, minor, rssi);

@@ -17,6 +17,7 @@ import com.adafruit.bluefruit.le.connect.ui.keyboard.CustomEditTextFormatter;
 import com.adafruit.bluefruit.le.connect.ui.keyboard.CustomKeyboard;
 
 import java.util.Random;
+import java.util.UUID;
 
 
 public class IBeaconFragment extends Fragment {
@@ -144,7 +145,7 @@ public class IBeaconFragment extends Fragment {
 
         // Generate initial state
         String manufacturers[] = getResources().getStringArray(R.array.beacon_manufacturers_ids);
-        String manufacturerId = manufacturers[1];
+        String manufacturerId = manufacturers[0];
         mVendorEditText.setText(manufacturerId);
         onClickRandomUuid(null);
         mMajorEditText.setText("0000");
@@ -172,17 +173,13 @@ public class IBeaconFragment extends Fragment {
 
 
     public void onClickRandomUuid(View view) {
-        final String kAllowedChars = "0123456789ABCDEF";
-        final int kNumChars = 32;
-
-        final Random random = new Random();
-        final StringBuilder randomString = new StringBuilder(kNumChars);
-        for (int i = 0; i < kNumChars; i++) {
-            randomString.append(kAllowedChars.charAt(random.nextInt(kAllowedChars.length())));
-        }
-
-        String result = CustomEditTextFormatter.formatText(randomString.toString(), 32, "-", 2);
+        final String randomUuid = UUID.randomUUID().toString().replaceAll("-", "");
+        String result = CustomEditTextFormatter.formatText(randomUuid.toString(), 32, "-", 2);
         mUuidEditText.setText(result);
+
+        // set cursor at the end
+        mUuidEditText.requestFocus();
+        mUuidEditText.setSelection(result.length());
     }
 
     public void onClickRefreshRssi(View view) {

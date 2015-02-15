@@ -127,12 +127,12 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
         final boolean gattAutoconnect = sharedPreferences.getBoolean("pref_gattautoconnect", false);
         mGatt = mDevice.connectGatt(mContext, gattAutoconnect, mExecutor);
 
-        /*
+
+        // Refresh device cache
         final boolean refreshDeviceCache = sharedPreferences.getBoolean("pref_refreshdevicecache", true);
         if (refreshDeviceCache) {
             refreshDeviceCache();          // hack to force refresh the device cache and avoid problems with characteristic services read from cache and not updated
         }
-        */
 
         Log.d(TAG, "Trying to create a new connection.");
         mDeviceAddress = address;
@@ -145,7 +145,7 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
 
     /**
     * Call to private Android method 'refresh'
-    * This method does actually clear the cache from a bluetooth device. But the problem is that we don't have access to it. But in java we have reflection, so we can access this method. Here is my code to connect a bluetooth device refreshing the cache.
+    * This method does actually clear the cache from a bluetooth device. But the problem is that we don't have access to it. But in java we have reflection, so we can access this method.
     * http://stackoverflow.com/questions/22596951/how-to-programmatically-force-bluetooth-low-energy-service-discovery-on-android
     */
     public boolean refreshDeviceCache(){
@@ -177,6 +177,15 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
             Log.w(TAG, "disconnect: BluetoothAdapter not initialized");
             return;
         }
+
+        // Refresh device cache before disconnect
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        final boolean refreshDeviceCache = sharedPreferences.getBoolean("pref_refreshdevicecache", true);
+        if (refreshDeviceCache) {
+            refreshDeviceCache();          // hack to force refresh the device cache and avoid problems with characteristic services read from cache and not updated
+        }
+
+        // Disconnect
         mGatt.disconnect();
     }
 

@@ -27,7 +27,6 @@ import android.widget.Toast;
 import com.adafruit.bluefruit.le.connect.BuildConfig;
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
-import com.adafruit.bluefruit.le.connect.ble.BleUtils;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -37,7 +36,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import no.nordicsemi.android.error.GattError;
 
@@ -51,6 +49,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     public static final String kDefaultUpdateServerUrl = "https://raw.githubusercontent.com/adafruit/Adafruit_BluefruitLE_Firmware/master/releases.xml";
 //    public static final String kDefaultUpdateServerUrl = "http://openroad.es/projects/bluefruit/firmware/releases.xml";
 
+    private final static String kPreferences = "FirmwareUpdater_prefs";
     private static final String kManufacturer = "Adafruit Industries";
 
     // Constants
@@ -60,9 +59,9 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     private static final String kModelNumberCharacteristic = "00002A24-0000-1000-8000-00805F9B34FB";
     private static final String kManufacturerNameCharacteristic = "00002A29-0000-1000-8000-00805F9B34FB";
     private static final String kSoftwareRevisionCharacteristic = "00002A28-0000-1000-8000-00805F9B34FB";
-    //    private static final String kFirmwareRevisionCharacteristic = "00002A26-0000-1000-8000-00805F9B34FB";
+    private static final String kFirmwareRevisionCharacteristic = "00002A26-0000-1000-8000-00805F9B34FB";
 
-    private static final String kDfuVersionCharacteristic = "00001534-1212-EFDE-1523-785FEABCD123";
+  //  private static final String kDfuVersionCharacteristic = "00001534-1212-EFDE-1523-785FEABCD123";
 
     private static final int kDownloadOperation_VersionsDatabase = 0;
     private static final int kDownloadOperation_Software_Hex = 1;
@@ -93,9 +92,21 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
 
     public class DeviceInfoData {
         public String manufacturer;
-        public String firmwareRevision;
         public String modelNumber;
-        public String dfuVersion;
+        public String firmwareRevision;
+        public String softwareRevision;
+
+        public String getBootloaderVersion() {
+            String result = "0.0";
+            if (firmwareRevision != null) {
+                int index = firmwareRevision.indexOf(", ");
+                if (index >= 0) {
+                    String bootloaderVersion = firmwareRevision.substring(index + 2);
+                    result = bootloaderVersion;
+                }
+            }
+            return result;
+        }
     }
 
     // region Initialization
@@ -150,10 +161,9 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
             // Check if the device is an adafruit updateable device
             if (mListener == null) Log.w(TAG, "Trying to verify software version without a listener!!");
 
-            BleManager bleManager = BleManager.getInstance(mContext);
-            BluetoothGattService dfuService = bleManager.getGattService(kNordicDeviceFirmwareUpdateService);
-            boolean hasDFUService = dfuService != null;
+            boolean hasDFUService = hasCurrentConnectedDeviceDFUService();
             if (hasDFUService) {
+                BleManager bleManager = BleManager.getInstance(mContext);
                 BluetoothGattService deviceInformationService = bleManager.getGattService(kDeviceInformationService);
                 boolean hasDISService = deviceInformationService != null;
                 if (hasDISService) {
@@ -162,6 +172,9 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                     bleManager.readCharacteristic(deviceInformationService, kManufacturerNameCharacteristic);
                     bleManager.readCharacteristic(deviceInformationService, kModelNumberCharacteristic);
                     bleManager.readCharacteristic(deviceInformationService, kSoftwareRevisionCharacteristic);
+                    bleManager.readCharacteristic(deviceInformationService, kFirmwareRevisionCharacteristic);
+
+                    /*
                     boolean dfuVersionAvailable = dfuService.getCharacteristic(UUID.fromString(kDfuVersionCharacteristic)) != null;
                     if (dfuVersionAvailable) {
                         bleManager.readCharacteristic(dfuService, kDfuVersionCharacteristic);
@@ -170,15 +183,14 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                         String noVersion = "0x0000";         // Some devices don't expose this characteristic, so we set this value as default
                         mDeviceInfoData.dfuVersion = noVersion;
                     }
+                    */
 
                     // Data will be received asynchronously (onDataAvailable)
                     return true;        // returns true that means that the process is still working
                 } else {
                     Log.d(TAG, "Updates: No DIS service found");
                 }
-
             }
-
         } else {
             Log.d(TAG, "Updates: Internet connection not detected. Skipping version check...");
         }
@@ -197,7 +209,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     }
 
     public void changedParentActivity(Activity activity) {      // method to refresh parent activity if a configchange is detected
-        if (mParentActivity != null) {      // only save the activity if we are using it
+        if (mParentActivity != null) {      // only save the activity if we were using it
             mParentActivity = activity;
         }
     }
@@ -210,18 +222,28 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         downloadAndInstall(activity, release);
     }
 
-    public void downloadAndInstall(Activity activity, ReleasesParser.BasicVersionInfo release) {
+    public void downloadAndInstall(Activity activity, ReleasesParser.BasicVersionInfo originalRelease) {
+        // Hack to use only hex files if the detected bootloader version is 0x0000
+        String bootloaderVersion = mDeviceInfoData.getBootloaderVersion();
+        boolean useHexOnly = bootloaderVersion.equals("0.0") || bootloaderVersion.equals("0x0000");
+
+        ReleasesParser.BasicVersionInfo release;
+        if (useHexOnly) {
+            // Copy minimum fields required (and don't use the init file)
+            release = new ReleasesParser.BasicVersionInfo();
+            release.fileType = originalRelease.fileType;
+            release.hexFileUrl = originalRelease.hexFileUrl;
+        } else {
+            release = originalRelease;
+        }
+
+        // Cancel previous download task if still running
         if (mDownloadTask != null) {
             mDownloadTask.cancel(true);
         }
 
+        // Download files
         if (isNetworkAvailable()) {
-            /*
-            BleManager mBleManager = BleManager.getInstance(mContext);
-            mBleManager.disconnect();       // disconnect to let the dfu library connect to the device
-            mBleManager.close();
-*/
-
             mParentActivity = activity;
 
             mProgressDialog = new ProgressFragmentDialog();
@@ -564,12 +586,13 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     private String readCharacteristicValueAsString(BluetoothGattCharacteristic characteristic) {
         String string = "";     // Not null
         try {
-           string = characteristic.getStringValue(0);
-        }catch(Exception e){
-            Log.w(TAG, "readCharacteristicValueAsString" +e);
+            string = characteristic.getStringValue(0);
+        } catch (Exception e) {
+            Log.w(TAG, "readCharacteristicValueAsString" + e);
         }
         return string;
     }
+
     @Override
     public void onDataAvailable(BluetoothGattCharacteristic characteristic) {
 
@@ -583,14 +606,15 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                 mDeviceInfoData.modelNumber = readCharacteristicValueAsString(characteristic);
                 Log.d(TAG, "Updates: received modelNumber:" + mDeviceInfoData.modelNumber);
             } else if (charUuid.equalsIgnoreCase(kSoftwareRevisionCharacteristic)) {
-                mDeviceInfoData.firmwareRevision =  readCharacteristicValueAsString(characteristic);
-                Log.d(TAG, "Updates: received firmwareRevision:" + mDeviceInfoData.firmwareRevision);
-            } else if (charUuid.equalsIgnoreCase(kSoftwareRevisionCharacteristic)) {
-                mDeviceInfoData.firmwareRevision =  readCharacteristicValueAsString(characteristic);
+                mDeviceInfoData.softwareRevision = readCharacteristicValueAsString(characteristic);
+                Log.d(TAG, "Updates: received softwareRevision:" + mDeviceInfoData.softwareRevision);
+            } else if (charUuid.equalsIgnoreCase(kFirmwareRevisionCharacteristic)) {
+                mDeviceInfoData.firmwareRevision = readCharacteristicValueAsString(characteristic);
                 Log.d(TAG, "Updates: received firmwareRevision:" + mDeviceInfoData.firmwareRevision);
             }
         }
 
+        /*
         // Process DFU characteristics
         if (characteristic.getService().getUuid().toString().equalsIgnoreCase(kNordicDeviceFirmwareUpdateService)) {
             final String charUuid = characteristic.getUuid().toString();
@@ -600,9 +624,10 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                 Log.d(TAG, "Updates: received dfu version:" + mDeviceInfoData.dfuVersion);
             }
         }
+        */
 
         // Check if we have all data required to check if a software update is needed
-        if (mDeviceInfoData.manufacturer != null && mDeviceInfoData.modelNumber != null && mDeviceInfoData.firmwareRevision != null && mDeviceInfoData.dfuVersion != null) {
+        if (mDeviceInfoData.manufacturer != null && mDeviceInfoData.modelNumber != null && mDeviceInfoData.firmwareRevision != null && mDeviceInfoData.softwareRevision != null) {
             if (mListener != null) {
                 boolean isFirmwareUpdateAvailable = false;
 
@@ -619,7 +644,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                             latestRelease = modelReleases.get(0);
 
                             // Check if the bootloader is compatible with this version
-                            if (mDeviceInfoData.dfuVersion.compareToIgnoreCase(latestRelease.minBootloaderVersion) >= 0) {
+                            if (mDeviceInfoData.getBootloaderVersion().compareToIgnoreCase(latestRelease.minBootloaderVersion) >= 0) {
 
                                 // Check if the user chose to ignore this version
                                 SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
@@ -646,7 +671,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                                     Log.d(TAG, "Updates: User ignored version: " + versionToIgnore + ". Skipping...");
                                 }
                             } else {
-                                Log.d(TAG, "Updates: Bootloader version " + mDeviceInfoData.dfuVersion + " below minimun needed: " + latestRelease.minBootloaderVersion);
+                                Log.d(TAG, "Updates: Bootloader version " + mDeviceInfoData.getBootloaderVersion() + " below minimum needed: " + latestRelease.minBootloaderVersion);
                             }
                         } else {
                             Log.d(TAG, "Updates: No firmware releases found for model: " + mDeviceInfoData.modelNumber);
