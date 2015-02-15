@@ -151,7 +151,6 @@ public class URIBeaconFragment extends Fragment implements ShortenerAsyncTask.Sh
 
     private void onEnable(View view) {
         mListener.onEnable(mCurrentUri);
-
     }
 
     private void onUriChanged(String uri, boolean isShortened) {
@@ -161,22 +160,22 @@ public class URIBeaconFragment extends Fragment implements ShortenerAsyncTask.Sh
         mEnableButton.setEnabled(uriStatus == kUriVerify_Ok);
 
         if (isShortened && uriStatus != kUriVerify_Ok) {
-            mUriEncodeMessage.setText("Shortening error");
+            mUriEncodeMessage.setText(R.string.beacon_uribeacon_shorteningerror);
         } else if (uriStatus == kUriVerify_InvalidUri) {
             mUriEncodeMessage.setText("");
         } else if (uriStatus == kUriVerify_UnknownPrefix) {
             mUriEncodeMessage.setText(getString(R.string.beacon_uribeacon_invalidprefix));
         } else if (uriStatus == kUriVerify_TooLong && !isShortened && isNetworkAvailable() && mUseShortenerSwitch.isChecked()) {
-            mUriEncodeMessage.setText("Shortening...");
+            mUriEncodeMessage.setText(R.string.beacon_uribeacon_shortening);
             if (mCurrentShorteningTask != null) {
                 mCurrentShorteningTask.cancel(true);
             }
             mCurrentShorteningTask = new BitlyShortenerAsyncTask(this);
             mCurrentShorteningTask.execute(uri);
         } else if (uriStatus == kUriVerify_TooLong) {
-            mUriEncodeMessage.setText("Uri too long");
+            mUriEncodeMessage.setText(R.string.beacon_uribeacon_uritoolong);
         } else if (uriStatus == kUriVerify_Ok) {
-            String message = isShortened ? "Shortened uri: " + uri : "Valid URI";
+            String message = isShortened ? String.format(getString(R.string.beacon_uribeacon_shorteneduriformat),  uri) : getString(R.string.beacon_uribeacon_validuri);
             mUriEncodeMessage.setText(message);
 
         }

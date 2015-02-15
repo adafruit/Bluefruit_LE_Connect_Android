@@ -29,6 +29,7 @@ public class ColorPickerActivity extends UartInterfaceActivity implements BleMan
     private final static String kPreferences = "ColorPickerActivity_prefs";
     private final static String kPreferences_color = "color";
 
+    private final int kFirstTimeColor = 0xff0000;
 
     // UI
     private ColorPicker mColorPicker;
@@ -59,10 +60,10 @@ public class ColorPickerActivity extends UartInterfaceActivity implements BleMan
 
         if (kPersistValues) {
             SharedPreferences preferences = getSharedPreferences(kPreferences, Context.MODE_PRIVATE);
-            mSelectedColor = preferences.getInt(kPreferences_color, 0xffffff);
+            mSelectedColor = preferences.getInt(kPreferences_color, kFirstTimeColor);
         }
         else {
-            mSelectedColor = 0xffffff;
+            mSelectedColor = kFirstTimeColor;
         }
 
         mColorPicker.setOldCenterColor(mSelectedColor);
@@ -169,7 +170,7 @@ public class ColorPickerActivity extends UartInterfaceActivity implements BleMan
         int r = (color >> 16) & 0xFF;
         int g = (color >> 8) & 0xFF;
         int b = (color >> 0) & 0xFF;
-        String text = String.format("R:%s G:%s B:%s", r, g, b);
+        String text = String.format(getString(R.string.colorpicker_rgbformat), r, g, b);
         mRgbTextView.setText(text);
 
     }

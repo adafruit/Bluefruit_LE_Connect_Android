@@ -156,12 +156,15 @@
     <string name="beacon_beacon_enabling">Resetting into Beacon Mode</string>
 
     <string name="beacon_aterror">Device not responding to commands.\nPlease ensure that you are running firmware version 0.4.7 or higher</string>
-
-
     <string name="beacon_ibeacon_subtitle">iBeacon Data</string>
     <string name="beacon_uribeacon_subtitle">UriBeacon Data</string>
 
     <string name="beacon_uribeacon_invalidprefix">Prefix must be one of the following values: http://www. https://www.  http:// https://  urn:uuid:</string>
+    <string name="beacon_uribeacon_uritoolong">Uri too long</string>
+    <string name="beacon_uribeacon_shorteneduriformat">Shortened uri: </string>
+    <string name="beacon_uribeacon_shorteningerror">Shortening error</string>
+    <string name="beacon_uribeacon_shortening">Shortening...</string>
+    <string name="beacon_uribeacon_validuri">Valid URI</string>
 
     <!-- Connected Settings -->
     <string name="title_activity_connected_settings">Connected Settings</string>
