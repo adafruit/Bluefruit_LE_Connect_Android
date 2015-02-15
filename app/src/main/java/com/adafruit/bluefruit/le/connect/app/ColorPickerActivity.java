@@ -29,7 +29,7 @@ public class ColorPickerActivity extends UartInterfaceActivity implements BleMan
     private final static String kPreferences = "ColorPickerActivity_prefs";
     private final static String kPreferences_color = "color";
 
-    private final int kFirstTimeColor = 0xff0000;
+    private final int kFirstTimeColor = 0x0000ff;
 
     // UI
     private ColorPicker mColorPicker;

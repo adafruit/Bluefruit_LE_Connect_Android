@@ -44,7 +44,6 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
     private static final int kActivityRequestCode_SelectFile_Ini = 1;
 
     // UI
-
     private View mUpdatesWaitView;
     private View mUpdatesWaitIndicatorView;
     private TextView mUpdatesWaitTextView;
@@ -111,7 +110,10 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
 
     @Override
     public void onResume() {
+
         super.onResume();
+
+
     }
 
     @Override

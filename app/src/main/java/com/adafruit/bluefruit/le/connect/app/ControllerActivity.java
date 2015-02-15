@@ -105,11 +105,11 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (position == 0) {
-                    Intent intent = new Intent(ControllerActivity.this, PadActivity.class);
+                    Intent intent = new Intent(ControllerActivity.this, ColorPickerActivity.class);
                     startActivityForResult(intent, 0);
                 }
                 else {
-                    Intent intent = new Intent(ControllerActivity.this, ColorPickerActivity.class);
+                    Intent intent = new Intent(ControllerActivity.this, PadActivity.class);
                     startActivityForResult(intent, 0);
                 }
             }
@@ -234,6 +234,12 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
             startConnectedSettings();
             return true;
         }
+        else if (id == R.id.action_refreshcache)  {
+            if (mBleManager != null ) {
+                mBleManager.refreshDeviceCache();
+            }
+        }
+
         return super.onOptionsItemSelected(item);
     }
 

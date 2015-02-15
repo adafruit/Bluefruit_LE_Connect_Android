@@ -12,7 +12,14 @@
 
     <item
         android:id="@+id/action_connected_settings"
-        android:title="@string/action_connected_settings"
+        android:title="@string/action_firmwareupdates"
         android:icon="@drawable/ic_settings_white_24dp"
-        app:showAsAction="always" />
+        app:showAsAction="never" />
+
+
+    <item
+        android:id="@+id/action_refreshcache"
+        android:title="@string/action_refreshcache"
+        app:showAsAction="never"
+        />
 </menu>

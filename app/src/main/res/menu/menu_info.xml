@@ -1,18 +1,26 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.adafruit.bluefruit.le.connect.app.InfoActivity">
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context="com.adafruit.bluefruit.le.connect.app.InfoActivity">
 
     <item
         android:id="@+id/action_help"
-        android:title="@string/action_info"
         android:icon="@android:drawable/ic_menu_info_details"
-        app:showAsAction="always" />
+        android:title="@string/action_info"
+        app:showAsAction="always"/>
 
     <item
         android:id="@+id/action_connected_settings"
-        android:title="@string/action_connected_settings"
         android:icon="@drawable/ic_settings_white_24dp"
-        app:showAsAction="always" />
+        android:title="@string/action_firmwareupdates"
+        app:showAsAction="never"
+        />
+
+    <item
+        android:id="@+id/action_refreshcache"
+        android:title="@string/action_refreshcache"
+        app:showAsAction="never"
+        />
+
 
 </menu>

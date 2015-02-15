@@ -63,8 +63,6 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
     public void setBleListener(BleManagerListener listener) {
         mBleListener = listener;
 
-        // Force clear current command queue to prevent a weird state where the executor is waiting for actions that never finish
-        mExecutor.clear();
     }
     public BleManagerListener getBleListener()  {return mBleListener; }
 
@@ -130,12 +128,13 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
         final boolean gattAutoconnect = sharedPreferences.getBoolean("pref_gattautoconnect", false);
         mGatt = mDevice.connectGatt(mContext, gattAutoconnect, mExecutor);
 
-
+/*
         // Refresh device cache
         final boolean refreshDeviceCache = sharedPreferences.getBoolean("pref_refreshdevicecache", true);
         if (refreshDeviceCache) {
             refreshDeviceCache();          // hack to force refresh the device cache and avoid problems with characteristic services read from cache and not updated
         }
+*/
 
         Log.d(TAG, "Trying to create a new connection.");
         mDeviceAddress = address;
@@ -180,13 +179,14 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
             Log.w(TAG, "disconnect: BluetoothAdapter not initialized");
             return;
         }
-
+/*
         // Refresh device cache before disconnect
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         final boolean refreshDeviceCache = sharedPreferences.getBoolean("pref_refreshdevicecache", true);
         if (refreshDeviceCache) {
             refreshDeviceCache();          // hack to force refresh the device cache and avoid problems with characteristic services read from cache and not updated
         }
+*/
 
         // Disconnect
         mGatt.disconnect();

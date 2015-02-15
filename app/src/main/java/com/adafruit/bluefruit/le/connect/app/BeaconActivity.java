@@ -190,6 +190,12 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
             startConnectedSettings();
             return true;
         }
+        else if (id == R.id.action_refreshcache)  {
+            if (mBleManager != null ) {
+                mBleManager.refreshDeviceCache();
+            }
+        }
+
 
         return super.onOptionsItemSelected(item);
     }

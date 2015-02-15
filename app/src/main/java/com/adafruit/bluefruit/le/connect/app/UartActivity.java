@@ -253,6 +253,12 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
             startConnectedSettings();
             return true;
         }
+        else if (id == R.id.action_refreshcache)  {
+            if (mBleManager != null ) {
+                mBleManager.refreshDeviceCache();
+            }
+        }
+
 
         return super.onOptionsItemSelected(item);
     }
