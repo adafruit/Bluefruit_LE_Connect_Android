@@ -23,6 +23,8 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -31,6 +33,7 @@ import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.app.settings.ConnectedSettingsActivity;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightExpandableListView;
+import com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightListView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -62,6 +65,9 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
     private ExpandableHeightExpandableListView mControllerListView;
     private ExpandableListAdapter mControllerListAdapter;
 
+    private ExpandableHeightListView mInterfaceListView;
+    private ArrayAdapter<String> mInterfaceListAdapter;
+
     // Data
     private Handler sendDataHandler = new Handler();
     private GoogleApiClient mGoogleApiClient;
@@ -90,6 +96,24 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
         mControllerListAdapter = new ExpandableListAdapter(this, mSensorData);
         mControllerListView.setAdapter(mControllerListAdapter);
         mControllerListView.setExpanded(true);
+
+        mInterfaceListView = (ExpandableHeightListView) findViewById(R.id.interfaceListView);
+        mInterfaceListAdapter = new ArrayAdapter<>(this, R.layout.layout_controller_interface_title, R.id.titleTextView, getResources().getStringArray(R.array.controller_interface_items));
+        mInterfaceListView.setAdapter(mInterfaceListAdapter);
+        mInterfaceListView.setExpanded(true);
+        mInterfaceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (position == 0) {
+                    Intent intent = new Intent(ControllerActivity.this, PadActivity.class);
+                    startActivityForResult(intent, 0);
+                }
+                else {
+                    Intent intent = new Intent(ControllerActivity.this, ColorPickerActivity.class);
+                    startActivityForResult(intent, 0);
+                }
+            }
+        });
 
         // Sensors
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -326,11 +350,6 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
         }
     }
 
-    public void onClickInterfacePad(View view) {
-        Intent intent = new Intent(this, PadActivity.class);
-        startActivityForResult(intent, 0);
-    }
-
     @Override
     public final void onAccuracyChanged(Sensor sensor, int accuracy) {
         // Do something here if sensor accuracy changes.
@@ -451,6 +470,7 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
     }
 
 
+    // region ExpandableListAdapter
     private class SensorData {
         public int sensorType;
         public float[] values;
@@ -579,6 +599,8 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
             return false;
         }
     }
+
+    // endregion
 
     // region DataFragment
     public static class DataFragment extends Fragment {

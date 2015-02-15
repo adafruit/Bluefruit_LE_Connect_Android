@@ -47,8 +47,6 @@ public class PadActivity extends UartInterfaceActivity implements BleManager.Ble
         ImageButton button4ImageButton = (ImageButton) findViewById(R.id.button4ImageButton);
         button4ImageButton.setOnTouchListener(mPadButtonTouchListener);
 
-        // Adjust aspect ratio
-
         // Start services
         onServicesDiscovered();
     }

@@ -1,15 +1,15 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/default_background"
-    android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@drawable/default_background"
+              android:orientation="vertical"
+              android:paddingBottom="@dimen/activity_vertical_margin"
+              android:paddingLeft="@dimen/activity_horizontal_margin"
+              android:paddingRight="@dimen/activity_horizontal_margin"
+              android:paddingTop="@dimen/activity_vertical_margin"
 
-    tools:context="com.adafruit.bluefruit.le.connect.app.ControllerActivity">
+              tools:context="com.adafruit.bluefruit.le.connect.app.ControllerActivity">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -23,8 +23,8 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@drawable/default_textcolor"
-                android:text="@string/controller_sectiontitle_stream" />
+                android:text="@string/controller_sectiontitle_stream"
+                android:textColor="@drawable/default_textcolor"/>
 
             <com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightExpandableListView
                 android:id="@+id/controllerListView"
@@ -33,22 +33,23 @@
                 android:layout_marginTop="10dp"
                 android:background="#ffffff"
                 android:childDivider="#00000000"
-                android:groupIndicator="@null" />
+                android:groupIndicator="@null"/>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@drawable/default_textcolor"
                 android:layout_marginTop="20dp"
-                android:text="@string/controller_sectiontitle_interface" />
+                android:text="@string/controller_sectiontitle_interface"
+                android:textColor="@drawable/default_textcolor"/>
 
-            <include
-                layout="@layout/layout_controller_interface_title"
+
+            <com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightListView
+                android:id="@+id/interfaceListView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                />
-
+                android:layout_height="wrap_content"
+                android:dividerHeight="1dp"
+                android:divider="#aaaaaa"/>
         </LinearLayout>
 
     </ScrollView>

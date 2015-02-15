@@ -114,9 +114,17 @@
             android:label="@string/title_activity_connected_settings" >
         </activity>
         <activity
-            android:windowSoftInputMode="stateVisible|adjustPan"
             android:name=".app.BeaconActivity"
-            android:label="@string/title_activity_beacon">
+            android:label="@string/title_activity_beacon"
+            android:windowSoftInputMode="stateVisible|adjustPan" >
+        </activity>
+        <activity
+            android:name=".app.ColorPickerActivity"
+            android:label="@string/title_activity_color_picker"
+            android:parentActivityName=".app.ControllerActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.adafruit.bluefruit.le.connect.app.ControllerActivity" />
         </activity>
     </application>
 

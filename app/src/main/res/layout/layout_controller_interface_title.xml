@@ -3,7 +3,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="#ffffff"
-    android:onClick="onClickInterfacePad"
     android:orientation="horizontal"
     android:paddingBottom="20dp"
     android:paddingLeft="10dp"
@@ -11,11 +10,11 @@
     android:paddingTop="20dp">
 
     <TextView
+        android:id="@+id/titleTextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_weight="1"
-        android:text="@string/controller_interface_controlpad"
         android:textColor="#000000"
         android:textSize="16sp" />
 
