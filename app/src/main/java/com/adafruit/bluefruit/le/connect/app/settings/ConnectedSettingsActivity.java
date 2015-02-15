@@ -102,6 +102,10 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
 
         // Start
         if (mDeviceInfoData == null) {      // only do this check the first time
+            // Force clear current command queue to prevent a weird state where the executor is waiting for actions that never finish
+            BleManager bleManager = BleManager.getInstance(this);
+            bleManager.clearExecutor();
+
             mFirmwareUpdater.checkFirmwareUpdatesForTheCurrentConnectedDevice();            // continues on onFirmwareUpdatesChecked
         }
 

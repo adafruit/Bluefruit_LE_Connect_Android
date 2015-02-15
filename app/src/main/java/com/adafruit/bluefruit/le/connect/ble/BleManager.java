@@ -145,6 +145,12 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
         return true;
     }
 
+    public void clearExecutor() {
+        if (mExecutor != null) {
+            mExecutor.clear();
+        }
+    }
+
     /**
     * Call to private Android method 'refresh'
     * This method does actually clear the cache from a bluetooth device. But the problem is that we don't have access to it. But in java we have reflection, so we can access this method.
