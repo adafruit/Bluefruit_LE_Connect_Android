@@ -139,7 +139,7 @@ public class URIBeaconFragment extends Fragment implements ShortenerAsyncTask.Sh
         super.onDetach();
         mListener = null;
 
-        // Preserver values
+        // Preserve values
         if (kPersistValues) {
             SharedPreferences settings = getActivity().getSharedPreferences(kPreferences, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = settings.edit();
