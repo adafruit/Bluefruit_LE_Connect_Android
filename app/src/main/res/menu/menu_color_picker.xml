@@ -7,4 +7,10 @@
         android:title="@string/action_info"
         android:icon="@android:drawable/ic_menu_info_details"
         app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_about"
+        android:title="@string/action_about"
+        app:showAsAction="never"
+        />
 </menu>

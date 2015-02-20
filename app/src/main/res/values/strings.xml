@@ -8,6 +8,7 @@
     <string name="action_settings">Settings</string>
     <string name="action_firmwareupdates">Firmware Updates</string>
     <string name="action_refreshcache">Refresh Bluetooth Cache</string>
+    <string name="action_about">About</string>
 
     <!-- Bluetooth Adapter -->
     <string name="dialog_error_no_ble">Bluetooth Low Energy not supported</string>
@@ -117,6 +118,7 @@
     <!-- Color Picker -->
     <string name="title_activity_color_picker">Color Picker</string>
     <string name="colorpicker_help_title">Color Picker Help</string>
+    <string name="colorpicker_about_title">Color Picker About</string>
     <string name="colorpicker_send">Send</string>
     <string name="colorpicker_rgbformat">R:%1$s G:%2$s B:%3$s</string>
 
