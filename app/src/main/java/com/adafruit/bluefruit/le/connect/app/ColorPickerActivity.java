@@ -198,16 +198,19 @@ public class ColorPickerActivity extends UartInterfaceActivity implements BleMan
 
         Log.d(TAG, "Send to UART: !C " + r + " " + g + " " + b);
 
-        ByteBuffer buffer = ByteBuffer.allocate(2 + 3 * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer buffer = ByteBuffer.allocate(6).order(java.nio.ByteOrder.LITTLE_ENDIAN);
 
         // prefix
         String prefix = "!C";
         buffer.put(prefix.getBytes());
 
         // values
-        buffer.putInt(r);
-        buffer.putInt(g);
-        buffer.putInt(b);
+        buffer.put((byte)(r & 0xFF));
+        buffer.put((byte)(g & 0xFF));
+        buffer.put((byte)(b & 0xFF));
+
+        // ToDo: Calculate CRC
+        buffer.put((byte)0);
 
         byte[] result = buffer.array();
         sendData(result);
