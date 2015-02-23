@@ -60,7 +60,7 @@ public class UartInterfaceActivity extends ActionBarActivity {
         dataCrc[data.length] = checksum;
 
         // Send it
-        Log.d(TAG, "Send to UART: " + BleUtils.bytesToHex(dataCrc));
+        Log.d(TAG, "Send to UART: " + BleUtils.bytesToHexWithSpaces(dataCrc));
         sendData(dataCrc);
 
     }
