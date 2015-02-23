@@ -85,6 +85,7 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
 
     private float[] mRotation = new float[9];
     private float[] mOrientation = new float[3];
+    private float[] mQuaternion = new float[4];
 
     private DataFragment mRetainedDataFragment;
 
@@ -202,7 +203,7 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
                 SensorData sensorData = mSensorData[i];
 
                 if (sensorData.enabled && sensorData.values != null) {
-                    ByteBuffer buffer = ByteBuffer.allocate(2 + 3 * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+                    ByteBuffer buffer = ByteBuffer.allocate(2 + sensorData.values.length * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
 
                     // prefix
                     String prefix = prefixes[sensorData.sensorType];
@@ -214,6 +215,7 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
                     }
 
                     byte[] result = buffer.array();
+                    Log.d(TAG, "Send data for sensor: "+i);
                     sendDataWithCRC(result);
                 }
             }
@@ -386,15 +388,18 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
     public final void onSensorChanged(SensorEvent event) {
         int sensorType = event.sensor.getType();
         if (sensorType == Sensor.TYPE_ACCELEROMETER) {
+     //       Log.d(TAG, "Received data for accelerometer / quaternion");
             mSensorData[kSensorType_Accelerometer].values = event.values;
 
             updateOrientation();            // orientation depends on Accelerometer and Magnetometer
             mControllerListAdapter.notifyDataSetChanged();
         } else if (sensorType == Sensor.TYPE_GYROSCOPE) {
+     //       Log.d(TAG, "Received data for gyroscope");
             mSensorData[kSensorType_Gyroscope].values = event.values;
 
             mControllerListAdapter.notifyDataSetChanged();
         } else if (sensorType == Sensor.TYPE_MAGNETIC_FIELD) {
+//            Log.d(TAG, "Received data for magnetometer / quaternion");
             mSensorData[kSensorType_Magnetometer].values = event.values;
 
             updateOrientation();            // orientation depends on Accelerometer and Magnetometer
@@ -403,16 +408,29 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
     }
 
     private void updateOrientation() {
-
         float[] lastAccelerometer = mSensorData[kSensorType_Accelerometer].values;
         float[] lastMagnetometer = mSensorData[kSensorType_Magnetometer].values;
         if (lastAccelerometer != null && lastMagnetometer != null) {
             SensorManager.getRotationMatrix(mRotation, null, lastAccelerometer, lastMagnetometer);
             SensorManager.getOrientation(mRotation, mOrientation);
-            mSensorData[kSensorType_Quaternion].values = mOrientation;
+
+            final boolean kUse4Components = true;
+            if (kUse4Components) {
+                SensorManager.getQuaternionFromVector(mQuaternion, mOrientation);
+                // Quaternions in Android are stored as [w, x, y, z], so we change it to [x, y, z, w]
+                float w = mQuaternion[0];
+                mQuaternion[0] = mQuaternion[1];
+                mQuaternion[1] = mQuaternion[2];
+                mQuaternion[2] = mQuaternion[3];
+                mQuaternion[3] = w;
+
+                mSensorData[kSensorType_Quaternion].values = mQuaternion;
+            }
+            else {
+                mSensorData[kSensorType_Quaternion].values = mOrientation;
+            }
         }
     }
-
 
     // region BleManagerListener
     @Override
@@ -521,7 +539,8 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
         @Override
         public int getChildrenCount(int groupPosition) {
             switch (groupPosition) {
-//                case kSensorType_Quaternion: return 4;       // Quaternion (x, y, z, w)
+                case kSensorType_Quaternion:
+                    return 4;       // Quaternion (x, y, z, w)
                 case kSensorType_Location: {
                     SensorData sensorData = mSensorData[groupPosition];
                     return sensorData.values == null ? 1 : 3;
