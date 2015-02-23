@@ -14,6 +14,8 @@ import android.widget.ImageButton;
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 
+import java.nio.ByteBuffer;
+
 public class PadActivity extends UartInterfaceActivity implements BleManager.BleManagerListener {
     // Log
     private final static String TAG = PadActivity.class.getSimpleName();
@@ -89,7 +91,9 @@ public class PadActivity extends UartInterfaceActivity implements BleManager.Ble
 
     private void sendTouchEvent(int tag, boolean pressed) {
         String data = "!B" + tag + (pressed ? "1" : "0");
-        sendData(data.getBytes());
+        ByteBuffer buffer = ByteBuffer.allocate(data.length()).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        buffer.put(data.getBytes());
+        sendDataWithCRC(buffer.array());
     }
 
     @Override
