@@ -187,6 +187,17 @@ public class ColorPickerActivity extends UartInterfaceActivity implements BleMan
 
     }
 
+    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
+
     public void onClickSend(View view) {
         // Set the old color
         mColorPicker.setOldCenterColor(mSelectedColor);
@@ -195,8 +206,6 @@ public class ColorPickerActivity extends UartInterfaceActivity implements BleMan
         int r = (mSelectedColor >> 16) & 0xFF;
         int g = (mSelectedColor >> 8) & 0xFF;
         int b = (mSelectedColor >> 0) & 0xFF;
-
-        Log.d(TAG, "Send to UART: !C " + r + " " + g + " " + b);
 
         ByteBuffer buffer = ByteBuffer.allocate(6).order(java.nio.ByteOrder.LITTLE_ENDIAN);
 
@@ -209,10 +218,15 @@ public class ColorPickerActivity extends UartInterfaceActivity implements BleMan
         buffer.put((byte)(g & 0xFF));
         buffer.put((byte)(b & 0xFF));
 
-        // ToDo: Calculate CRC
-        buffer.put((byte)0);
+        // Calculate CRC
+        byte checksum = 0;
+        for(int x = 0; x < 6; x++) {
+            checksum += buffer.get(x);
+        }
+        buffer.put((byte)(~checksum)); // Invert before adding the checksum
 
         byte[] result = buffer.array();
+        Log.d(TAG, "Send to UART: " + bytesToHex(result));
         sendData(result);
     }
 }
