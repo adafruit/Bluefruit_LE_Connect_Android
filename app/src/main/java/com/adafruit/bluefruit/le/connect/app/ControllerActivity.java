@@ -9,6 +9,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -51,6 +52,10 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
     private static final int kActivityRequestCode_ConnectedSettingsActivity = 0;
 
     // Constants
+    private final static String kPreferences = "ControllerActivity_prefs";
+    private final static String kPreferences_uartToolTip = "uarttooltip";
+
+    // Constants
     private final static int kSendDataInterval = 500;   // milliseconds
 
     // Sensor Types
@@ -67,6 +72,7 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
 
     private ExpandableHeightListView mInterfaceListView;
     private ArrayAdapter<String> mInterfaceListAdapter;
+    private ViewGroup mUartTooltipViewGroup;
 
     // Data
     private Handler sendDataHandler = new Handler();
@@ -114,6 +120,11 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
                 }
             }
         });
+
+        mUartTooltipViewGroup = (ViewGroup)findViewById(R.id.uartTooltipViewGroup);
+        SharedPreferences preferences = getSharedPreferences(kPreferences, Context.MODE_PRIVATE);
+        final boolean showUartTooltip = preferences.getBoolean(kPreferences_uartToolTip, true);
+        mUartTooltipViewGroup.setVisibility(showUartTooltip?View.VISIBLE:View.GONE);
 
         // Sensors
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -326,6 +337,16 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
                 LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
             }
         }
+    }
+
+    public void onClickCloseTooltip(View view) {
+        SharedPreferences settings = getSharedPreferences(kPreferences, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putBoolean(kPreferences_uartToolTip, false);
+        editor.commit();
+
+        mUartTooltipViewGroup.setVisibility(View.GONE);
+
     }
 
     public void onClickToggle(View view) {

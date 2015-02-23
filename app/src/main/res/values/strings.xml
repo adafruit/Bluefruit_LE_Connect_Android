@@ -92,6 +92,7 @@
 
     <!-- Controller Activity -->
     <string name="title_activity_controller">Controller</string>
+    <string name="controller_uartwarning">Please ensure that your Bluefruit LE module is set to DATA/UART mode when using this application</string>
     <string name="controller_sectiontitle_stream">Stream Sensor Data</string>
     <string name="controller_sectiontitle_interface">Interface</string>
     <string name="controller_help_title">Controller Help</string>

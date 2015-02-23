@@ -11,6 +11,33 @@
 
               tools:context="com.adafruit.bluefruit.le.connect.app.ControllerActivity">
 
+
+    <LinearLayout
+        android:id="@+id/uartTooltipViewGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/default_textcolor"
+        android:orientation="horizontal"
+        android:layout_marginBottom="10dp"
+        android:padding="10dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/controller_uartwarning"
+            android:textColor="#000000"/>
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+           android:layout_gravity="center_vertical"
+           android:padding="4dp"
+            android:background="@null"
+            android:onClick="onClickCloseTooltip"
+            android:src="@drawable/ic_close_black_18dp"/>
+    </LinearLayout>
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -46,10 +73,10 @@
             <com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightListView
                 android:id="@+id/interfaceListView"
                 android:layout_width="match_parent"
-                android:layout_marginTop="10dp"
                 android:layout_height="wrap_content"
-                android:dividerHeight="1dp"
-                android:divider="#dddddd"/>
+                android:layout_marginTop="10dp"
+                android:divider="#dddddd"
+                android:dividerHeight="1dp"/>
         </LinearLayout>
 
     </ScrollView>
