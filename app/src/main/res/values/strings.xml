@@ -139,7 +139,7 @@
     </string-array>
 
     <string-array name="beacon_page_titles">
-        <item>iBeacon</item>
+        <item>Beacon</item>
         <item>URI Beacon</item>
     </string-array>
 
@@ -159,7 +159,7 @@
     <string name="beacon_beacon_enabling">Resetting into Beacon Mode</string>
 
     <string name="beacon_aterror">Device not responding to commands.\nPlease ensure that you are running firmware version 0.4.7 or higher</string>
-    <string name="beacon_ibeacon_subtitle">iBeacon Data</string>
+    <string name="beacon_ibeacon_subtitle">Beacon Data</string>
     <string name="beacon_uribeacon_subtitle">UriBeacon Data</string>
 
     <string name="beacon_uribeacon_invalidprefix">Prefix must be one of the following values: http://www. https://www.  http:// https://  urn:uuid:</string>
