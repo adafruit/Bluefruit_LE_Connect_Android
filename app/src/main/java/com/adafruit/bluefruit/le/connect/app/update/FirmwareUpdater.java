@@ -369,7 +369,9 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         }
 
         if (mProgressDialog != null) {
-            mProgressDialog.dismiss();
+            try {
+                mProgressDialog.dismiss();
+            }catch(Exception e) {};
             mProgressDialog = null;
         }
 
