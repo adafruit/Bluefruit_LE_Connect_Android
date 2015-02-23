@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
+import com.adafruit.bluefruit.le.connect.ble.BleUtils;
 import com.larswerkman.holocolorpicker.ColorPicker;
 import com.larswerkman.holocolorpicker.SaturationBar;
 import com.larswerkman.holocolorpicker.ValueBar;
@@ -187,46 +188,28 @@ public class ColorPickerActivity extends UartInterfaceActivity implements BleMan
 
     }
 
-    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
-    public static String bytesToHex(byte[] bytes) {
-        char[] hexChars = new char[bytes.length * 2];
-        for ( int j = 0; j < bytes.length; j++ ) {
-            int v = bytes[j] & 0xFF;
-            hexChars[j * 2] = hexArray[v >>> 4];
-            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
-        }
-        return new String(hexChars);
-    }
 
     public void onClickSend(View view) {
         // Set the old color
         mColorPicker.setOldCenterColor(mSelectedColor);
 
         // Send selected color !Crgb
-        int r = (mSelectedColor >> 16) & 0xFF;
-        int g = (mSelectedColor >> 8) & 0xFF;
-        int b = (mSelectedColor >> 0) & 0xFF;
+        byte r = (byte)((mSelectedColor >> 16) & 0xFF);
+        byte g = (byte)((mSelectedColor >>  8) & 0xFF);
+        byte b = (byte)((mSelectedColor >>  0) & 0xFF);
 
-        ByteBuffer buffer = ByteBuffer.allocate(6).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer buffer = ByteBuffer.allocate(2+3*1).order(java.nio.ByteOrder.LITTLE_ENDIAN);
 
         // prefix
         String prefix = "!C";
         buffer.put(prefix.getBytes());
 
         // values
-        buffer.put((byte)(r & 0xFF));
-        buffer.put((byte)(g & 0xFF));
-        buffer.put((byte)(b & 0xFF));
-
-        // Calculate CRC
-        byte checksum = 0;
-        for(int x = 0; x < 6; x++) {
-            checksum += buffer.get(x);
-        }
-        buffer.put((byte)(~checksum)); // Invert before adding the checksum
+        buffer.put(r);
+        buffer.put(g);
+        buffer.put(b);
 
         byte[] result = buffer.array();
-        Log.d(TAG, "Send to UART: " + bytesToHex(result));
-        sendData(result);
+        sendDataWithCRC(result);
     }
 }

@@ -203,7 +203,7 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
                     }
 
                     byte[] result = buffer.array();
-                    sendData(result);
+                    sendDataWithCRC(result);
                 }
             }
 

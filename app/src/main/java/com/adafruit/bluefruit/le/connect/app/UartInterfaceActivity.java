@@ -5,6 +5,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
+import com.adafruit.bluefruit.le.connect.ble.BleUtils;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -41,6 +42,27 @@ public class UartInterfaceActivity extends ActionBarActivity {
         } else {
             Log.w(TAG, "Uart Service not discovered. Unable to send data");
         }
+    }
+
+    // Send data to UART and add a byte with a custom CRC
+    protected void sendDataWithCRC(byte[] data) {
+
+        // Calculate checksum
+        byte checksum = 0;
+        for(int i = 0; i < data.length; i++) {
+            checksum += data[i];
+        }
+        checksum = (byte)(~checksum);       // Invert
+
+        // Add crc to data
+        byte dataCrc[] = new byte[data.length+1];
+        System.arraycopy(data, 0, dataCrc, 0, data.length);
+        dataCrc[data.length] = checksum;
+
+        // Send it
+        Log.d(TAG, "Send to UART: " + BleUtils.bytesToHex(dataCrc));
+        sendData(dataCrc);
+
     }
 
 
