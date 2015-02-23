@@ -2,7 +2,9 @@ package com.adafruit.bluefruit.le.connect.app;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -57,17 +59,19 @@ public class PadActivity extends UartInterfaceActivity implements BleManager.Ble
     private void adjustAspectRatio() {
         ViewGroup rootLayout = (ViewGroup) findViewById(R.id.rootLayout);
         int mainWidth = rootLayout.getWidth();
-        int mainHeight = rootLayout.getHeight();
-        if (mainWidth > 0 && mainHeight > 0) {
-            // Add black bars if aspect ratio is below min
-            float aspectRatio = mainWidth / (float)mainHeight;
-            if (aspectRatio < kMinAspectRatio) {
-                final int spacerHeight =  Math.round(mainHeight * (kMinAspectRatio - aspectRatio));
 
-                View topSpacerView = findViewById(R.id.topSpacerView);
-                topSpacerView.getLayoutParams().height = spacerHeight / 2;
-                View bottomSpacerView = findViewById(R.id.bottomSpacerView);
-                bottomSpacerView.getLayoutParams().height = spacerHeight / 2;
+        if (mainWidth > 0) {
+            View topSpacerView = findViewById(R.id.topSpacerView);
+            View bottomSpacerView = findViewById(R.id.bottomSpacerView);
+            int mainHeight = rootLayout.getHeight() - topSpacerView.getLayoutParams().height - bottomSpacerView.getLayoutParams().height;
+            if (mainHeight > 0) {
+                // Add black bars if aspect ratio is below min
+                float aspectRatio = mainWidth / (float) mainHeight;
+                if (aspectRatio < kMinAspectRatio) {
+                    final int spacerHeight = Math.round(mainHeight * (kMinAspectRatio - aspectRatio));
+                    topSpacerView.getLayoutParams().height = spacerHeight / 2;
+                    bottomSpacerView.getLayoutParams().height = spacerHeight / 2;
+                }
             }
         }
     }
@@ -118,6 +122,16 @@ public class PadActivity extends UartInterfaceActivity implements BleManager.Ble
         return super.onOptionsItemSelected(item);
     }
 
+    /*
+    @Override
+    public void onConfigurationChanged (Configuration newConfig)
+    {
+        super.onConfigurationChanged(newConfig);
+
+        adjustAspectRatio();
+    }
+    */
+
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
@@ -131,9 +145,9 @@ public class PadActivity extends UartInterfaceActivity implements BleManager.Ble
                             | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                             | View.SYSTEM_UI_FLAG_FULLSCREEN
                             | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+            adjustAspectRatio();
         }
 
-        adjustAspectRatio();
     }
 
     public void onClickExit(View view) {
