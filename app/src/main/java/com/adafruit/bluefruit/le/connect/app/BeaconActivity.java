@@ -46,7 +46,7 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
     private static final int kActivityRequestCode_ConnectedSettingsActivity = 0;
 
     // Data
-    BeaconPagerAdapter mAdapterViewPager;
+    private BeaconPagerAdapter mAdapterViewPager;
     private int mCurrentTab;
     private int mCurrentOperation;
     private AlertDialog mDialog;
@@ -149,7 +149,7 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
         boolean result = false;
 
         if (mCurrentTab == kTab_iBeacon) {
-            // if pressed back check if we need to dimiss custom keyboard used on iBeacon Activity
+            // if pressed back check if we need to dimiss the custom keyboard used on iBeacon Activity
             Fragment currentFragment = mAdapterViewPager.getCurrentFragment();
             result = ((IBeaconFragment) currentFragment).onBackPressed();
         }
@@ -276,7 +276,7 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
     @Override
     public void onServicesDiscovered() {
         mUartService = mBleManager.getGattService(UUID_SERVICE);
-        mBleManager.enableService(mUartService, UUID_RX, true);
+        mBleManager.enableNotification(mUartService, UUID_RX, true);
 
         // Test AT parser
         testATParser();
@@ -302,13 +302,13 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
 
                     switch (mCurrentOperation) {
                         case kOperation_BeaconDisable:
-                            break;//message = getString(R.string.beacon_beacon_disabled); break;
+                            break;
                         case kOperation_iBeaconEnable:
                             onBeaconEnabled();
-                            break;//message = getString(R.string.beacon_beacon_enabled); break;
+                            break;
                         case kOperation_UriBeaconEnable:
                             onBeaconEnabled();
-                            break;//message = getString(R.string.beacon_beacon_enabled); break;
+                            break;
                         default:
                             break;
                     }
@@ -453,7 +453,7 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
     public void onEnable(String encodedUri) {
         mCurrentOperation = kOperation_UriBeaconEnable;
 
-        // URIBeacon enable
+        // URIBeacon enableNotification
         String uartCommand = String.format("AT+BLEURIBEACON=%s\r\n", encodedUri);
         Log.d(TAG, "send command: " + uartCommand);
         mCommandTimeoutHandler = new Handler();

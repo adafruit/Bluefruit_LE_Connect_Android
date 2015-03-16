@@ -254,15 +254,28 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
     }
 
 
-    public void enableService(BluetoothGattService service, String uuid, boolean enabled) {
+    public void enableNotification(BluetoothGattService service, String uuid, boolean enabled) {
         if (service != null) {
 
             if (mAdapter == null || mGatt == null) {
-                Log.w(TAG, "enableService: BluetoothAdapter not initialized");
+                Log.w(TAG, "enableNotification: BluetoothAdapter not initialized");
                 return;
             }
 
-            mExecutor.enable(service, uuid, enabled);
+            mExecutor.enableNotification(service, uuid, enabled);
+            mExecutor.execute(mGatt);
+        }
+    }
+
+    public void enableIndication(BluetoothGattService service, String uuid, boolean enabled) {
+        if (service != null) {
+
+            if (mAdapter == null || mGatt == null) {
+                Log.w(TAG, "enableNotification: BluetoothAdapter not initialized");
+                return;
+            }
+
+            mExecutor.enableIndication(service, uuid, enabled);
             mExecutor.execute(mGatt);
         }
     }
@@ -291,7 +304,6 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
         final boolean isNotifiable = (properties & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0;
         return isNotifiable;
     }
-
 
     // Permissions
     public int getDescriptorPermissions(BluetoothGattService service, String characteristicUUIDString, String descriptorUUIDString) {

@@ -85,7 +85,7 @@ public class BleGattExecutor extends BluetoothGattCallback {
         };
     }
 
-    protected void enable(BluetoothGattService gattService, String characteristicUUID, boolean enable) {
+    protected void enableNotification(BluetoothGattService gattService, String characteristicUUID, boolean enable) {
         ServiceAction action = serviceNotifyAction(gattService, characteristicUUID, enable);
         mQueue.add(action);
     }
@@ -99,7 +99,7 @@ public class BleGattExecutor extends BluetoothGattCallback {
                     final BluetoothGattCharacteristic dataCharacteristic = gattService.getCharacteristic(characteristicUuid);
 
                     if (dataCharacteristic == null) {
-                        Log.w(TAG, "Characteristic with UUID " + characteristicUuidString + "not found");
+                        Log.w(TAG, "Characteristic with UUID " + characteristicUuidString + " not found");
                         return true;
                     }
 
@@ -108,15 +108,51 @@ public class BleGattExecutor extends BluetoothGattCallback {
                     if (config == null)
                         return true;
 
-                    // enable/disable locally
+                    // enableNotification/disable locally
                     bluetoothGatt.setCharacteristicNotification(dataCharacteristic, enable);
-                    // enable/disable remotely
+                    // enableNotification/disable remotely
                     config.setValue(enable ? BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE : BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
                     bluetoothGatt.writeDescriptor(config);
 
                     return false;
                 } else {
-                    Log.w(TAG, "Characteristic with UUID " + characteristicUuidString + "not found");
+                    Log.w(TAG, "Characteristic with UUID " + characteristicUuidString + " not found");
+                    return true;
+                }
+            }
+        };
+    }
+
+    protected void enableIndication(BluetoothGattService gattService, String characteristicUUID, boolean enable) {
+        ServiceAction action = serviceIndicateAction(gattService, characteristicUUID, enable);
+        mQueue.add(action);
+    }
+
+    private BleGattExecutor.ServiceAction serviceIndicateAction(final BluetoothGattService gattService, final String characteristicUuidString, final boolean enable) {
+        return new BleGattExecutor.ServiceAction() {
+            @Override
+            public boolean execute(BluetoothGatt bluetoothGatt) {
+                if (characteristicUuidString != null) {
+                    final UUID characteristicUuid = UUID.fromString(characteristicUuidString);
+                    final BluetoothGattCharacteristic dataCharacteristic = gattService.getCharacteristic(characteristicUuid);
+
+                    if (dataCharacteristic == null) {
+                        Log.w(TAG, "Characteristic with UUID " + characteristicUuidString + " not found");
+                        return true;
+                    }
+
+                    final UUID clientCharacteristicConfiguration = UUID.fromString(CHARACTERISTIC_CONFIG);
+                    final BluetoothGattDescriptor config = dataCharacteristic.getDescriptor(clientCharacteristicConfiguration);
+                    if (config == null)
+                        return true;
+
+                    // enableNotification/disable remotely
+                    config.setValue(enable ? BluetoothGattDescriptor.ENABLE_INDICATION_VALUE : BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
+                    bluetoothGatt.writeDescriptor(config);
+
+                    return false;
+                } else {
+                    Log.w(TAG, "Characteristic with UUID " + characteristicUuidString + " not found");
                     return true;
                 }
             }

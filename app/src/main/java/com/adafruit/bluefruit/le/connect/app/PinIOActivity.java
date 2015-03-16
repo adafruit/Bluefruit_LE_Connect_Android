@@ -250,7 +250,7 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
     @Override
     public void onServicesDiscovered() {
         mUartService = mBleManager.getGattService(UUID_SERVICE);
-        mBleManager.enableService(mUartService, UUID_RX, true);
+        mBleManager.enableNotification(mUartService, UUID_RX, true);
 
         // PinIo init
         if (mIsActivityFirstRun) {

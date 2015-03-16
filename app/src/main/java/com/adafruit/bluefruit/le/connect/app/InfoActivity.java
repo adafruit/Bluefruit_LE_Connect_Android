@@ -582,7 +582,7 @@ public class InfoActivity extends ActionBarActivity implements BleManager.BleMan
                     ImageButton imageButton = (ImageButton) view;
                     final boolean selected = !imageButton.isSelected();
                     imageButton.setSelected(selected);
-                    mBleManager.enableService(service, elementPath.characteristicUUID, selected);
+                    mBleManager.enableNotification(service, elementPath.characteristicUUID, selected);
 
                     // Button color effect when pressed
                     imageButton.setImageResource(selected ? R.drawable.ic_sync_white_24dp : R.drawable.ic_sync_black_24dp);

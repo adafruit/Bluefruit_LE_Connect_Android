@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattService;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -50,9 +51,11 @@ import static android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 
 
 public class MainActivity extends ActionBarActivity implements BleManager.BleManagerListener, BleUtils.ResetBluetoothAdapterListener, FirmwareUpdater.FirmwareUpdaterListener {
-    // Log
+    // Constants
     private final static String TAG = MainActivity.class.getSimpleName();
     private final static long kMinDelayToUpdateUI = 800;    // in milliseconds
+    private static final String kGenericAttributeService = "00001801-0000-1000-8000-00805F9B34FB";
+    private static final String kServiceChangedCharacteristic = "00002A05-0000-1000-8000-00805F9B34FB";
 
     // Components
     private final static int kComponentsNameIds[] = {
@@ -104,7 +107,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
 
         // UI
         mScannedDevicesListView = (ExpandableHeightExpandableListView) findViewById(R.id.scannedDevicesListView);
-        mScannedDevicesAdapter = new ExpandableListAdapter(this, mScannedDevices);
+        mScannedDevicesAdapter = new ExpandableListAdapter(mScannedDevices);
         mScannedDevicesListView.setAdapter(mScannedDevicesAdapter);
         mScannedDevicesListView.setExpanded(true);
 
@@ -247,7 +250,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
                     .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            Log.d(TAG, "enable wifi");
+                            Log.d(TAG, "enableNotification wifi");
                             BleUtils.enableWifi(true, MainActivity.this);
                             MainActivity.super.onBackPressed();
                         }
@@ -352,7 +355,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
             }
             case BleUtils.STATUS_BLUETOOTH_DISABLED: {
                 isEnabled = false;      // it was already off
-                // if no enabled, launch settings dialog to enable it (user should always be prompted before automatically enabling bluetooth)
+                // if no enabled, launch settings dialog to enableNotification it (user should always be prompted before automatically enabling bluetooth)
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, kActivityRequestCode_EnableBluetooth);
                 // execution will continue at onActivityResult()
@@ -424,8 +427,8 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
         showStatusDialog(true, R.string.scan_checkingupdates);
     }
 
-    private void showStatusDialog(boolean enable, int stringId) {
-        if (enable) {
+    private void showStatusDialog(boolean show, int stringId) {
+        if (show) {
 
             // Remove if a previous dialog was open (maybe because was clicked 2 times really quick)
             if (mConnectingDialog != null) {
@@ -675,9 +678,29 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
     // endregion
 
     private void launchComponentActivity() {
-        showConnectionStatus(false);
+        // Enable generic attribute service
+        final BluetoothGattService genericAttributeService = mBleManager.getGattService(kGenericAttributeService);
+        if (genericAttributeService != null) {
+            Log.d(TAG, "kGenericAttributeService found. Check if kServiceChangedCharacteristic exists");
+
+            final UUID characteristicUuid = UUID.fromString(kServiceChangedCharacteristic);
+            final BluetoothGattCharacteristic dataCharacteristic = genericAttributeService.getCharacteristic(characteristicUuid);
+            if (dataCharacteristic != null) {
+                Log.d(TAG, "kServiceChangedCharacteristic exists. Enable indication");
+                mBleManager.enableIndication(genericAttributeService, kServiceChangedCharacteristic, true);
+            }
+            else
+            {
+                Log.d(TAG, "Skip enable indications for kServiceChangedCharacteristic. Characteristic not found");
+            }
+        }
+        else
+        {
+            Log.d(TAG, "Skip enable indications for kServiceChangedCharacteristic. kGenericAttributeService not found");
+        }
 
         // Launch activity
+        showConnectionStatus(false);
         if (mComponentToStartWhenConnected != null) {
             Intent intent = new Intent(MainActivity.this, mComponentToStartWhenConnected);
             if (mComponentToStartWhenConnected == BeaconActivity.class && mSelectedDeviceData != null) {
@@ -907,7 +930,6 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
         private static final int kChild_Services = 2;
         private static final int kChild_TXPower = 3;
 
-        private Activity mActivity;
         private ArrayList<BluetoothDeviceData> mBluetoothDevices;
 
         private class GroupViewHolder {
@@ -919,11 +941,9 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
 
         }
 
-        public ExpandableListAdapter(Activity activity, ArrayList<BluetoothDeviceData> bluetoothDevices) {
-            mActivity = activity;
+        public ExpandableListAdapter(ArrayList<BluetoothDeviceData> bluetoothDevices) {
             mBluetoothDevices = bluetoothDevices;
         }
-
 
         @Override
         public int getGroupCount() {
@@ -997,7 +1017,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
             GroupViewHolder holder;
 
             if (convertView == null) {
-                convertView = mActivity.getLayoutInflater().inflate(R.layout.layout_scan_item_title, parent, false);
+                convertView = getLayoutInflater().inflate(R.layout.layout_scan_item_title, parent, false);
 
                 holder = new GroupViewHolder();
 
@@ -1051,7 +1071,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
         @Override
         public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
             if (convertView == null) {
-                convertView = mActivity.getLayoutInflater().inflate(R.layout.layout_scan_item_child, parent, false);
+                convertView = getLayoutInflater().inflate(R.layout.layout_scan_item_child, parent, false);
             }
 
             // We don't expect many items so for clarity just find the views each time instead of using a ViewHolder
@@ -1072,7 +1092,6 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
     // region DataFragment
     public static class DataFragment extends Fragment {
         private ArrayList<BluetoothDeviceData> mScannedDevices;
-        // private boolean mWasScanningBeforeOnPause;
         private Class<?> mComponentToStartWhenConnected;
         private boolean mShouldEnableWifiOnQuit;
         private FirmwareUpdater mFirmwareUpdater;
