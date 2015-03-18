@@ -40,7 +40,7 @@ public class StandardUUIDs {
         aMap.put("1813", "Scan Parameters");
         aMap.put("1804", "Tx Power");
         aMap.put("181C", "User Data");
-        aMap.put("180D", "Weight Scale");
+        aMap.put("181D", "Weight Scale");
 
         // v0.9
         aMap.put("1815", "Automation IO");
