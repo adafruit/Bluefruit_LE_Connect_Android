@@ -1,4 +1,4 @@
-/*************************************************************************************************************************************************
+/*
  * Copyright (c) 2015, Nordic Semiconductor
  * All rights reserved.
  *
@@ -18,19 +18,31 @@
  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
  * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- ************************************************************************************************************************************************/
-
-package no.nordicsemi.android.dfu.exception;
-
-import java.io.IOException;
-
-/**
- * The HEX file could not be parsed.
  */
-public class HexFileValidationException extends IOException {
-	private static final long serialVersionUID = -6467104024030837875L;
 
-	public HexFileValidationException(final String message) {
-		super(message);
+package no.nordicsemi.android.dfu.manifest;
+
+import com.google.gson.annotations.SerializedName;
+
+public class Manifest {
+	protected FileInfo application;
+	protected FileInfo bootloader;
+	protected FileInfo softdevice;
+	@SerializedName("softdevice_bootloader") protected SoftDeviceBootloaderFileInfo softdeviceBootloader;
+
+	public FileInfo getApplicationInfo() {
+		return application;
+	}
+
+	public FileInfo getBootloaderInfo() {
+		return bootloader;
+	}
+
+	public FileInfo getSoftdeviceInfo() {
+		return softdevice;
+	}
+
+	public SoftDeviceBootloaderFileInfo getSoftdeviceBootloaderInfo() {
+		return softdeviceBootloader;
 	}
 }
