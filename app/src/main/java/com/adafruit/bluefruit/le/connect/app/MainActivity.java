@@ -212,7 +212,9 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
             mBleManager.disconnect();
 
             // Force restart scanning
-            mScannedDevices.clear();
+            if (mScannedDevices != null) {      // Fixed a weird bug when resuming the app (this was null on very rare occasions even if it should not be)
+                mScannedDevices.clear();
+            }
             startScan(null, null);
         }
 
