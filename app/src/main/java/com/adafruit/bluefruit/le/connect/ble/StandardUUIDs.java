@@ -33,6 +33,7 @@ public class StandardUUIDs {
         aMap.put("1802", "Immediate Alert");
         aMap.put("1803", "Link Loss");
         aMap.put("1819", "Location and Navigation");
+        aMap.put("1820", "Internet Protocol Support");
         aMap.put("1807", "Next DST Change Service");
         aMap.put("180E", "Phone Alert Status Service");
         aMap.put("1806", "Reference Time Update Service");
@@ -45,8 +46,8 @@ public class StandardUUIDs {
         // v0.9
         aMap.put("1815", "Automation IO");
         aMap.put("1802", "Immediate Alert Service 1.1");
-        aMap.put("1803", "Link Loss Service 1.1");
-        aMap.put("1804", "Tx Power Service 1.1");
+        // aMap.put("1803", "Link Loss Service 1.1");
+        // aMap.put("1804", "Tx Power Service 1.1");
 
         sServiceUUIDs = Collections.unmodifiableMap(aMap);
     }
@@ -85,6 +86,7 @@ public class StandardUUIDs {
         aMap.put("2A22", "Boot Keyboard Input Report");
         aMap.put("2A32", "Boot Keyboard Output Report");
         aMap.put("2A33", "Boot Mouse Input Report");
+        aMap.put("2AA6", "Central Address Resolution");
         aMap.put("2AA8", "CGM Feature");
         aMap.put("2AA7", "CGM Measurement");
         aMap.put("2AAB", "CGM Session Run Time");
@@ -171,7 +173,7 @@ public class StandardUUIDs {
         aMap.put("2A55", "SC Control Point");
         aMap.put("2A4F", "Scan Interval Window");
         aMap.put("2A31", "Scan Refresh");
-        aMap.put("2A5D", "Sensor Location	");
+        aMap.put("2A5D", "Sensor Location");
         aMap.put("2A25", "Serial Number String");
         aMap.put("2A05", "Service Changed");
         aMap.put("2A28", "Software Revision String");
@@ -203,9 +205,13 @@ public class StandardUUIDs {
         aMap.put("2A9D", "Weight Measurement");
         aMap.put("2A9E", "Weight Scale Feature");
         aMap.put("2A79", "Wind Chill");
+
+        // v0.9
         aMap.put("2A5A", "Aggregate");
+        //   aMap.put("xxxx", "Altitude");
         aMap.put("2A58", "Analog");
         aMap.put("2A56", "Digital");
+
         sCharacteristicUUIDs = Collections.unmodifiableMap(aMap);
     }
 
@@ -228,6 +234,12 @@ public class StandardUUIDs {
         aMap.put("290B", "Environmental Sensing Configuration");
         aMap.put("290C", "Environmental Sensing Measurement");
         aMap.put("290D", "Environmental Sensing Trigger Setting");
+
+        // v0.9
+        aMap.put("2909", "Number of Digitals");
+        aMap.put("290A", "Value Trigger Setting");
+        aMap.put("290E", "Time Trigger Setting");
+
         sDescriptorUUIDs = Collections.unmodifiableMap(aMap);
     }
 

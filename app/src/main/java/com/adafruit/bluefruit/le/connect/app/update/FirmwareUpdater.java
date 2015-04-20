@@ -78,7 +78,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     private ProgressFragmentDialog mProgressDialog;
     private Activity mParentActivity;
 
-    public static interface FirmwareUpdaterListener {
+    public interface FirmwareUpdaterListener {
         void onFirmwareUpdatesChecked(boolean isUpdateAvailable, ReleasesParser.FirmwareInfo latestRelease, DeviceInfoData deviceInfoData, Map<String, ReleasesParser.BoardInfo> allReleases);
 
         void onUpdateCancelled();
@@ -687,7 +687,6 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
 
     }
     // endregion
-
 
     // region Utils
     private boolean isNetworkAvailable() {
