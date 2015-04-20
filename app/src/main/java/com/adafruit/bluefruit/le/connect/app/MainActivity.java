@@ -424,9 +424,9 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
         showStatusDialog(enable, R.string.scan_connecting);
     }
 
-    private void showCheckingUpdateState() {
+    private void showGettingUpdateInfoState() {
         showConnectionStatus(false);
-        showStatusDialog(true, R.string.scan_checkingupdates);
+        showStatusDialog(true, R.string.scan_gettingupdateinfo);
     }
 
     private void showStatusDialog(boolean show, int stringId) {
@@ -775,7 +775,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            showCheckingUpdateState();
+                            showGettingUpdateInfoState();
                         }
                     });
                     mFirmwareUpdater.checkFirmwareUpdatesForTheCurrentConnectedDevice();        // continues asynchronously in onFirmwareUpdatesChecked

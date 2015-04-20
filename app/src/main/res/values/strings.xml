@@ -27,7 +27,7 @@
     <string name="scan_device_services">Service UUIDs</string>
     <string name="scan_device_txpower">TX Power Level</string>
     <string name="scan_connecting">Connecting ...</string>
-    <string name="scan_checkingupdates">Checking updates ...</string>
+    <string name="scan_gettingupdateinfo">Waiting for device info...</string>
     <string name="scan_connectto_dialog_title_format">Choose mode to connect to %s</string>
     <string name="scan_unexpecteddisconnect">Peripheral disconnected</string>
     <string name="scan_tag_id">Id</string>
