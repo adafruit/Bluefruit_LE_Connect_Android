@@ -26,9 +26,9 @@ public class ApplicationFilesFragmentDialog extends DialogFragment {
 
     // Data
     public interface ApplicationFilesDialogListener {
-        public void onApplicationFilesDialogDoneClick();
+        void onApplicationFilesDialogDoneClick();
 
-        public void onApplicationFilesDialogCancelClick();
+        void onApplicationFilesDialogCancelClick();
     }
 
     ApplicationFilesDialogListener mListener;
