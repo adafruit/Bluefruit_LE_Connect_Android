@@ -175,12 +175,10 @@ public class URIBeaconFragment extends Fragment implements ShortenerAsyncTask.Sh
         } else if (uriStatus == kUriVerify_TooLong) {
             mUriEncodeMessage.setText(R.string.beacon_uribeacon_uritoolong);
         } else if (uriStatus == kUriVerify_Ok) {
-            String message = isShortened ? String.format(getString(R.string.beacon_uribeacon_shorteneduriformat),  uri) : getString(R.string.beacon_uribeacon_validuri);
+            String message = isShortened ? String.format(getString(R.string.beacon_uribeacon_shorteneduriformat), uri) : getString(R.string.beacon_uribeacon_validuri);
             mUriEncodeMessage.setText(message);
-
         }
     }
-
 
     // region Utils
     private boolean isNetworkAvailable() {
@@ -209,7 +207,6 @@ public class URIBeaconFragment extends Fragment implements ShortenerAsyncTask.Sh
 
         // Make sure we have a valid string
         if (input == null || input.length() < 1) {
-
             return kUriVerify_InvalidUri;
         }
 
@@ -242,22 +239,16 @@ public class URIBeaconFragment extends Fragment implements ShortenerAsyncTask.Sh
 
         // See if we can chop off the suffix in the Uri
         if (input.indexOf(".com/") > -1) {
-
             len -= 4;
         } else if (input.indexOf(".org/") > -1) {
-
             len -= 4;
         } else if (input.indexOf(".edu/") > -1) {
-
             len -= 4;
         } else if (input.indexOf(".net/") > -1) {
-
             len -= 4;
         } else if (input.indexOf(".info/") > -1) {
-
             len -= 5;
         } else if (input.indexOf(".biz/") > -1) {
-
             len -= 4;
         } else if (input.indexOf(".gov/") > -1) {
             len -= 4;
@@ -296,9 +287,10 @@ public class URIBeaconFragment extends Fragment implements ShortenerAsyncTask.Sh
     }
 
     public interface OnFragmentInteractionListener {
-        public void onEnable(String encodedUri);
+        void onEnable(String encodedUri);
 
-        public void onDisable();
+        void onDisable();
     }
+
 
 }

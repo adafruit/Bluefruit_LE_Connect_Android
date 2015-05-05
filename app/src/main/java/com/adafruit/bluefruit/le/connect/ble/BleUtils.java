@@ -10,6 +10,10 @@ import android.content.pm.PackageManager;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.UUID;
+
 public class BleUtils {
     private final static String TAG = BleUtils.class.getSimpleName();
 
@@ -80,7 +84,7 @@ public class BleUtils {
     }
 
     public interface ResetBluetoothAdapterListener {
-        public void resetBluetoothCompleted();
+        void resetBluetoothCompleted();
     }
 
     private static class ResetBluetoothAdapter {
@@ -204,6 +208,31 @@ public class BleUtils {
         }
         return newString.toString().trim();
 
+    }
+
+
+    public static String getUuidStringFromByteArray(byte[] bytes) {
+        StringBuilder buffer = new StringBuilder();
+        for (int i=0; i<bytes.length; i++) {
+            buffer.append(String.format("%02x", bytes[i]));
+        }
+        return buffer.toString();
+    }
+
+    public static UUID getUuidFromByteArrayBigEndian(byte[] bytes) {
+        ByteBuffer bb = ByteBuffer.wrap(bytes);
+        long high = bb.getLong();
+        long low = bb.getLong();
+        UUID uuid = new UUID(high, low);
+        return uuid;
+    }
+
+    public static UUID getUuidFromByteArraLittleEndian(byte[] bytes) {
+        ByteBuffer bb = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
+        long high = bb.getLong();
+        long low = bb.getLong();
+        UUID uuid = new UUID(low, high);
+        return uuid;
     }
 
 }

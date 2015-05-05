@@ -52,8 +52,7 @@
         <TextView
             android:id="@+id/descriptionTextView"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="UART capable" />
+            android:layout_height="wrap_content"/>
 
     </LinearLayout>
 

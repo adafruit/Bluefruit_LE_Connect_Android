@@ -26,6 +26,10 @@
     <string name="scan_device_uuid">UUID</string>
     <string name="scan_device_services">Service UUIDs</string>
     <string name="scan_device_txpower">TX Power Level</string>
+    <string name="scan_device_beacon_manufacturer">Manufacturer</string>
+    <string name="scan_device_beacon_major">Major</string>
+    <string name="scan_device_beacon_minor">Minor</string>
+    <string name="scan_device_uribeacon_uri">Uri</string>
     <string name="scan_connecting">Connecting ...</string>
     <string name="scan_gettingupdateinfo">Waiting for device info...</string>
     <string name="scan_connectto_dialog_title_format">Choose mode to connect to %s</string>
@@ -57,6 +61,13 @@
     <string name="scan_secondphaseupdatedetected_message">Firmware will be updated now</string>
     <string name="scan_secondphaseupdatedetected_ok">Continue</string>
 
+
+    <string-array name="scan_devicetypes">
+        <item>Uknown</item>
+        <item>UART capable</item>
+        <item>Beacon</item>
+        <item>UriBeacon</item>
+    </string-array>
 
     <!-- Scan Help Activity -->
     <string name="title_activity_mainhelp">Help</string>
@@ -126,7 +137,6 @@
 
     <!-- Beacon -->
     <string name="beacon_help_title">Beacons Help</string>
-
 
     <string name="beacon_manufacturer_choose_title">Choose Manufacturer</string>
     <string-array name="beacon_manufacturers_names">

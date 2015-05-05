@@ -30,26 +30,6 @@
                 android:text="@string/beacon_ibeacon_subtitle"
                 android:textColor="@drawable/default_textcolor"/>
 
-            <RadioGroup
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:visibility="gone">
-
-                <RadioButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="iBeacon (Apple)"
-                    android:textColor="@drawable/default_textcolor"/>
-
-                <RadioButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Uri Beacon (Google)"
-                    android:textColor="@drawable/default_textcolor"/>
-            </RadioGroup>
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
