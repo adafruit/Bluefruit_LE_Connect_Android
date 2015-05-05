@@ -156,14 +156,6 @@ public class IBeaconFragment extends Fragment {
 
         // Generate initial state
         String manufacturers[] = getResources().getStringArray(R.array.beacon_manufacturers_ids);
-        /*
-        String manufacturerId = manufacturers[0];
-        mVendorEditText.setText(manufacturerId);
-        onClickRandomUuid(null);
-        mMajorEditText.setText("0000");
-        mMinorEditText.setText("0000");
-        mRssiEditText.setText("" + mRssi);
-        */
 
         SharedPreferences preferences = getActivity().getSharedPreferences(kPreferences, Context.MODE_PRIVATE);
         mVendorEditText.setText(preferences.getString(kPreferences_vendor, manufacturers[0]));
@@ -177,7 +169,6 @@ public class IBeaconFragment extends Fragment {
         mMajorEditText.setText(preferences.getString(kPreferences_major, "0000"));
         mMinorEditText.setText(preferences.getString(kPreferences_minor, "0000"));
         mRssiEditText.setText("" + mRssi);
-
 
         return rootView;
     }
@@ -246,8 +237,8 @@ public class IBeaconFragment extends Fragment {
     public void onClickEnable(View view) {
         String manufacturerId = "0x" + getVendor();
         String uuid = getUuid();
-        String major = "0x" + getMajor();
-        String minor = "0x" + getMinor();
+        String major = getMajor();
+        String minor = getMinor();
         String rssi = getRssi();
 
         mListener.onEnable(manufacturerId, uuid, major, minor, rssi);
@@ -262,11 +253,23 @@ public class IBeaconFragment extends Fragment {
     }
 
     public String getMajor() {
-        return mMajorEditText.getText().toString();
+        String major = mMajorEditText.getText().toString();
+        return bigEndianString4Chars(major);
     }
 
     public String getMinor() {
-        return mMinorEditText.getText().toString();
+        String minor =  mMinorEditText.getText().toString();
+        return bigEndianString4Chars(minor);
+    }
+
+    private String bigEndianString4Chars(String value)
+    {
+        // Ensure that we have 4 characters
+        while (value.length() < 4) {
+            value = "0" + value;
+        }
+        // Change order to big endian
+        return "0x"+value.charAt(2)+value.charAt(3)+value.charAt(0)+value.charAt(1);
     }
 
     public String getRssi() {
@@ -278,9 +281,9 @@ public class IBeaconFragment extends Fragment {
     }
 
     public interface OnFragmentInteractionListener {
-        public void onEnable(String vendor, String uuid, String major, String minor, String rssi);
+        void onEnable(String vendor, String uuid, String major, String minor, String rssi);
 
-        public void onDisable();
+        void onDisable();
     }
 
 }
