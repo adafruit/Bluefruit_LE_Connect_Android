@@ -613,13 +613,13 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
             offset += 2 * 2;   // major, minor
 
             // Read txpower
-            final int txPower = advertisedData[offset++] & 0xFF;
+            final int txPower = advertisedData[offset++];
             deviceData.txPower = txPower;
         } else if (isUriBeacon) {
             deviceData.type = BluetoothDeviceData.kType_UriBeacon;
 
             // Read txpower
-            final int txPower = advertisedData[9] & 0xFF;
+            final int txPower = advertisedData[9];
             deviceData.txPower = txPower;
         } else {
             // Read standard advertising packet
@@ -667,7 +667,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
                     }
 
                     case 0x0A: {   // TX Power
-                        final int txPower = advertisedData[offset++] & 0xFF;
+                        final int txPower = advertisedData[offset++];
                         deviceData.txPower = txPower;
                         break;
                     }
