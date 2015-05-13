@@ -10,4 +10,7 @@
     <dimen name="activity_beacon_edit_title_width">65dp</dimen>
     <dimen name="activity_beacon_edit_smallvalue_width">70dp</dimen>
     <dimen name="activity_beacon_edit_button_width">100dp</dimen>
+
+    <dimen name="activity_mqqt_edit_title_width">65dp</dimen>
+
 </resources>

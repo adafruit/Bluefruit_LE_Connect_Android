@@ -108,7 +108,6 @@ public class IBeaconFragment extends Fragment {
             }
         });
 
-
         Button rssiRefreshButton = (Button) rootView.findViewById(R.id.rssiButton);
         rssiRefreshButton.setOnClickListener(new View.OnClickListener() {
             @Override

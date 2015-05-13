@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
@@ -33,17 +34,23 @@ import android.widget.TextView;
 
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.app.settings.ConnectedSettingsActivity;
+import com.adafruit.bluefruit.le.connect.mqtt.MqttManager;
+import com.adafruit.bluefruit.le.connect.mqtt.MqttSettings;
+import com.adafruit.bluefruit.le.connect.app.settings.MqttSettingsActivity;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
+
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.nio.charset.Charset;
 
 
-public class UartActivity extends UartInterfaceActivity implements BleManager.BleManagerListener {
+public class UartActivity extends UartInterfaceActivity implements BleManager.BleManagerListener, MqttManager.MqttManagerListener {
     // Log
     private final static String TAG = UartActivity.class.getSimpleName();
 
     // Activity request codes (used for onActivityResult)
     private static final int kActivityRequestCode_ConnectedSettingsActivity = 0;
+    private static final int kActivityRequestCode_MqttSettingsActivity = 1;
 
     // Constants
     private final static String kPreferences = "UartActivity_prefs";
@@ -59,6 +66,8 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
     private Switch mEolSwitch;
     private EditText mBufferTextView;
     private EditText mSendEditText;
+    private MenuItem mMqttMenuItem;
+    private Handler mMqttMenuItemAnimationHandler;
 
     // Data
     private boolean mShowDataInHexFormat;
@@ -68,6 +77,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
     private DataFragment mRetainedDataFragment;
 
+    private MqttManager mMqttManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -151,6 +161,20 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
         // Continue
         onServicesDiscovered();
+
+        // Mqtt debug
+        mMqttManager = MqttManager.getInstance(this);
+        mMqttManager.connectFromSavedSettings(this);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // Setup listeners
+        mBleManager.setBleListener(this);
+
+        mMqttManager.setListener(this);
     }
 
     @Override
@@ -184,11 +208,24 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         String data = mSendEditText.getText().toString();
         mSendEditText.setText("");       // Clear editText
 
+        if (MqttSettings.getInstance(this).isPublishEnabled()) {
+            uartSendData(data, true);
+        }
+    }
+
+    private void uartSendData(String data, boolean mqttPublishEnabled)
+    {
         if (mEolSwitch.isChecked()) {
             // Add newline character if checked
             data += "\n";
         }
+
         sendData(data);
+
+        if (mqttPublishEnabled) {
+            String topic = MqttSettings.getInstance(this).getPublishTopic();
+            mMqttManager.publish(topic, data, MqttManager.MqqtQos_ExactlyOnce);
+        }
 
         if (mEchoSwitch.isChecked()) {      // Add send data to visible buffer if checked
             addTextToSpanBuffer(mAsciiSpanBuffer, data, mTxColor);
@@ -221,20 +258,49 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         updateUI();
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        // Setup listeners
-        mBleManager.setBleListener(this);
-    }
 
     // region Menu
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_uart, menu);
+
+        mMqttMenuItem = menu.findItem(R.id.action_mqttsettings);
+        mMqttMenuItemAnimationHandler = new Handler();
+        mMqttMenuItemAnimationRunnable.run();
+
         return true;
+    }
+
+    private Runnable mMqttMenuItemAnimationRunnable = new Runnable() {
+        @Override
+        public void run() {
+            updateMqttStatus();
+            mMqttMenuItemAnimationHandler.postDelayed(mMqttMenuItemAnimationRunnable, 500);
+        }
+    };
+    private  int mMqttMenuItemAnimationFrame = 0;
+
+    private void updateMqttStatus() {
+        MqttManager mqttManager = mMqttManager.getInstance(this);
+        MqttManager.MqqtConnectionStatus status = mqttManager.getClientStatus();
+
+        if (status == MqttManager.MqqtConnectionStatus.CONNECTING)
+        {
+            final int kConnectingAnimationDrawableIds[] = {R.drawable.mqtt_connecting1, R.drawable.mqtt_connecting2, R.drawable.mqtt_connecting3};
+            mMqttMenuItem.setIcon(kConnectingAnimationDrawableIds[mMqttMenuItemAnimationFrame]);
+            mMqttMenuItemAnimationFrame = (mMqttMenuItemAnimationFrame+1)%kConnectingAnimationDrawableIds.length;
+        }
+        else if (status == MqttManager.MqqtConnectionStatus.CONNECTED) {
+            mMqttMenuItem.setIcon(R.drawable.mqtt_connected);
+            mMqttMenuItemAnimationHandler.removeCallbacks(mMqttMenuItemAnimationRunnable);
+        }
+        else
+        {
+            mMqttMenuItem.setIcon(R.drawable.mqtt_disconnected);
+            mMqttMenuItemAnimationHandler.removeCallbacks(mMqttMenuItemAnimationRunnable);
+        }
+
     }
 
     @Override
@@ -258,6 +324,10 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
                 mBleManager.refreshDeviceCache();
             }
         }
+        else if (id == R.id.action_mqttsettings)  {
+            Intent intent = new Intent(this, MqttSettingsActivity.class);
+            startActivityForResult(intent, kActivityRequestCode_MqttSettingsActivity);
+        }
 
 
         return super.onOptionsItemSelected(item);
@@ -271,8 +341,11 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent intent) {
-        if (resultCode == RESULT_OK && requestCode == kActivityRequestCode_ConnectedSettingsActivity) {
+        if (requestCode == kActivityRequestCode_ConnectedSettingsActivity && resultCode == RESULT_OK) {
             finish();
+        }
+        else if (requestCode == kActivityRequestCode_MqttSettingsActivity && resultCode == RESULT_OK) {
+
         }
     }
     private void startHelp() {
@@ -401,5 +474,35 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         mRetainedDataFragment.mAsciiSpanBuffer = mAsciiSpanBuffer;
         mRetainedDataFragment.mHexSpanBuffer = mHexSpanBuffer;
     }
+    // endregion
+
+
+
+    // region MqttManagerListener
+
+    @Override
+    public void onMqttConnected() {
+        updateMqttStatus();
+    }
+
+    @Override
+    public void onMqttDisconnected() {
+        updateMqttStatus();
+    }
+
+    @Override
+    public void onMqttMessageArrived(String topic, MqttMessage mqttMessage) {
+        final String message = new String(mqttMessage.getPayload());
+        Log.d(TAG, "Mqtt messageArrived from topic: " +topic+ " message: "+message);
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                uartSendData(message, false);       // Don't republish to mqtt something received from mqtt
+            }
+        });
+
+    }
+
     // endregion
 }
