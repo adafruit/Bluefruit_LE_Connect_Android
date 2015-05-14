@@ -279,6 +279,7 @@
     <string name="mqtt_status_disconnected">Disconnected</string>
     <string name="mqtt_status_connecting">Connecting...</string>
     <string name="mqtt_status_disconnecting">Disconnecting...</string>
+    <string name="mqtt_status_error">Error</string>
 
 
     <!-- Mqtt -->

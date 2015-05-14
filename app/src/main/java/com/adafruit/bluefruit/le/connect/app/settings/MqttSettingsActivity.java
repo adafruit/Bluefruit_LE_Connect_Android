@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -161,6 +162,8 @@ public class MqttSettingsActivity extends ActionBarActivity implements MqttManag
             @Override
             public void onClick(View v) {
                 Context context = MqttSettingsActivity.this;
+                dismissKeyboard(v);
+
                 MqttManager mqttManager = MqttManager.getInstance(context);
                 MqttManager.MqqtConnectionStatus status = mqttManager.getClientStatus();
                 Log.d(TAG, "current mqtt status: " + status);
@@ -178,6 +181,11 @@ public class MqttSettingsActivity extends ActionBarActivity implements MqttManag
         updateStatusUI();
     }
 
+    private  void dismissKeyboard(View view) {
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -187,7 +195,7 @@ public class MqttSettingsActivity extends ActionBarActivity implements MqttManag
     }
 
     private void subscriptionChanged(String newTopic, int qos, String previousTopic) {
-        Log.d(TAG, "subscription changed from: " + previousTopic + " to: " + newTopic + " qos: "+qos);
+        Log.d(TAG, "subscription changed from: " + previousTopic + " to: " + newTopic + " qos: " + qos);
         MqttManager mqttManager = MqttManager.getInstance(this);
 
         mqttManager.unsubscribe(previousTopic);
@@ -212,7 +220,7 @@ public class MqttSettingsActivity extends ActionBarActivity implements MqttManag
 
         // Update enable-disable button
         final boolean showWait = (status == MqttManager.MqqtConnectionStatus.CONNECTING || status == MqttManager.MqqtConnectionStatus.DISCONNECTING);
-        mConnectButton.setVisibility(showWait ? View.GONE : View.VISIBLE);
+        mConnectButton.setVisibility(showWait ? View.INVISIBLE : View.VISIBLE);
         mConnectProgressBar.setVisibility(showWait ? View.VISIBLE : View.GONE);
 
         if (!showWait) {
@@ -235,6 +243,9 @@ public class MqttSettingsActivity extends ActionBarActivity implements MqttManag
                 break;
             case DISCONNECTING:
                 statusStringId = R.string.mqtt_status_disconnecting;
+                break;
+            case ERROR:
+                statusStringId = R.string.mqtt_status_error;
                 break;
             default:
                 statusStringId = R.string.mqtt_status_disconnected;

@@ -127,6 +127,8 @@ public class MqttManager implements IMqttActionListener, MqttCallback, MqttTrace
                 Log.e(TAG, "Mqtt:x disconnection error: ", e);
             }
         }
+        MqttSettings.getInstance(mContext).setConnectedEnabled(false);
+
     }
 
     public void connectFromSavedSettings(Context context) {
@@ -158,7 +160,7 @@ public class MqttManager implements IMqttActionListener, MqttCallback, MqttTrace
         } else {
             uri = "tcp://" + host + ":" + port;
         }
-        String handle = uri + clientId;
+        //String handle = uri + clientId;
 
         Log.d(TAG, "Mqtt: Create client");
         mMqttClient = new MqttAndroidClient(context, uri, clientId);
@@ -191,8 +193,10 @@ public class MqttManager implements IMqttActionListener, MqttCallback, MqttTrace
         mMqttClient.setTraceCallback(this);
 
         if (doConnect) {
+            MqttSettings.getInstance(mContext).setConnectedEnabled(true);
+
             try {
-                Log.d(TAG, "Mqtt: connect");
+                Log.d(TAG, "Mqtt: connect to "+uri);
                 mMqqtClientStatus = MqqtConnectionStatus.CONNECTING;
                 mMqttClient.connect(conOpt, null, this);
             } catch (MqttException e) {
@@ -227,11 +231,18 @@ public class MqttManager implements IMqttActionListener, MqttCallback, MqttTrace
     @Override
     public void onFailure(IMqttToken iMqttToken, Throwable throwable) {
         Log.d(TAG, "Mqtt onFailure. " + throwable);
+
+        // Remove the auto-connect till the failure is solved
+        if (mMqqtClientStatus == MqqtConnectionStatus.CONNECTING) {
+            MqttSettings.getInstance(mContext).setConnectedEnabled(false);
+        }
+
+        // Set as an error
         mMqqtClientStatus = MqqtConnectionStatus.ERROR;
-
-        if (mListener != null) mListener.onMqttDisconnected();
-
         Toast.makeText(mContext, R.string.mqtt_connection_failed, Toast.LENGTH_LONG).show();
+
+        // Call listener
+        if (mListener != null) mListener.onMqttDisconnected();
     }
     // endregion
 

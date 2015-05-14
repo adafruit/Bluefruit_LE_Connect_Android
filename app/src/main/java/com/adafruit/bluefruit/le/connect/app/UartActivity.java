@@ -164,7 +164,9 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
         // Mqtt debug
         mMqttManager = MqttManager.getInstance(this);
-        mMqttManager.connectFromSavedSettings(this);
+        if (MqttSettings.getInstance(this).isConnected()) {
+            mMqttManager.connectFromSavedSettings(this);
+        }
     }
 
     @Override

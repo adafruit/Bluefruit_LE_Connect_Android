@@ -24,6 +24,7 @@ public class MqttSettings {
     private final static String kPreferences_subscribetopic = "subscribetopic";
     private final static String kPreferences_subscribeqos = "subscribeqos";
     private final static String kPreferences_subscribeenabled = "subscribeenabled";
+    private final static String kPreferences_connected = "connected";
 
     // Data
     private Context mContext;
@@ -72,12 +73,18 @@ public class MqttSettings {
         editor.apply();
     }
 
-    public boolean isPublishEnabled() {
-        return getSharedPreferences().getBoolean(kPreferences_publishenabled, true);
+    public boolean isConnected() {
+        return getSharedPreferences().getBoolean(kPreferences_connected, false);
     }
 
-    public boolean isSubscribeEnabled() {
-        return getSharedPreferences().getBoolean(kPreferences_subscribeenabled, true);
+    public void setConnectedEnabled(boolean enabled) {
+        SharedPreferences.Editor editor = getSharedPreferencesEditor();
+        editor.putBoolean(kPreferences_connected, enabled);
+        editor.apply();
+    }
+
+    public boolean isPublishEnabled() {
+        return getSharedPreferences().getBoolean(kPreferences_publishenabled, true);
     }
 
     public void setPublishEnabled(boolean enabled) {
@@ -86,6 +93,9 @@ public class MqttSettings {
         editor.apply();
     }
 
+    public boolean isSubscribeEnabled() {
+        return getSharedPreferences().getBoolean(kPreferences_subscribeenabled, true);
+    }
     public void setSubscribeEnabled(boolean enabled) {
         SharedPreferences.Editor editor = getSharedPreferencesEditor();
         editor.putBoolean(kPreferences_subscribeenabled, enabled);
