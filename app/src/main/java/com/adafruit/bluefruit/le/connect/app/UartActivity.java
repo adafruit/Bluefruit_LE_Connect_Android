@@ -284,6 +284,8 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
     private  int mMqttMenuItemAnimationFrame = 0;
 
     private void updateMqttStatus() {
+        if (mMqttMenuItem == null) return;      // Hack: Sometimes this could have not been initialized so we don't update icons
+
         MqttManager mqttManager = mMqttManager.getInstance(this);
         MqttManager.MqqtConnectionStatus status = mqttManager.getClientStatus();
 
