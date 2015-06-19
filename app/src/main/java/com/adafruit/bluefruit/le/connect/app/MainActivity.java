@@ -527,6 +527,8 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
 
                     BluetoothDeviceData previouslyScannedDeviceData = null;
                     if (deviceNameToScanFor == null || (deviceName != null && deviceName.equalsIgnoreCase(deviceNameToScanFor))) {       // Workaround for bug in service discovery. Discovery filtered by service uuid is not working on Android 4.3, 4.4
+                        if (mScannedDevices == null) mScannedDevices = new ArrayList<>();       // Safeguard
+
                         // Check that the device was not previously found
                         for (BluetoothDeviceData deviceData : mScannedDevices) {
                             if (deviceData.device.getAddress().equals(device.getAddress())) {

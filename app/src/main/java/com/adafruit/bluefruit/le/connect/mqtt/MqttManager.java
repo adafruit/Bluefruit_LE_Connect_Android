@@ -136,17 +136,24 @@ public class MqttManager implements IMqttActionListener, MqttCallback, MqttTrace
         String host = settings.getServerAddress();
         int port = settings.getServerPort();
 
-        connect(context, host, port);
+        //String username = "antopenroad";
+       // String password = "d6b86da0a16d781b6c72940999d1e801c33ef651";
+       // host = "io.adafruit.com";
+        //settings.setSubscribeTopic(username+"/f/"+"newtest");
+//        settings.setPublishTopic(username+"/f/"+"newtest");
+
+        String username = settings.getUsername();
+        String password = settings.getPassword();
+        boolean cleanSession = settings.isCleanSession();
+
+        connect(context, host, port, username, password, cleanSession);
     }
 
-    public void connect(Context context, String host, int port) {
+    public void connect(Context context, String host, int port, String username, String password, boolean cleanSession) {
         boolean sslConnection = false;
         String clientId = "Bluefruit";
-        boolean cleanSession = true;
-        int timeout = 1000;
-        int keepalive = 10;
-        String username = null;
-        String password = null;
+        final int timeout = MqttConnectOptions.CONNECTION_TIMEOUT_DEFAULT;
+        final int keepalive = MqttConnectOptions.KEEP_ALIVE_INTERVAL_DEFAULT;
 
         String message = null;
         String topic = null;
@@ -167,13 +174,16 @@ public class MqttManager implements IMqttActionListener, MqttCallback, MqttTrace
         mMqttClient.registerResources(mContext);
 
         MqttConnectOptions conOpt = new MqttConnectOptions();
+        Log.d(TAG, "Mqtt: clean session:" +(cleanSession?"yes":"no"));
         conOpt.setCleanSession(cleanSession);
         conOpt.setConnectionTimeout(timeout);
         conOpt.setKeepAliveInterval(keepalive);
         if (username != null && username.length() > 0) {
+            Log.d(TAG, "Mqtt: username: " + username);
             conOpt.setUserName(username);
         }
         if (password != null && password.length() > 0) {
+            Log.d(TAG, "Mqtt: password: " + password);
             conOpt.setPassword(password.toCharArray());
         }
 
@@ -196,7 +206,7 @@ public class MqttManager implements IMqttActionListener, MqttCallback, MqttTrace
             MqttSettings.getInstance(mContext).setConnectedEnabled(true);
 
             try {
-                Log.d(TAG, "Mqtt: connect to "+uri);
+                Log.d(TAG, "Mqtt: connect to " + uri);
                 mMqqtClientStatus = MqqtConnectionStatus.CONNECTING;
                 mMqttClient.connect(conOpt, null, this);
             } catch (MqttException e) {
@@ -214,10 +224,12 @@ public class MqttManager implements IMqttActionListener, MqttCallback, MqttTrace
             Log.d(TAG, "Mqtt connect onSuccess");
             mMqqtClientStatus = MqqtConnectionStatus.CONNECTED;
             if (mListener != null) mListener.onMqttConnected();
+
             MqttSettings settings = MqttSettings.getInstance(mContext);
             String topic = settings.getSubscribeTopic();
+            int topicQos = settings.getSubscribeQos();
             if (settings.isSubscribeEnabled() && topic != null) {
-                subscribe(topic, MqqtQos_ExactlyOnce);
+                subscribe(topic, topicQos);
             }
         } else if (mMqqtClientStatus == MqqtConnectionStatus.DISCONNECTING) {
             Log.d(TAG, "Mqtt disconnect onSuccess");
@@ -239,7 +251,8 @@ public class MqttManager implements IMqttActionListener, MqttCallback, MqttTrace
 
         // Set as an error
         mMqqtClientStatus = MqqtConnectionStatus.ERROR;
-        Toast.makeText(mContext, R.string.mqtt_connection_failed, Toast.LENGTH_LONG).show();
+        String errorText = mContext.getString(R.string.mqtt_connection_failed)+". "+throwable.getLocalizedMessage();
+        Toast.makeText(mContext, errorText, Toast.LENGTH_LONG).show();
 
         // Call listener
         if (mListener != null) mListener.onMqttDisconnected();
@@ -266,9 +279,15 @@ public class MqttManager implements IMqttActionListener, MqttCallback, MqttTrace
     public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
         String message = new String(mqttMessage.getPayload());
 
-        Log.d(TAG, "Mqtt messageArrived from topic: " + topic + " message: " + message + " isDuplicate: " + (mqttMessage.isDuplicate() ? "yes" : "no"));
-        if (mListener != null) {
-            mListener.onMqttMessageArrived(topic, mqttMessage);
+        if (message != null && message.length() > 0) {      // filter cleared messages (to avoid duplicates)
+
+            Log.d(TAG, "Mqtt messageArrived from topic: " + topic + " message: " + message + " isDuplicate: " + (mqttMessage.isDuplicate() ? "yes" : "no"));
+            if (mListener != null) {
+                mListener.onMqttMessageArrived(topic, mqttMessage);
+            }
+
+            // Fix duplicated messages clearing the received payload and processing only non null messages
+            mqttMessage.clearPayload();
         }
     }
 

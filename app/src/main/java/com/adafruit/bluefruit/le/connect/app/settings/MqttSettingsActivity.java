@@ -38,6 +38,9 @@ public class MqttSettingsActivity extends ActionBarActivity implements MqttManag
     private ProgressBar mConnectProgressBar;
     private TextView mStatusTextView;
     private Spinner mSubscribeSpinner;
+    private EditText mUsernameEditText;
+    private EditText mPasswordEditText;
+    private Switch mCleanSessionSwitch;
 
     // Data
     private String mPreviousSubscriptionTopic;
@@ -58,9 +61,8 @@ public class MqttSettingsActivity extends ActionBarActivity implements MqttManag
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) {
-                    String serverAddress = mServerAddressEditText.getText().toString();
-                    Log.d(TAG, "server address " + serverAddress);
-                    MqttSettings.getInstance(MqttSettingsActivity.this).setServerAddress(serverAddress);
+                    final String serverAddress = mServerAddressEditText.getText().toString();
+                    settings.setServerAddress(serverAddress);
                 }
             }
         });
@@ -157,10 +159,47 @@ public class MqttSettingsActivity extends ActionBarActivity implements MqttManag
             }
         });
 
+
+        mUsernameEditText = (EditText) findViewById(R.id.usernameEditText);
+        mUsernameEditText.setText(settings.getUsername());
+        mUsernameEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    final String username = mUsernameEditText.getText().toString();
+                    settings.setUsername(username);
+                }
+            }
+        });
+
+        mPasswordEditText = (EditText) findViewById(R.id.passwordEditText);
+        mPasswordEditText.setText(settings.getPassword());
+        mPasswordEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    final String password = mPasswordEditText.getText().toString();
+                    settings.setPassword(password);
+                }
+            }
+        });
+
+        mCleanSessionSwitch = (Switch) findViewById(R.id.cleanSessionSwitch);
+        mCleanSessionSwitch.setChecked(settings.isCleanSession());
+        mCleanSessionSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                settings.setCleanSession(isChecked);
+            }
+        });
+
+
         mConnectButton = (Button) findViewById(R.id.connectButton);
         mConnectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                getCurrentFocus().clearFocus(); // Force remove focus from last field to take into account the changes
+
                 Context context = MqttSettingsActivity.this;
                 dismissKeyboard(v);
 

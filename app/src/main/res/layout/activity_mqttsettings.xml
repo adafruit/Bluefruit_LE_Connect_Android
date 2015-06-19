@@ -101,7 +101,6 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:hint="@string/mqtt_server_address_hint"
-                            android:nextFocusDown="@+id/uuidEditText"
                             android:singleLine="true"/>
 
                     </LinearLayout>
@@ -121,7 +120,6 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:nextFocusDown="@+id/uuidEditText"
                             android:singleLine="true"/>
 
                     </LinearLayout>
@@ -179,14 +177,13 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:nextFocusDown="@+id/uuidEditText"
                                 android:singleLine="true"/>
 
                             <Spinner
                                 android:id="@+id/publishSpinner"
-                                android:entries="@array/mqtt_qos"
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"/>
+                                android:layout_height="wrap_content"
+                                android:entries="@array/mqtt_qos"/>
                         </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
@@ -244,15 +241,103 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:nextFocusDown="@+id/uuidEditText"
                                 android:singleLine="true"/>
 
                             <Spinner
                                 android:id="@+id/subscribeSpinner"
-                                android:entries="@array/mqtt_qos"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:entries="@array/mqtt_qos"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Advanced Settings -->
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:orientation="vertical">
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="10dp"
+                            android:layout_weight="1"
+                            android:text="@string/mqtt_advanced_title"
+                            android:textColor="@drawable/default_textcolor"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="#cccccc"
+                        android:orientation="vertical"
+                        android:paddingLeft="10dp"
+                        android:paddingRight="10dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="@dimen/activity_mqqt_edit_title_width"
+                                android:layout_height="wrap_content"
+                                android:text="@string/mqtt_username"/>
+
+                            <EditText
+                                android:id="@+id/usernameEditText"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:singleLine="true"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="@dimen/activity_mqqt_edit_title_width"
+                                android:layout_height="wrap_content"
+                                android:text="@string/mqtt_password"/>
+
+                            <EditText
+                                android:id="@+id/passwordEditText"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:singleLine="true"/>
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/mqtt_cleansession"/>
+
+                            <Switch
+                                android:id="@+id/cleanSessionSwitch"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"/>
+
                         </LinearLayout>
+
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>

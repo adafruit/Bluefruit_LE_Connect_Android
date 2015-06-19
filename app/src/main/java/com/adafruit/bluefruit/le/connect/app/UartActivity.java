@@ -60,6 +60,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
     private int mTxColor;
     private int mRxColor;
+    private int mMqttSubscribedColor;
 
     // UI
     private Switch mEchoSwitch;
@@ -115,6 +116,9 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         mTxColor = typedValue.data;
         theme.resolveAttribute(R.attr.colorControlActivated, typedValue, true);
         mRxColor= typedValue.data;
+
+        theme.resolveAttribute(R.attr.colorControlHighlight, typedValue, true);
+        mMqttSubscribedColor = typedValue.data;
 
         // Read preferences
         SharedPreferences preferences = getSharedPreferences(kPreferences, MODE_PRIVATE);
@@ -217,21 +221,26 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
     private void uartSendData(String data, boolean mqttPublishEnabled)
     {
-        if (mEolSwitch.isChecked()) {
-            // Add newline character if checked
-            data += "\n";
-        }
-
-        sendData(data);
-
+        // Publish to mqtt
         if (mqttPublishEnabled) {
             String topic = MqttSettings.getInstance(this).getPublishTopic();
             mMqttManager.publish(topic, data, MqttManager.MqqtQos_ExactlyOnce);
         }
 
+        // Add eol
+        if (mEolSwitch.isChecked()) {
+            // Add newline character if checked
+            data += "\n";
+        }
+
+        // Send to uart
+        sendData(data);
+
+        // Show on UI
         if (mEchoSwitch.isChecked()) {      // Add send data to visible buffer if checked
-            addTextToSpanBuffer(mAsciiSpanBuffer, data, mTxColor);
-            addTextToSpanBuffer(mHexSpanBuffer, asciiToHex(data), mTxColor);
+            int color = mqttPublishEnabled?mTxColor:mMqttSubscribedColor;       // mTxColor for standard input or mqttsubscribedcolor when is something that should not be published to mqtt (it has been recevied from a mqqt subscribed feed=
+            addTextToSpanBuffer(mAsciiSpanBuffer, data, color);
+            addTextToSpanBuffer(mHexSpanBuffer, asciiToHex(data), color);
         }
 
         updateUI();
@@ -497,7 +506,8 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
     @Override
     public void onMqttMessageArrived(String topic, MqttMessage mqttMessage) {
         final String message = new String(mqttMessage.getPayload());
-        Log.d(TAG, "Mqtt messageArrived from topic: " +topic+ " message: "+message);
+
+        //Log.d(TAG, "Mqtt messageArrived from topic: " +topic+ " message: "+message);
 
         runOnUiThread(new Runnable() {
             @Override
