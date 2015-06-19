@@ -223,8 +223,11 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
     {
         // Publish to mqtt
         if (mqttPublishEnabled) {
-            String topic = MqttSettings.getInstance(this).getPublishTopic();
-            mMqttManager.publish(topic, data, MqttManager.MqqtQos_ExactlyOnce);
+            MqttSettings settings = MqttSettings.getInstance(UartActivity.this);
+            String topic = settings.getPublishTopic();
+            final int qos = settings.getPublishQos();
+
+            mMqttManager.publish(topic, data, qos);
         }
 
         // Add eol
@@ -238,7 +241,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
         // Show on UI
         if (mEchoSwitch.isChecked()) {      // Add send data to visible buffer if checked
-            int color = mqttPublishEnabled?mTxColor:mMqttSubscribedColor;       // mTxColor for standard input or mqttsubscribedcolor when is something that should not be published to mqtt (it has been recevied from a mqqt subscribed feed=
+            int color = mqttPublishEnabled?mTxColor:mMqttSubscribedColor;       // mTxColor for standard input or mqttsubscribedcolor when is something that should not be published to mqtt (it has been received from a mqqt subscribed feed=
             addTextToSpanBuffer(mAsciiSpanBuffer, data, color);
             addTextToSpanBuffer(mHexSpanBuffer, asciiToHex(data), color);
         }
@@ -399,7 +402,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         // UART RX
         if (characteristic.getService().getUuid().toString().equalsIgnoreCase(UUID_SERVICE)) {
             if (characteristic.getUuid().toString().equalsIgnoreCase(UUID_RX)) {
-                String data = new String(characteristic.getValue(), Charset.forName("UTF-8"));
+                final String data = new String(characteristic.getValue(), Charset.forName("UTF-8"));
 
                 addTextToSpanBuffer(mAsciiSpanBuffer, data, mRxColor);
                 addTextToSpanBuffer(mHexSpanBuffer, asciiToHex(data), mRxColor);
@@ -408,6 +411,12 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
                     @Override
                     public void run() {
                         updateUI();
+
+                        // Publish to topic
+                        MqttSettings settings = MqttSettings.getInstance(UartActivity.this);
+                        String topic = settings.getPublishTopic();
+                        final int qos = settings.getPublishQos();
+                        mMqttManager.publish(topic, data, qos);
                     }
                 });
             }
