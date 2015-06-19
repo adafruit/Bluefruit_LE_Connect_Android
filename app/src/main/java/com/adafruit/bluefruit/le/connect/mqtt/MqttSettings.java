@@ -12,7 +12,8 @@ public class MqttSettings {
 
     // Constants
     public final static int kDefaultServerPort = 1883;
-    public final static String kDefaultPublishTopic = "uart_output";
+    public final static String kDefaultPublishTopicTx = "uart_tx";
+    public final static String kDefaultPublishTopicRx = "uart_rx";
     public final static String kDefaultSubscribeTopic = "uart_input";
 
     private final static String kPreferences = "MqttSettings_prefs";
@@ -23,6 +24,7 @@ public class MqttSettings {
     private final static String kPreferences_publishenabled = "publishenabled";
     private final static String kPreferences_subscribetopic = "subscribetopic";
     private final static String kPreferences_subscribeqos = "subscribeqos";
+    private final static String kPreferences_subscribebehaviour = "subscribebehaviour";
     private final static String kPreferences_subscribeenabled = "subscribeenabled";
     private final static String kPreferences_connected = "connected";
     private final static String kPreferences_username = "username";
@@ -96,12 +98,12 @@ public class MqttSettings {
         setPrefsBoolean(kPreferences_subscribeenabled, enabled);
     }
 
-    public int getPublishQos() {
-        return getPrefsInt(kPreferences_publishqos, 0);
+    public int getPublishQos(int index) {
+        return getPrefsInt(kPreferences_publishqos + index, 0);
     }
 
-    public void setPublishQos(int qos) {
-        setPrefsInt(kPreferences_publishqos, qos);
+    public void setPublishQos(int index, int qos) {
+        setPrefsInt(kPreferences_publishqos + index, qos);
     }
 
     public int getSubscribeQos() {
@@ -112,12 +114,20 @@ public class MqttSettings {
         setPrefsInt(kPreferences_subscribeqos, qos);
     }
 
-    public String getPublishTopic() {
-        return getPrefsString(kPreferences_publishtopic, kDefaultPublishTopic);
+    public int getSubscribeBehaviour() {
+        return getPrefsInt(kPreferences_subscribebehaviour, 0);
     }
 
-    public void setPublishTopic(String topic) {
-        setPrefsString(kPreferences_publishtopic, topic);
+    public void setSubscribeBehaviour(int behaviour) {
+        setPrefsInt(kPreferences_subscribebehaviour, behaviour);
+    }
+
+    public String getPublishTopic(int index) {
+        return getPrefsString(kPreferences_publishtopic+index, index==0?kDefaultPublishTopicTx:kDefaultPublishTopicRx);
+    }
+
+    public void setPublishTopic(int index, String topic) {
+        setPrefsString(kPreferences_publishtopic+index, topic);
     }
 
     public String getSubscribeTopic() {

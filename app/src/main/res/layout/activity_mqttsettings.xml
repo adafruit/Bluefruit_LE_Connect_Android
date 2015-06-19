@@ -7,7 +7,7 @@
              android:paddingLeft="@dimen/activity_horizontal_margin"
              android:paddingRight="@dimen/activity_horizontal_margin"
              android:paddingTop="@dimen/activity_vertical_margin"
-             tools:context="com.adafruit.bluefruit.le.connect.app.settings.MqttSettingsActivity">
+             tools:context="com.adafruit.bluefruit.le.connect.app.settings.MqttUartSettingsActivity">
 
 
     <ScrollView
@@ -82,6 +82,7 @@
                     android:layout_height="wrap_content"
                     android:background="#cccccc"
                     android:orientation="vertical"
+                    android:paddingBottom="6dp"
                     android:paddingLeft="10dp"
                     android:paddingRight="10dp">
 
@@ -159,6 +160,7 @@
                         android:background="#cccccc"
                         android:orientation="vertical"
                         android:paddingLeft="10dp"
+                        android:paddingBottom="6dp"
                         android:paddingRight="10dp">
 
 
@@ -170,17 +172,41 @@
                             <TextView
                                 android:layout_width="@dimen/activity_mqqt_edit_title_width"
                                 android:layout_height="wrap_content"
-                                android:text="@string/mqtt_publish_topic"/>
+                                android:text="@string/mqtt_publish0_topic"/>
 
                             <EditText
-                                android:id="@+id/publishTopicEditText"
+                                android:id="@+id/publish0TopicEditText"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:singleLine="true"/>
 
                             <Spinner
-                                android:id="@+id/publishSpinner"
+                                android:id="@+id/publish0Spinner"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:entries="@array/mqtt_qos"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="@dimen/activity_mqqt_edit_title_width"
+                                android:layout_height="wrap_content"
+                                android:text="@string/mqtt_publish1_topic"/>
+
+                            <EditText
+                                android:id="@+id/publish1TopicEditText"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:singleLine="true"/>
+
+                            <Spinner
+                                android:id="@+id/publish1Spinner"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:entries="@array/mqtt_qos"/>
@@ -223,6 +249,7 @@
                         android:background="#cccccc"
                         android:orientation="vertical"
                         android:paddingLeft="10dp"
+                        android:paddingBottom="6dp"
                         android:paddingRight="10dp">
 
 
@@ -249,7 +276,26 @@
                                 android:layout_height="wrap_content"
                                 android:entries="@array/mqtt_qos"/>
                         </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="@dimen/activity_mqqt_edit_title_width"
+                                android:layout_height="wrap_content"
+                                android:text="@string/mqtt_subscribe_behaviour"/>
+
+                            <Spinner
+                                android:id="@+id/subscribeBehaviourSpinner"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:entries="@array/mqtt_uart_subscribe_behaviour"/>
+                        </LinearLayout>
                     </LinearLayout>
+
+
                 </LinearLayout>
 
                 <!-- Advanced Settings -->
@@ -259,7 +305,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:orientation="vertical">
-
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -281,6 +326,7 @@
                         android:layout_height="wrap_content"
                         android:background="#cccccc"
                         android:orientation="vertical"
+                        android:paddingBottom="6dp"
                         android:paddingLeft="10dp"
                         android:paddingRight="10dp">
 

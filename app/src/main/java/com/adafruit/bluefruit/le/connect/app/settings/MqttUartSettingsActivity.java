@@ -23,16 +23,22 @@ import com.adafruit.bluefruit.le.connect.mqtt.MqttSettings;
 
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
-public class MqttSettingsActivity extends ActionBarActivity implements MqttManager.MqttManagerListener {
+public class MqttUartSettingsActivity extends ActionBarActivity implements MqttManager.MqttManagerListener {
     // Log
-    private final static String TAG = MqttSettingsActivity.class.getSimpleName();
+    private final static String TAG = MqttUartSettingsActivity.class.getSimpleName();
+
+    // Constants
+    private static final int kNumPublishFeeds = 2;
+    public static final int kPublishFeed_RX = 0;
+    public static final int kPublishFeed_TX = 1;
+
+    public static final int kSubscribeBehaviour_LocalOnly = 0;      // note: should have the same order than strings/mqtt_uart_subscribe_behaviour
+    public static final int kSubscribeBehaviour_Transmit = 1;
 
     // UI
     private EditText mServerAddressEditText;
     private EditText mServerPortEditText;
-    private EditText mPublishTopicEditText;
     private EditText mSubscribeTopicEditText;
-    private Switch mPublishSwitch;
     private Switch mSubscribeSwitch;
     private Button mConnectButton;
     private ProgressBar mConnectProgressBar;
@@ -50,11 +56,10 @@ public class MqttSettingsActivity extends ActionBarActivity implements MqttManag
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mqttsettings);
 
-
         // Data
         final MqttSettings settings = MqttSettings.getInstance(this);
 
-        // UI
+        // UI - Server
         mServerAddressEditText = (EditText) findViewById(R.id.serverAddressEditText);
         mServerAddressEditText.setText(settings.getServerAddress());
         mServerAddressEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -79,40 +84,48 @@ public class MqttSettingsActivity extends ActionBarActivity implements MqttManag
             }
         });
 
-        mPublishTopicEditText = (EditText) findViewById(R.id.publishTopicEditText);
-        mPublishTopicEditText.setText(settings.getPublishTopic());
-        mPublishTopicEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    settings.setPublishTopic(mPublishTopicEditText.getText().toString());
-                }
-            }
-        });
-        mPublishSwitch = (Switch) findViewById(R.id.publishSwitch);
-        mPublishSwitch.setChecked(settings.isPublishEnabled());
-        mPublishSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        // UI - Publish
+        Switch publishSwitch = (Switch) findViewById(R.id.publishSwitch);
+        publishSwitch.setChecked(settings.isPublishEnabled());
+        publishSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 settings.setPublishEnabled(isChecked);
             }
         });
 
-        Spinner publishSpinner = (Spinner) findViewById(R.id.publishSpinner);
-        publishSpinner.setSelection(settings.getPublishQos());
-        publishSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                settings.setPublishQos(position);
-            }
+        final int kPublishTopicEditTextsIds[] = {R.id.publish0TopicEditText, R.id.publish1TopicEditText};
+        final int kPublishTopicSpinnerIds[] = {R.id.publish0Spinner, R.id.publish1Spinner};
+        for (int i = 0; i < kNumPublishFeeds; i++) {
+            final int index = i;
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+            final EditText publishTopicEditText = (EditText) findViewById(kPublishTopicEditTextsIds[i]);
+            publishTopicEditText.setText(settings.getPublishTopic(index));
+            publishTopicEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (!hasFocus) {
+                        settings.setPublishTopic(index, publishTopicEditText.getText().toString());
+                    }
+                }
+            });
 
-            }
-        });
+            Spinner publishSpinner = (Spinner) findViewById(kPublishTopicSpinnerIds[i]);
+            publishSpinner.setSelection(settings.getPublishQos(index));
+            publishSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    settings.setPublishQos(index, position);
+                }
 
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
 
+                }
+            });
+        }
+
+        // UI - Subscribe
         mSubscribeTopicEditText = (EditText) findViewById(R.id.subscribeTopicEditText);
         mSubscribeTopicEditText.setText(settings.getSubscribeTopic());
         mPreviousSubscriptionTopic = settings.getSubscribeTopic();
@@ -159,7 +172,27 @@ public class MqttSettingsActivity extends ActionBarActivity implements MqttManag
             }
         });
 
+        Spinner subscribeBehaviourSpinner = (Spinner) findViewById(R.id.subscribeBehaviourSpinner);
+        subscribeBehaviourSpinner.setSelection(settings.getSubscribeBehaviour());
+        subscribeBehaviourSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            boolean isInitializing = true;
 
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (!isInitializing) {
+                    settings.setSubscribeBehaviour(position);
+                }
+                isInitializing = false;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
+        // UI - Advanced
         mUsernameEditText = (EditText) findViewById(R.id.usernameEditText);
         mUsernameEditText.setText(settings.getUsername());
         mUsernameEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -198,11 +231,17 @@ public class MqttSettingsActivity extends ActionBarActivity implements MqttManag
         mConnectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getCurrentFocus().clearFocus(); // Force remove focus from last field to take into account the changes
+                // Force remove focus from last field to take into account the changes
+                View currentFocusView = getCurrentFocus();
+                if (currentFocusView != null) {
+                    currentFocusView.clearFocus();
+                }
 
-                Context context = MqttSettingsActivity.this;
+                // Dismiss keyboard
+                Context context = MqttUartSettingsActivity.this;
                 dismissKeyboard(v);
 
+                // Connect / Disconnect
                 MqttManager mqttManager = MqttManager.getInstance(context);
                 MqttManager.MqqtConnectionStatus status = mqttManager.getClientStatus();
                 Log.d(TAG, "current mqtt status: " + status);
@@ -212,6 +251,7 @@ public class MqttSettingsActivity extends ActionBarActivity implements MqttManag
                     mqttManager.disconnect();
                 }
 
+                // Update UI
                 updateStatusUI();
             }
         });
@@ -220,7 +260,7 @@ public class MqttSettingsActivity extends ActionBarActivity implements MqttManag
         updateStatusUI();
     }
 
-    private  void dismissKeyboard(View view) {
+    private void dismissKeyboard(View view) {
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }

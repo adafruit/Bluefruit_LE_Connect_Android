@@ -266,9 +266,11 @@
     <string name="mqtt_server_address">Address:</string>
     <string name="mqtt_server_port">Port:</string>
     <string name="mqtt_publish_title">Publish</string>
-    <string name="mqtt_publish_topic">Topic:</string>
+    <string name="mqtt_publish0_topic">UART RX:</string>
+    <string name="mqtt_publish1_topic">UART TX:</string>
     <string name="mqtt_subscribe_title">Subscribe</string>
     <string name="mqtt_subscribe_topic">Topic:</string>
+    <string name="mqtt_subscribe_behaviour">Action:</string>
     <string name="mqtt_advanced_title">Advanced</string>
     <string name="mqtt_username">Username:</string>
     <string name="mqtt_password">Password:</string>
@@ -285,6 +287,11 @@
     <string name="mqtt_status_connecting">Connecting...</string>
     <string name="mqtt_status_disconnecting">Disconnecting...</string>
     <string name="mqtt_status_error">Error</string>
+
+    <string-array name="mqtt_uart_subscribe_behaviour">
+        <item>Local Only</item>
+        <item>Transmit</item>
+    </string-array>
 
 
     <!-- Mqtt -->

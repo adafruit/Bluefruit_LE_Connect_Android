@@ -77,7 +77,7 @@ public class MqttManager implements IMqttActionListener, MqttCallback, MqttTrace
 
     // region MQTT
     public void subscribe(String topic, int qos) {
-        if (mMqttClient != null && mMqqtClientStatus == MqqtConnectionStatus.CONNECTED) {
+        if (mMqttClient != null && mMqqtClientStatus == MqqtConnectionStatus.CONNECTED && topic != null) {
             try {
                 Log.d(TAG, "Mqtt: subscribe to " + topic + " qos:" + qos);
                 mMqttClient.subscribe(topic, qos);
@@ -88,7 +88,7 @@ public class MqttManager implements IMqttActionListener, MqttCallback, MqttTrace
     }
 
     public void unsubscribe(String topic) {
-        if (mMqttClient != null && mMqqtClientStatus == MqqtConnectionStatus.CONNECTED) {
+        if (mMqttClient != null && mMqqtClientStatus == MqqtConnectionStatus.CONNECTED && topic != null) {
             try {
                 Log.d(TAG, "Mqtt: unsubscribe from " + topic);
                 mMqttClient.unsubscribe(topic);
@@ -101,7 +101,7 @@ public class MqttManager implements IMqttActionListener, MqttCallback, MqttTrace
 
 
     public void publish(String topic, String payload, int qos) {
-        if (mMqttClient != null && mMqqtClientStatus == MqqtConnectionStatus.CONNECTED) {
+        if (mMqttClient != null && mMqqtClientStatus == MqqtConnectionStatus.CONNECTED && topic != null) {
             boolean retained = false;
 
             try {
