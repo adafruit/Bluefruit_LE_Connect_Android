@@ -12,9 +12,10 @@ public class MqttSettings {
 
     // Constants
     public final static int kDefaultServerPort = 1883;
-    public final static String kDefaultPublishTopicTx = "uart_tx";
-    public final static String kDefaultPublishTopicRx = "uart_rx";
-    public final static String kDefaultSubscribeTopic = "uart_input";
+    public final static String kDefaultServerAddress = "io.adafruit.com";
+    public final static String kDefaultPublishTopicTx = null;//"uart_tx";
+    public final static String kDefaultPublishTopicRx = null;//"uart_rx";
+    public final static String kDefaultSubscribeTopic = null;//"uart_input";
 
     private final static String kPreferences = "MqttSettings_prefs";
     private final static String kPreferences_serveraddress = "serveraddress";
@@ -55,7 +56,7 @@ public class MqttSettings {
     }
 
     public String getServerAddress() {
-        return getPrefsString(kPreferences_serveraddress, null);
+        return getPrefsString(kPreferences_serveraddress, kDefaultServerAddress);
     }
 
     public void setServerAddress(String address) {

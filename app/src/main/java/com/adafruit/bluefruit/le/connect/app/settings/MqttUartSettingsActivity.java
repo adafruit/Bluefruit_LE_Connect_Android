@@ -333,6 +333,7 @@ public class MqttUartSettingsActivity extends ActionBarActivity implements MqttM
         mStatusTextView.setText(getString(statusStringId));
     }
 
+    /*
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -354,6 +355,7 @@ public class MqttUartSettingsActivity extends ActionBarActivity implements MqttM
 
         return super.onOptionsItemSelected(item);
     }
+    */
 
     // region MqttManagerListener
     @Override
