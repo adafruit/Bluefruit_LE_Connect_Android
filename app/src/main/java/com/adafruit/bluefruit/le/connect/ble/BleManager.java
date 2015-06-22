@@ -466,16 +466,16 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
     }
     //endregion
 
-    public static interface BleManagerListener {
+    public interface BleManagerListener {
 
-        public void onConnected();
-        public void onConnecting();
-        public void onDisconnected();
-        public void onServicesDiscovered();
+        void onConnected();
+        void onConnecting();
+        void onDisconnected();
+        void onServicesDiscovered();
 
-        public void onDataAvailable(BluetoothGattCharacteristic characteristic);
-        public void onDataAvailable(BluetoothGattDescriptor descriptor);
+        void onDataAvailable(BluetoothGattCharacteristic characteristic);
+        void onDataAvailable(BluetoothGattDescriptor descriptor);
 
-        public void onReadRemoteRssi(int rssi);
+        void onReadRemoteRssi(int rssi);
     }
 }

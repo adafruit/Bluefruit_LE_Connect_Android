@@ -5,6 +5,7 @@
     <string name="app_name">Bluefruit LE</string>
     <string name="app_full_name">Bluefruit LE Connect</string>
     <string name="action_info">Info</string>
+    <string name="action_mqttsettings">MQTT</string>
     <string name="action_settings">Settings</string>
     <string name="action_firmwareupdates">Firmware Updates</string>
     <string name="action_refreshcache">Refresh Bluetooth Cache</string>
@@ -136,6 +137,7 @@
 
 
     <!-- Beacon -->
+    <string name="title_activity_beacon">Beacons</string>
     <string name="beacon_help_title">Beacons Help</string>
 
     <string name="beacon_manufacturer_choose_title">Choose Manufacturer</string>
@@ -256,13 +258,57 @@
     <string name="dfu_service_progress">%d%%</string>
     <string name="dfu_feature_title">Bluefruit Update</string>
 
+
+    <!-- Mqtt Settings -->
+    <string name="title_activity_mqtt">MQTT Settings</string>
+
+    <string name="mqtt_server_title">Server</string>
+    <string name="mqtt_server_address">Address:</string>
+    <string name="mqtt_server_port">Port:</string>
+    <string name="mqtt_publish_title">Publish</string>
+    <string name="mqtt_publish0_topic">UART RX:</string>
+    <string name="mqtt_publish1_topic">UART TX:</string>
+    <string name="mqtt_subscribe_title">Subscribe</string>
+    <string name="mqtt_subscribe_topic">Topic:</string>
+    <string name="mqtt_subscribe_behaviour">Action:</string>
+    <string name="mqtt_advanced_title">Advanced</string>
+    <string name="mqtt_username">Username:</string>
+    <string name="mqtt_password">Password:</string>
+    <string name="mqtt_cleansession">Clean session:</string>
+
+
+    <string name="mqtt_server_address_hint">\u003CMQTT server address\u003E</string>
+    <string name="mqtt_enable">Enable</string>
+    <string name="mqtt_disable">Disable</string>
+    <string name="mqtt_service_status">Mqtt Service Status:</string>
+
+    <string name="mqtt_status_connected">Connected</string>
+    <string name="mqtt_status_disconnected">Disconnected</string>
+    <string name="mqtt_status_connecting">Connecting...</string>
+    <string name="mqtt_status_disconnecting">Disconnecting...</string>
+    <string name="mqtt_status_error">Error</string>
+
+    <string-array name="mqtt_uart_subscribe_behaviour">
+        <item>Local Only</item>
+        <item>Transmit</item>
+    </string-array>
+
+
+    <!-- Mqtt -->
+    <string name="mqtt_connection_lost">Mqtt connection to server lost</string>
+    <string name="mqtt_connection_failed">Mqtt server connection failed</string>
+
+    <string-array name="mqtt_qos">
+        <item>At Most Once</item>
+        <item>At Least Once</item>
+        <item>Exactly Once</item>
+    </string-array>
+
     <!-- Common -->
     <string name="dialog_ok">Ok</string>
 
     <!-- Debug -->
 
-    <string name="title_activity_beacon">BeaconActivity</string>
-    <string name="hello_world">Hello world!</string>
 
 
 </resources>
