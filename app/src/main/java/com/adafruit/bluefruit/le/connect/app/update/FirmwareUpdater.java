@@ -636,7 +636,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                                 String versionToIgnore = sharedPreferences.getString("pref_ignoredversion", "");
                                 if (ReleasesParser.versionCompare(latestRelease.version, versionToIgnore) != 0) {
 
-                                    final boolean isNewerVersion = ReleasesParser.versionCompare(latestRelease.version, mDeviceInfoData.firmwareRevision) > 0;
+                                    final boolean isNewerVersion = ReleasesParser.versionCompare(latestRelease.version, mDeviceInfoData.softwareRevision) > 0;
                                     final boolean showUpdateOnlyForNewerVersions = sharedPreferences.getBoolean("pref_updatesversioncheck", true);
 
                                     isFirmwareUpdateAvailable = (isNewerVersion || !showUpdateOnlyForNewerVersions);
@@ -645,7 +645,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                                         if (isNewerVersion) {
                                             Log.d(TAG, "Updates: New version found. Ask the user to install: " + latestRelease.version);
                                         } else {
-                                            Log.d(TAG, "Updates: Device has already latest version: " + mDeviceInfoData.firmwareRevision);
+                                            Log.d(TAG, "Updates: Device has already latest version: " + mDeviceInfoData.softwareRevision);
 
                                             if (isFirmwareUpdateAvailable) {
                                                 Log.d(TAG, "Updates: user asked to show old versions too");
