@@ -47,6 +47,7 @@ public class MqttUartSettingsActivity extends ActionBarActivity implements MqttM
     private EditText mUsernameEditText;
     private EditText mPasswordEditText;
     private Switch mCleanSessionSwitch;
+    private Switch mSslConnectionSwitch;
 
     // Data
     private String mPreviousSubscriptionTopic;
@@ -226,6 +227,14 @@ public class MqttUartSettingsActivity extends ActionBarActivity implements MqttM
             }
         });
 
+        mSslConnectionSwitch = (Switch) findViewById(R.id.sslConnectionSwitch);
+        mSslConnectionSwitch.setChecked(settings.isSslConnection());
+        mSslConnectionSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                settings.setSslConnection(isChecked);
+            }
+        });
 
         mConnectButton = (Button) findViewById(R.id.connectButton);
         mConnectButton.setOnClickListener(new View.OnClickListener() {

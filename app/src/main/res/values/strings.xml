@@ -275,6 +275,7 @@
     <string name="mqtt_username">Username:</string>
     <string name="mqtt_password">Password:</string>
     <string name="mqtt_cleansession">Clean session:</string>
+    <string name="mqtt_sslconnection">SSL connection:</string>
 
 
     <string name="mqtt_server_address_hint">\u003CMQTT server address\u003E</string>

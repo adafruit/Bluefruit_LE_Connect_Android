@@ -373,7 +373,7 @@
                             android:orientation="horizontal">
 
                             <TextView
-                                android:layout_width="wrap_content"
+                                android:layout_width="@dimen/activity_mqqt_edit_longtitle_width"
                                 android:layout_height="wrap_content"
                                 android:text="@string/mqtt_cleansession"/>
 
@@ -383,6 +383,24 @@
                                 android:layout_height="wrap_content"/>
 
                         </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="@dimen/activity_mqqt_edit_longtitle_width"
+                                android:layout_height="wrap_content"
+                                android:text="@string/mqtt_sslconnection"/>
+
+                            <Switch
+                                android:id="@+id/sslConnectionSwitch"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+
+                        </LinearLayout>
+
 
                     </LinearLayout>
                 </LinearLayout>

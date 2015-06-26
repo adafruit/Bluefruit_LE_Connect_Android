@@ -16,6 +16,8 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import java.util.UUID;
+
 public class MqttManager implements IMqttActionListener, MqttCallback, MqttTraceHandler {
     // Log
     private final static String TAG = MqttManager.class.getSimpleName();
@@ -136,22 +138,16 @@ public class MqttManager implements IMqttActionListener, MqttCallback, MqttTrace
         String host = settings.getServerAddress();
         int port = settings.getServerPort();
 
-        //String username = "antopenroad";
-       // String password = "d6b86da0a16d781b6c72940999d1e801c33ef651";
-       // host = "io.adafruit.com";
-        //settings.setSubscribeTopic(username+"/f/"+"newtest");
-//        settings.setPublishTopic(username+"/f/"+"newtest");
-
         String username = settings.getUsername();
         String password = settings.getPassword();
         boolean cleanSession = settings.isCleanSession();
+        boolean sslConnection = settings.isSslConnection();
 
-        connect(context, host, port, username, password, cleanSession);
+        connect(context, host, port, username, password, cleanSession, sslConnection);
     }
 
-    public void connect(Context context, String host, int port, String username, String password, boolean cleanSession) {
-        boolean sslConnection = false;
-        String clientId = "Bluefruit";
+    public void connect(Context context, String host, int port, String username, String password, boolean cleanSession, boolean sslConnection) {
+        String clientId = "Bluefruit_"+ UUID.randomUUID().toString();
         final int timeout = MqttConnectOptions.CONNECTION_TIMEOUT_DEFAULT;
         final int keepalive = MqttConnectOptions.KEEP_ALIVE_INTERVAL_DEFAULT;
 
@@ -167,9 +163,8 @@ public class MqttManager implements IMqttActionListener, MqttCallback, MqttTrace
         } else {
             uri = "tcp://" + host + ":" + port;
         }
-        //String handle = uri + clientId;
 
-        Log.d(TAG, "Mqtt: Create client");
+        Log.d(TAG, "Mqtt: Create client: "+clientId);
         mMqttClient = new MqttAndroidClient(context, uri, clientId);
         mMqttClient.registerResources(mContext);
 

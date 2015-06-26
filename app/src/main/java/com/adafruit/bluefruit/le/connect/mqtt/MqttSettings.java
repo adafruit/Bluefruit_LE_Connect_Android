@@ -31,6 +31,7 @@ public class MqttSettings {
     private final static String kPreferences_username = "username";
     private final static String kPreferences_password = "password";
     private final static String kPreferences_cleansession = "cleansession";
+    private final static String kPreferences_sslconnection = "sslconnection";
 
 
     // Data
@@ -100,7 +101,7 @@ public class MqttSettings {
     }
 
     public int getPublishQos(int index) {
-        return getPrefsInt(kPreferences_publishqos + index, 0);
+        return getPrefsInt(kPreferences_publishqos + index, MqttManager.MqqtQos_AtMostOnce);
     }
 
     public void setPublishQos(int index, int qos) {
@@ -108,7 +109,7 @@ public class MqttSettings {
     }
 
     public int getSubscribeQos() {
-        return getPrefsInt(kPreferences_subscribeqos, 0);
+        return getPrefsInt(kPreferences_subscribeqos, MqttManager.MqqtQos_AtMostOnce);
     }
 
     public void setSubscribeQos(int qos) {
@@ -116,7 +117,7 @@ public class MqttSettings {
     }
 
     public int getSubscribeBehaviour() {
-        return getPrefsInt(kPreferences_subscribebehaviour, 0);
+        return getPrefsInt(kPreferences_subscribebehaviour, MqttManager.MqqtQos_AtMostOnce);
     }
 
     public void setSubscribeBehaviour(int behaviour) {
@@ -124,11 +125,11 @@ public class MqttSettings {
     }
 
     public String getPublishTopic(int index) {
-        return getPrefsString(kPreferences_publishtopic+index, index==0?kDefaultPublishTopicTx:kDefaultPublishTopicRx);
+        return getPrefsString(kPreferences_publishtopic + index, index == 0 ? kDefaultPublishTopicTx : kDefaultPublishTopicRx);
     }
 
     public void setPublishTopic(int index, String topic) {
-        setPrefsString(kPreferences_publishtopic+index, topic);
+        setPrefsString(kPreferences_publishtopic + index, topic);
     }
 
     public String getSubscribeTopic() {
@@ -156,6 +157,15 @@ public class MqttSettings {
         setPrefsString(kPreferences_password, password);
     }
 
+    public boolean isSslConnection() {
+        return getPrefsBoolean(kPreferences_sslconnection, false);
+    }
+
+    public void setSslConnection(boolean enabled) {
+        setPrefsBoolean(kPreferences_sslconnection, enabled);
+    }
+
+
     public boolean isCleanSession() {
         return getPrefsBoolean(kPreferences_cleansession, true);
     }
@@ -163,7 +173,6 @@ public class MqttSettings {
     public void setCleanSession(boolean enabled) {
         setPrefsBoolean(kPreferences_cleansession, enabled);
     }
-
 
     // region Utils
     private String getPrefsString(String key, String defaultValue) {
