@@ -289,18 +289,7 @@ public class MqttUartSettingsActivity extends ActionBarActivity implements MqttM
         mqttManager.unsubscribe(previousTopic);
         mqttManager.subscribe(newTopic, qos);
         mPreviousSubscriptionTopic = newTopic;
-
-        /*
-        MqttManager.MqqtConnectionStatus status = mqttManager.getClientStatus();
-
-        if (status == MqttManager.MqqtConnectionStatus.CONNECTING || status == MqttManager.MqqtConnectionStatus.CONNECTED)
-        {
-            // Disconnect to apply the new subscription settings on connect
-            mqttManager.disconnect();
-        }
-        */
     }
-
 
     private void updateStatusUI() {
         MqttManager mqttManager = MqttManager.getInstance(this);
@@ -342,29 +331,6 @@ public class MqttUartSettingsActivity extends ActionBarActivity implements MqttM
         mStatusTextView.setText(getString(statusStringId));
     }
 
-    /*
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_mqtt, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-    */
 
     // region MqttManagerListener
     @Override

@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
@@ -117,8 +118,9 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         theme.resolveAttribute(R.attr.colorControlActivated, typedValue, true);
         mRxColor= typedValue.data;
 
-        theme.resolveAttribute(R.attr.colorControlHighlight, typedValue, true);
-        mMqttSubscribedColor = typedValue.data;
+        //theme.resolveAttribute(R.attr.colorControlHighlight, typedValue, true);
+        //mMqttSubscribedColor = typedValue.data;
+        mMqttSubscribedColor = Color.parseColor("#555555");
 
         // Read preferences
         SharedPreferences preferences = getSharedPreferences(kPreferences, MODE_PRIVATE);

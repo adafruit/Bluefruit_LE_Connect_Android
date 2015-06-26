@@ -205,7 +205,7 @@ public class MqttManager implements IMqttActionListener, MqttCallback, MqttTrace
                 mMqqtClientStatus = MqqtConnectionStatus.CONNECTING;
                 mMqttClient.connect(conOpt, null, this);
             } catch (MqttException e) {
-                Log.e(TAG, "Mqtt:x connection error: ", e);
+                Log.e(TAG, "Mqtt: connection error: ", e);
             }
         }
     }
