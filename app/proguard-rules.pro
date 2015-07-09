@@ -39,3 +39,8 @@
     public static *** d(...);
     public static *** v(...);
 }
+
+# Paho library logger
+-keep class org.eclipse.paho.client.mqttv3.logging.JSR47Logger {
+    *;
+}

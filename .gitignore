@@ -8,3 +8,5 @@ BuildConfig.java
 R.java
 dFULibrary/build
 tools/nRF_Toolbox_Android_1.9.2
+app-release.apk
+manifest-merger-release-report.txt
