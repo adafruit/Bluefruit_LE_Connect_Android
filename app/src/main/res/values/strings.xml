@@ -7,6 +7,7 @@
     <string name="action_info">Info</string>
     <string name="action_mqttsettings">MQTT</string>
     <string name="action_settings">Settings</string>
+    <string name="action_licenses">Licenses</string>
     <string name="action_firmwareupdates">Firmware Updates</string>
     <string name="action_refreshcache">Refresh Bluetooth Cache</string>
     <string name="action_about">About</string>
@@ -72,6 +73,9 @@
 
     <!-- Scan Help Activity -->
     <string name="title_activity_mainhelp">Help</string>
+
+    <!-- Licenses -->
+    <string name="licenses_title">Licenses</string>
 
     <!-- Info Activity -->
     <string name="title_activity_info">Info</string>

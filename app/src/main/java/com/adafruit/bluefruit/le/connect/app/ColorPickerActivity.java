@@ -107,10 +107,6 @@ public class ColorPickerActivity extends UartInterfaceActivity implements BleMan
             startHelp();
             return true;
         }
-        else if (id == R.id.action_about) {
-            startAbout();
-            return true;
-        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -120,14 +116,6 @@ public class ColorPickerActivity extends UartInterfaceActivity implements BleMan
         Intent intent = new Intent(this, CommonHelpActivity.class);
         intent.putExtra("title", getString(R.string.colorpicker_help_title));
         intent.putExtra("help", "colorpicker_help.html");
-        startActivity(intent);
-    }
-
-    private void startAbout() {
-        // Launch about activity
-        Intent intent = new Intent(this, CommonHelpActivity.class);
-        intent.putExtra("title", getString(R.string.colorpicker_about_title));
-        intent.putExtra("help", "colorpicker_about.html");
         startActivity(intent);
     }
 

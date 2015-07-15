@@ -194,6 +194,12 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
             startActivityForResult(intent, kActivityRequestCode_Settings);
             return true;
         }
+        else if (id == R.id.action_licenses) {
+            Intent intent = new Intent(this, CommonHelpActivity.class);
+            intent.putExtra("title", getString(R.string.licenses_title));
+            intent.putExtra("help", "licenses.html");
+            startActivity(intent);
+        }
         return super.onOptionsItemSelected(item);
     }
 
