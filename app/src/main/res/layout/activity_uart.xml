@@ -1,15 +1,15 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/rootLayout"
-    android:background="@drawable/default_background"
-    android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.adafruit.bluefruit.le.connect.app.UartActivity">
+<RelativeLayout android:id="@+id/rootLayout"
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/default_background"
+                android:orientation="vertical"
+                android:paddingBottom="@dimen/activity_vertical_margin"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:paddingTop="@dimen/activity_vertical_margin"
+                tools:context="com.adafruit.bluefruit.le.connect.app.UartActivity">
 
 
     <LinearLayout
@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-   <!--     <include layout="@layout/layout_uart_singleline_controls"/> -->
+        <!--     <include layout="@layout/layout_uart_singleline_controls"/> -->
     </LinearLayout>
 
     <LinearLayout
@@ -34,13 +34,13 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:singleLine="false" />
+            android:singleLine="false"/>
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="onClickSend"
-            android:text="Send" />
+            android:text="Send"/>
     </LinearLayout>
 
     <LinearLayout
@@ -59,30 +59,41 @@
             android:background="#cccccc"
             android:cursorVisible="false"
             android:gravity="top"
-            android:textColorHighlight="#ffffff" />
+            android:textColorHighlight="#ffffff"/>
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
             <Button
                 style="?android:attr/borderlessButtonStyle"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:onClick="onClickCopy"
-                android:text="Copy"
-                android:textColor="@drawable/default_textcolor" />
+                android:text="@string/uart_copy"
+                android:textColor="@drawable/default_textcolor"/>
 
             <Button
                 style="?android:attr/borderlessButtonStyle"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:onClick="onClickClear"
-                android:text="Clear"
-                android:textColor="@drawable/default_textcolor" />
+                android:layout_weight="1"
+                android:onClick="onClickShare"
+                android:text="@string/uart_share"
+                android:textColor="@drawable/default_textcolor"/>
 
-        </RelativeLayout>
+            <Button
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="onClickClear"
+                android:text="@string/uart_clear"
+                android:textColor="@drawable/default_textcolor"/>
+
+        </LinearLayout>
     </LinearLayout>
 
 

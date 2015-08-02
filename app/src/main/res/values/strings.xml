@@ -90,6 +90,14 @@
     <string name="uart_format_hex">Hex</string>
     <string name="uart_help_title">UART Help</string>
 
+    <string name="uart_copy">Copy</string>
+    <string name="uart_share">Share</string>
+    <string name="uart_clear">Clear</string>
+
+    <string name="uart_share_subject">UART</string>
+    <string name="uart_share_empty">Nothing to share. Uart text is empty</string>
+
+
     <!-- PinIO Activity -->
     <string name="title_activity_pin_io">PinIO</string>
     <string name="pinio_sectiontitle_digital">Digital</string>

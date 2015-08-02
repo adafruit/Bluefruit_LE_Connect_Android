@@ -1,5 +1,6 @@
 package com.adafruit.bluefruit.le.connect.app;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -35,10 +36,10 @@ import android.widget.TextView;
 
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.app.settings.ConnectedSettingsActivity;
-import com.adafruit.bluefruit.le.connect.mqtt.MqttManager;
-import com.adafruit.bluefruit.le.connect.mqtt.MqttSettings;
 import com.adafruit.bluefruit.le.connect.app.settings.MqttUartSettingsActivity;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
+import com.adafruit.bluefruit.le.connect.mqtt.MqttManager;
+import com.adafruit.bluefruit.le.connect.mqtt.MqttSettings;
 
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
@@ -116,7 +117,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         theme.resolveAttribute(R.attr.colorPrimaryDark, typedValue, true);
         mTxColor = typedValue.data;
         theme.resolveAttribute(R.attr.colorControlActivated, typedValue, true);
-        mRxColor= typedValue.data;
+        mRxColor = typedValue.data;
 
         //theme.resolveAttribute(R.attr.colorControlHighlight, typedValue, true);
         //mMqttSubscribedColor = typedValue.data;
@@ -225,8 +226,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         uartSendData(data, false);
     }
 
-    private void uartSendData(String data, boolean wasReceivedFromMqtt)
-    {
+    private void uartSendData(String data, boolean wasReceivedFromMqtt) {
         // MQTT publish to TX
         MqttSettings settings = MqttSettings.getInstance(UartActivity.this);
         if (!wasReceivedFromMqtt) {
@@ -250,7 +250,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
         // Show on UI
         if (mEchoSwitch.isChecked()) {      // Add send data to visible buffer if checked
-            int color = wasReceivedFromMqtt?mMqttSubscribedColor:mTxColor;       // mTxColor for standard input or mqttsubscribedcolor when is something that should not be published to mqtt (it has been received from a mqqt subscribed feed=
+            int color = wasReceivedFromMqtt ? mMqttSubscribedColor : mTxColor;       // mTxColor for standard input or mqttsubscribedcolor when is something that should not be published to mqtt (it has been received from a mqqt subscribed feed=
             addTextToSpanBuffer(mAsciiSpanBuffer, data, color);
             addTextToSpanBuffer(mHexSpanBuffer, asciiToHex(data), color);
         }
@@ -269,6 +269,25 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         mAsciiSpanBuffer.clear();
         mHexSpanBuffer.clear();
         updateUI();
+    }
+
+    public void onClickShare(View view) {
+        String textToSend = (mShowDataInHexFormat ? mHexSpanBuffer : mAsciiSpanBuffer).toString();
+
+        if (textToSend != null && textToSend.length() > 0) {
+
+            Intent sendIntent = new Intent();
+            sendIntent.setAction(Intent.ACTION_SEND);
+            sendIntent.putExtra(Intent.EXTRA_TEXT, textToSend);
+            sendIntent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.uart_share_subject));     // subject will be used if sent to an email app
+            sendIntent.setType("text/*");       // Note: don't use text/plain because dropbox will not appear as destination
+            startActivity(sendIntent);
+        } else {
+            new AlertDialog.Builder(this)
+                    .setMessage(getString(R.string.uart_share_empty))
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show();
+        }
     }
 
     public void onClickFormatAscii(View view) {
@@ -302,7 +321,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
             mMqttMenuItemAnimationHandler.postDelayed(mMqttMenuItemAnimationRunnable, 500);
         }
     };
-    private  int mMqttMenuItemAnimationFrame = 0;
+    private int mMqttMenuItemAnimationFrame = 0;
 
     private void updateMqttStatus() {
         if (mMqttMenuItem == null) return;      // Hack: Sometimes this could have not been initialized so we don't update icons
@@ -310,18 +329,14 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         MqttManager mqttManager = mMqttManager.getInstance(this);
         MqttManager.MqqtConnectionStatus status = mqttManager.getClientStatus();
 
-        if (status == MqttManager.MqqtConnectionStatus.CONNECTING)
-        {
+        if (status == MqttManager.MqqtConnectionStatus.CONNECTING) {
             final int kConnectingAnimationDrawableIds[] = {R.drawable.mqtt_connecting1, R.drawable.mqtt_connecting2, R.drawable.mqtt_connecting3};
             mMqttMenuItem.setIcon(kConnectingAnimationDrawableIds[mMqttMenuItemAnimationFrame]);
-            mMqttMenuItemAnimationFrame = (mMqttMenuItemAnimationFrame+1)%kConnectingAnimationDrawableIds.length;
-        }
-        else if (status == MqttManager.MqqtConnectionStatus.CONNECTED) {
+            mMqttMenuItemAnimationFrame = (mMqttMenuItemAnimationFrame + 1) % kConnectingAnimationDrawableIds.length;
+        } else if (status == MqttManager.MqqtConnectionStatus.CONNECTED) {
             mMqttMenuItem.setIcon(R.drawable.mqtt_connected);
             mMqttMenuItemAnimationHandler.removeCallbacks(mMqttMenuItemAnimationRunnable);
-        }
-        else
-        {
+        } else {
             mMqttMenuItem.setIcon(R.drawable.mqtt_disconnected);
             mMqttMenuItemAnimationHandler.removeCallbacks(mMqttMenuItemAnimationRunnable);
         }
@@ -339,17 +354,14 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         if (id == R.id.action_help) {
             startHelp();
             return true;
-        }
-        else if (id == R.id.action_connected_settings) {
+        } else if (id == R.id.action_connected_settings) {
             startConnectedSettings();
             return true;
-        }
-        else if (id == R.id.action_refreshcache)  {
-            if (mBleManager != null ) {
+        } else if (id == R.id.action_refreshcache) {
+            if (mBleManager != null) {
                 mBleManager.refreshDeviceCache();
             }
-        }
-        else if (id == R.id.action_mqttsettings)  {
+        } else if (id == R.id.action_mqttsettings) {
             Intent intent = new Intent(this, MqttUartSettingsActivity.class);
             startActivityForResult(intent, kActivityRequestCode_MqttSettingsActivity);
         }
@@ -368,11 +380,11 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent intent) {
         if (requestCode == kActivityRequestCode_ConnectedSettingsActivity && resultCode == RESULT_OK) {
             finish();
-        }
-        else if (requestCode == kActivityRequestCode_MqttSettingsActivity && resultCode == RESULT_OK) {
+        } else if (requestCode == kActivityRequestCode_MqttSettingsActivity && resultCode == RESULT_OK) {
 
         }
     }
+
     private void startHelp() {
         // Launch app help activity
         Intent intent = new Intent(this, CommonHelpActivity.class);
@@ -507,7 +519,6 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         mRetainedDataFragment.mHexSpanBuffer = mHexSpanBuffer;
     }
     // endregion
-
 
 
     // region MqttManagerListener
