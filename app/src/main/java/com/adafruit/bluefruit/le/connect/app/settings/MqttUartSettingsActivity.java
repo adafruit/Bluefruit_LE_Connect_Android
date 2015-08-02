@@ -32,9 +32,6 @@ public class MqttUartSettingsActivity extends ActionBarActivity implements MqttM
     public static final int kPublishFeed_RX = 0;
     public static final int kPublishFeed_TX = 1;
 
-    public static final int kSubscribeBehaviour_LocalOnly = 0;      // note: should have the same order than strings/mqtt_uart_subscribe_behaviour
-    public static final int kSubscribeBehaviour_Transmit = 1;
-
     // UI
     private EditText mServerAddressEditText;
     private EditText mServerPortEditText;
@@ -136,7 +133,7 @@ public class MqttUartSettingsActivity extends ActionBarActivity implements MqttM
                 if (!hasFocus) {
                     String topic = mSubscribeTopicEditText.getText().toString();
                     settings.setSubscribeTopic(topic);
-                    subscriptionChanged(topic, mSubscribeSpinner.getSelectedItemPosition(), mPreviousSubscriptionTopic);
+                    subscriptionChanged(topic, mSubscribeSpinner.getSelectedItemPosition());
                 }
             }
         });
@@ -148,7 +145,7 @@ public class MqttUartSettingsActivity extends ActionBarActivity implements MqttM
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 settings.setSubscribeEnabled(isChecked);
-                subscriptionChanged(null, mSubscribeSpinner.getSelectedItemPosition(), mPreviousSubscriptionTopic);
+                subscriptionChanged(null, mSubscribeSpinner.getSelectedItemPosition());
             }
         });
 
@@ -162,7 +159,7 @@ public class MqttUartSettingsActivity extends ActionBarActivity implements MqttM
                 if (!isInitializing) {
                     settings.setSubscribeQos(position);
                     String topic = mSubscribeTopicEditText.getText().toString();
-                    subscriptionChanged(topic, mSubscribeSpinner.getSelectedItemPosition(), mPreviousSubscriptionTopic);
+                    subscriptionChanged(topic, mSubscribeSpinner.getSelectedItemPosition());
                 }
                 isInitializing = false;
             }
@@ -258,6 +255,7 @@ public class MqttUartSettingsActivity extends ActionBarActivity implements MqttM
                     mqttManager.connectFromSavedSettings(context);
                 } else {
                     mqttManager.disconnect();
+                    MqttSettings.getInstance(context).setConnectedEnabled(false);
                 }
 
                 // Update UI
@@ -282,11 +280,11 @@ public class MqttUartSettingsActivity extends ActionBarActivity implements MqttM
         mqttManager.setListener(this);
     }
 
-    private void subscriptionChanged(String newTopic, int qos, String previousTopic) {
-        Log.d(TAG, "subscription changed from: " + previousTopic + " to: " + newTopic + " qos: " + qos);
+    private void subscriptionChanged(String newTopic, int qos) {
+        Log.d(TAG, "subscription changed from: " + mPreviousSubscriptionTopic + " to: " + newTopic + " qos: " + qos);
         MqttManager mqttManager = MqttManager.getInstance(this);
 
-        mqttManager.unsubscribe(previousTopic);
+        mqttManager.unsubscribe(mPreviousSubscriptionTopic);
         mqttManager.subscribe(newTopic, qos);
         mPreviousSubscriptionTopic = newTopic;
     }

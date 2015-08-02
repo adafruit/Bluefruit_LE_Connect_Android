@@ -168,7 +168,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         // Continue
         onServicesDiscovered();
 
-        // Mqtt debug
+        // Mqtt init
         mMqttManager = MqttManager.getInstance(this);
         if (MqttSettings.getInstance(this).isConnected()) {
             mMqttManager.connectFromSavedSettings(this);
@@ -183,6 +183,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         mBleManager.setBleListener(this);
 
         mMqttManager.setListener(this);
+        updateMqttStatus();
     }
 
     @Override
@@ -201,6 +202,11 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
     @Override
     public void onDestroy() {
+        // Disconnect mqtt
+        if (mMqttManager != null) {
+            mMqttManager.disconnect();
+        }
+
         // Retain data
         saveRetainedDataFragment();
 
@@ -216,19 +222,19 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         String data = mSendEditText.getText().toString();
         mSendEditText.setText("");       // Clear editText
 
-        if (MqttSettings.getInstance(this).isPublishEnabled()) {
-            uartSendData(data, false);
-        }
+        uartSendData(data, false);
     }
 
-    private void uartSendData(String data, boolean isMqttReceivedData)
+    private void uartSendData(String data, boolean wasReceivedFromMqtt)
     {
-        // Publish to mqtt
+        // MQTT publish to TX
         MqttSettings settings = MqttSettings.getInstance(UartActivity.this);
-        if (!isMqttReceivedData) {
-            String topic = settings.getPublishTopic(MqttUartSettingsActivity.kPublishFeed_TX);
-            final int qos = settings.getPublishQos(MqttUartSettingsActivity.kPublishFeed_TX);
-            mMqttManager.publish(topic, data, qos);
+        if (!wasReceivedFromMqtt) {
+            if (settings.isPublishEnabled()) {
+                String topic = settings.getPublishTopic(MqttUartSettingsActivity.kPublishFeed_TX);
+                final int qos = settings.getPublishQos(MqttUartSettingsActivity.kPublishFeed_TX);
+                mMqttManager.publish(topic, data, qos);
+            }
         }
 
         // Add eol
@@ -238,13 +244,13 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         }
 
         // Send to uart
-        if (!isMqttReceivedData || settings.getSubscribeBehaviour() == MqttUartSettingsActivity.kSubscribeBehaviour_Transmit) {
+        if (!wasReceivedFromMqtt || settings.getSubscribeBehaviour() == MqttSettings.kSubscribeBehaviour_Transmit) {
             sendData(data);
         }
 
         // Show on UI
         if (mEchoSwitch.isChecked()) {      // Add send data to visible buffer if checked
-            int color = isMqttReceivedData?mMqttSubscribedColor:mTxColor;       // mTxColor for standard input or mqttsubscribedcolor when is something that should not be published to mqtt (it has been received from a mqqt subscribed feed=
+            int color = wasReceivedFromMqtt?mMqttSubscribedColor:mTxColor;       // mTxColor for standard input or mqttsubscribedcolor when is something that should not be published to mqtt (it has been received from a mqqt subscribed feed=
             addTextToSpanBuffer(mAsciiSpanBuffer, data, color);
             addTextToSpanBuffer(mHexSpanBuffer, asciiToHex(data), color);
         }
@@ -415,7 +421,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
                     public void run() {
                         updateUI();
 
-                        // Publish to RX
+                        // MQTT publish to RX
                         MqttSettings settings = MqttSettings.getInstance(UartActivity.this);
                         if (settings.isPublishEnabled()) {
                             String topic = settings.getPublishTopic(MqttUartSettingsActivity.kPublishFeed_RX);

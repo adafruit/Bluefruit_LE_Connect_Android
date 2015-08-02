@@ -3,6 +3,8 @@ package com.adafruit.bluefruit.le.connect.mqtt;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.adafruit.bluefruit.le.connect.app.settings.MqttUartSettingsActivity;
+
 public class MqttSettings {
     // Log
     private final static String TAG = MqttSettings.class.getSimpleName();
@@ -33,6 +35,8 @@ public class MqttSettings {
     private final static String kPreferences_cleansession = "cleansession";
     private final static String kPreferences_sslconnection = "sslconnection";
 
+    public static final int kSubscribeBehaviour_LocalOnly = 0;      // note: should have the same order than strings/mqtt_uart_subscribe_behaviour
+    public static final int kSubscribeBehaviour_Transmit = 1;
 
     // Data
     private Context mContext;
@@ -117,7 +121,7 @@ public class MqttSettings {
     }
 
     public int getSubscribeBehaviour() {
-        return getPrefsInt(kPreferences_subscribebehaviour, MqttManager.MqqtQos_AtMostOnce);
+        return getPrefsInt(kPreferences_subscribebehaviour, kSubscribeBehaviour_LocalOnly);
     }
 
     public void setSubscribeBehaviour(int behaviour) {

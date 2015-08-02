@@ -129,7 +129,6 @@ public class MqttManager implements IMqttActionListener, MqttCallback, MqttTrace
                 Log.e(TAG, "Mqtt:x disconnection error: ", e);
             }
         }
-        MqttSettings.getInstance(mContext).setConnectedEnabled(false);
 
     }
 
