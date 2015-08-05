@@ -281,7 +281,8 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
             sendIntent.putExtra(Intent.EXTRA_TEXT, textToSend);
             sendIntent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.uart_share_subject));     // subject will be used if sent to an email app
             sendIntent.setType("text/*");       // Note: don't use text/plain because dropbox will not appear as destination
-            startActivity(sendIntent);
+           // startActivity(sendIntent);
+            startActivity(Intent.createChooser(sendIntent, getResources().getText(R.string.uart_sharechooser_title)));      // Always show the app-chooser
         } else {
             new AlertDialog.Builder(this)
                     .setMessage(getString(R.string.uart_share_empty))

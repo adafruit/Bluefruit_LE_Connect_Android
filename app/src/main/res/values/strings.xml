@@ -95,7 +95,10 @@
     <string name="uart_clear">Clear</string>
 
     <string name="uart_share_subject">UART</string>
-    <string name="uart_share_empty">Nothing to share. Uart text is empty</string>
+    <string name="uart_share_empty">Nothing to share. UART text is empty</string>
+
+    <string name="uart_sharechooser_title">Send UART text to...</string>
+
 
 
     <!-- PinIO Activity -->
