@@ -154,7 +154,7 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
             result = ((IBeaconFragment) currentFragment).onBackPressed();
         }
 
-        if (result == false) {
+        if (!result) {
             super.onBackPressed();
         }
     }
@@ -251,7 +251,7 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
             if (imm != null && imm.isAcceptingText()) { // verify if the soft keyboard is open
                 imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
     }
 
@@ -363,7 +363,7 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
 
     private void onBeaconEnabled() {
         // Reset device
-        String uartCommand = String.format("ATZ\r\n");
+        String uartCommand = "ATZ\r\n";
         Log.d(TAG, "send command: " + uartCommand);
         sendData(uartCommand);
 

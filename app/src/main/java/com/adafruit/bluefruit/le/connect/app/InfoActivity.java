@@ -9,7 +9,7 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class InfoActivity extends ActionBarActivity implements BleManager.BleManagerListener {
+public class InfoActivity extends AppCompatActivity implements BleManager.BleManagerListener {
     // Log
     private final static String TAG = InfoActivity.class.getSimpleName();
 
@@ -127,13 +127,11 @@ public class InfoActivity extends ActionBarActivity implements BleManager.BleMan
         if (id == R.id.action_help) {
             startHelp();
             return true;
-        }
-        else if (id == R.id.action_connected_settings) {
+        } else if (id == R.id.action_connected_settings) {
             startConnectedSettings();
             return true;
-        }
-        else if (id == R.id.action_refreshcache)  {
-            if (mBleManager != null ) {
+        } else if (id == R.id.action_refreshcache) {
+            if (mBleManager != null) {
                 mBleManager.refreshDeviceCache();
             }
         }
@@ -305,8 +303,8 @@ public class InfoActivity extends ActionBarActivity implements BleManager.BleMan
         mInfoListAdapter.notifyDataSetChanged();
 
         // Show progress view if data is not ready yet
-        final boolean isDataEmpty = mInfoListView.getChildCount()==0;
-        mWaitView.setVisibility(isDataEmpty?View.VISIBLE:View.GONE);
+        final boolean isDataEmpty = mInfoListView.getChildCount() == 0;
+        mWaitView.setVisibility(isDataEmpty ? View.VISIBLE : View.GONE);
     }
 
     // region adapters
@@ -512,11 +510,11 @@ public class InfoActivity extends ActionBarActivity implements BleManager.BleMan
 
     private String getValueFormattedInGraphicCharacters(byte[] value, ElementPath elementPath) {
         String valueString = getValueFormatted(value, elementPath.dataFormat);
-            // if format is auto and the result is not visible, change the format to hex
-            if (valueString != null && elementPath.dataFormat == kDataFormat_Auto && !TextUtils.isGraphic(valueString)) {
-                elementPath.dataFormat = kDataFormat_Hex;
-                valueString = getValueFormatted(value, elementPath.dataFormat);
-            }
+        // if format is auto and the result is not visible, change the format to hex
+        if (valueString != null && elementPath.dataFormat == kDataFormat_Auto && !TextUtils.isGraphic(valueString)) {
+            elementPath.dataFormat = kDataFormat_Hex;
+            valueString = getValueFormatted(value, elementPath.dataFormat);
+        }
         return valueString;
     }
 
@@ -611,8 +609,7 @@ public class InfoActivity extends ActionBarActivity implements BleManager.BleMan
             Log.d(TAG, "Toggle data format");
             if (elementPath.dataFormat == kDataFormat_Auto) {       // Special case for auto (the data format as not been set yet)
                 elementPath.dataFormat = kDataFormat_Hex;
-            }
-            else {
+            } else {
                 elementPath.dataFormat = (elementPath.dataFormat + 1) % kDataFormatCount;
             }
 

@@ -57,7 +57,7 @@ public class CustomEditTextFormatter {
             result[i] = s.substring(j, j + interval);
             j += interval;
         }
-        if (lastIndex>=0) {
+        if (lastIndex >= 0) {
             result[lastIndex] = s.substring(j);
         }
 

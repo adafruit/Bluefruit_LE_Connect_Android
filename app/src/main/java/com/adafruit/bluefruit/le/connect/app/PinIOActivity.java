@@ -117,13 +117,11 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
         if (id == R.id.action_help) {
             startHelp();
             return true;
-        }
-        else if (id == R.id.action_connected_settings) {
+        } else if (id == R.id.action_connected_settings) {
             startConnectedSettings();
             return true;
-        }
-        else if (id == R.id.action_refreshcache)  {
-            if (mBleManager != null ) {
+        } else if (id == R.id.action_refreshcache) {
+            if (mBleManager != null) {
                 mBleManager.refreshDeviceCache();
             }
         }
@@ -143,6 +141,7 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
             finish();
         }
     }
+
     private void startHelp() {
         // Launch app help activity
         Intent intent = new Intent(this, CommonHelpActivity.class);
@@ -281,13 +280,11 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
                 int pinStates = (int) (data[i + 1]);
                 pinStates |= (int) (data[i + 2]) << 7;      //use LSB of third byte for pin7
                 updateForPinStates(pinStates, 0);
-            }
-            else if (data0 == 0x91) {                       //Port 1
+            } else if (data0 == 0x91) {                       //Port 1
                 int pinStates = (int) (data[i + 1]);
                 pinStates |= (int) (data[i + 2]) << 7;      //pins 14 & 15
                 updateForPinStates(pinStates, 1);
-            }
-            else if (data0 == 0x92) {                       // Port 2
+            } else if (data0 == 0x92) {                       // Port 2
                 int pinStates = (int) (data[i + 1]);
                 updateForPinStates(pinStates, 2);
             }
@@ -327,21 +324,19 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
             if (port < mDigitalPins.length) {
                 PinData pinData = mDigitalPins[port];
                 if (pinData.mode == PinData.kMode_Input || pinData.mode == PinData.kMode_Output) {
-                    if (state==0 || state==1) {
-                        pinData.state = state==0?PinData.kState_Low:PinData.kState_High;
-                    }
-                    else {
+                    if (state == 0 || state == 1) {
+                        pinData.state = state == 0 ? PinData.kState_Low : PinData.kState_High;
+                    } else {
                         Log.w(TAG, "Attempting set digital pin to analog value");
                     }
-                }
-                else {
+                } else {
                     Log.w(TAG, "Attempting set analog pin to digital value");
                 }
             }
         }
 
         // Save reference state mask
-        portMasks[port] = (byte)pinStates;
+        portMasks[port] = (byte) pinStates;
 
         // Update UI
         runOnUiThread(new Runnable() {

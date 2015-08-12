@@ -639,7 +639,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                                     final boolean isNewerVersion = ReleasesParser.versionCompare(latestRelease.version, mDeviceInfoData.softwareRevision) > 0;
                                     final boolean showUpdateOnlyForNewerVersions = sharedPreferences.getBoolean("pref_updatesversioncheck", true);
 
-                                    isFirmwareUpdateAvailable = (isNewerVersion || !showUpdateOnlyForNewerVersions);
+                                    isFirmwareUpdateAvailable = isNewerVersion || !showUpdateOnlyForNewerVersions;
 
                                     if (BuildConfig.DEBUG) {
                                         if (isNewerVersion) {
@@ -674,7 +674,6 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                 Log.d(TAG, "Updates: No listener. Skipping version check...");
             }
         }
-
     }
 
     @Override

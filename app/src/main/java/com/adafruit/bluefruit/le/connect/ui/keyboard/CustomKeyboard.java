@@ -40,16 +40,14 @@ public class CustomKeyboard {
         ViewGroup parentViewGroup;
         if (keyboardContainer != null) {
             parentViewGroup = keyboardContainer;
-        } else
-        {
+        } else {
             int currentapiVersion = android.os.Build.VERSION.SDK_INT;
             // Get the root view to add the keyboard subview
             ViewGroup rootView;
             if (currentapiVersion > Build.VERSION_CODES.KITKAT) {
                 // Workaround for devices with softkeys. We cant not use  getRootView() because the keyboard would be below the softkeys.
-                rootView = (ViewGroup)activity.findViewById(android.R.id.content);
-            }
-            else {
+                rootView = (ViewGroup) activity.findViewById(android.R.id.content);
+            } else {
                 rootView = (ViewGroup) activity.getWindow().getDecorView().getRootView();
             }
 
@@ -160,7 +158,7 @@ public class CustomKeyboard {
                     if (editable != null && start > 0) editable.delete(start - 1, start);
                 } else if (primaryCode == kKeyReturn) {
                     View nextFocusView = edittext.focusSearch(View.FOCUS_DOWN);
-                    if (nextFocusView != null &&  (nextFocusView instanceof EditText)) {
+                    if (nextFocusView != null && (nextFocusView instanceof EditText)) {
                         nextFocusView.requestFocus();
                     } else {
                         hideCustomKeyboard();

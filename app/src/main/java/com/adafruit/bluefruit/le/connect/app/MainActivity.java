@@ -16,7 +16,7 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -48,7 +48,7 @@ import java.util.UUID;
 import static android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 
 
-public class MainActivity extends ActionBarActivity implements BleManager.BleManagerListener, BleUtils.ResetBluetoothAdapterListener, FirmwareUpdater.FirmwareUpdaterListener {
+public class MainActivity extends AppCompatActivity implements BleManager.BleManagerListener, BleUtils.ResetBluetoothAdapterListener, FirmwareUpdater.FirmwareUpdaterListener {
     // Constants
     private final static String TAG = MainActivity.class.getSimpleName();
     private final static long kMinDelayToUpdateUI = 800;    // in milliseconds
@@ -193,8 +193,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
             intent.setClass(MainActivity.this, SettingsActivity.class);
             startActivityForResult(intent, kActivityRequestCode_Settings);
             return true;
-        }
-        else if (id == R.id.action_licenses) {
+        } else if (id == R.id.action_licenses) {
             Intent intent = new Intent(this, CommonHelpActivity.class);
             intent.putExtra("title", getString(R.string.licenses_title));
             intent.putExtra("help", "licenses.html");
@@ -809,7 +808,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
             // Check if a firmware update is available
             boolean isCheckingFirmware = false;
             if (mFirmwareUpdater != null) {
-                // Don't bother the user waiting for checks if the latest connected device was this
+                // Don't bother the user waiting for checks if the latest connected device was this one too
                 String deviceAddress = mBleManager.getConnectedDeviceAddress();
                 if (!deviceAddress.equals(mLatestCheckedDeviceAddress)) {
                     mLatestCheckedDeviceAddress = deviceAddress;
@@ -851,7 +850,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
     // region SoftwareUpdateManagerListener
     @Override
     public void onFirmwareUpdatesChecked(boolean isUpdateAvailable, final ReleasesParser.FirmwareInfo latestRelease, FirmwareUpdater.DeviceInfoData deviceInfoData, Map<String, ReleasesParser.BoardInfo> allReleases) {
-        mBleManager.setBleListener(this);
+        mBleManager.setBleListener(this);           // Restore listener
 
         if (isUpdateAvailable) {
             runOnUiThread(new Runnable() {
@@ -1276,7 +1275,7 @@ public class MainActivity extends ActionBarActivity implements BleManager.BleMan
         if (mRetainedDataFragment == null) {
             // Create
             mRetainedDataFragment = new DataFragment();
-            fm.beginTransaction().add(mRetainedDataFragment, TAG).commit();
+            fm.beginTransaction().add(mRetainedDataFragment, TAG).commitAllowingStateLoss();        // http://stackoverflow.com/questions/7575921/illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate-h
 
             mScannedDevices = new ArrayList<>();
 
