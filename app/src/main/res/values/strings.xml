@@ -207,6 +207,7 @@
     <string name="connectedsettings_usecustomfirmware">Use custom firmware</string>
     <string name="connectedsettings_usecustombootloader">Use custom bootloader</string>
     <string name="connectedsettings_versionformat">Version %s</string>
+    <string name="connectedsettings_betaversionformat">Beta Version %s</string>
     <string name="connectedsettings_retrievinginfoformat">No releases found for this device (%s)</string>
     <string name="connectedsettings_firmwareinstall_messageformat">Download and install firmware version %s</string>
     <string name="connectedsettings_bootloaderinstall_messageformat">Download and install bootloader version %s</string>
@@ -244,6 +245,8 @@
     <string name="settings_ignoredversion_edittitle">Version to ignore</string>
     <string name="settings_pref_bootloaders_summary">Enable bootloader updates</string>
     <string name="settings_pref_bootloaders_title">Show bootloaders</string>
+    <string name="settings_pref_betaversions_summary">Show pre-release firmware and bootloaders</string>
+    <string name="settings_pref_betaversions_title">Show beta releases</string>
     <string name="pref_key_reset_settings">pref_key_reset_settings</string>
     <string name="settings_category_reset">Reset</string>
     <string name="settings_pref_reset_title">Reset Preferences</string>
@@ -253,6 +256,7 @@
     <string name="pref_updatesversioncheck">pref_updatesversioncheck</string>
     <string name="pref_ignoredversion">pref_ignoredversion</string>
     <string name="pref_showbootloaders">pref_showbootloaders</string>
+    <string name="pref_showbetaversions">pref_showbetaversions</string>
     <string name="pref_reset">pref_reset</string>
 
     <!-- Firmware & Bootloader updates -->

@@ -12,7 +12,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -31,10 +31,11 @@ import com.adafruit.bluefruit.le.connect.app.update.ReleasesParser;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightListView;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class ConnectedSettingsActivity extends ActionBarActivity implements FirmwareUpdater.FirmwareUpdaterListener, ApplicationFilesFragmentDialog.ApplicationFilesDialogListener {
+public class ConnectedSettingsActivity extends AppCompatActivity implements FirmwareUpdater.FirmwareUpdaterListener, ApplicationFilesFragmentDialog.ApplicationFilesDialogListener {
     // Log
     private final static String TAG = ConnectedSettingsActivity.class.getSimpleName();
 
@@ -62,6 +63,7 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
     private boolean mIsUpdating;
     private ReleasesParser.BoardInfo mBoardRelease;
     private FirmwareUpdater.DeviceInfoData mDeviceInfoData;
+    private boolean mShowBetaVersions;
 
     private ApplicationFilesFragmentDialog mApplicationFilesDialog;
 
@@ -89,15 +91,18 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
         mCustomFirmwareButton = (Button) findViewById(R.id.customFirmwareButton);
         mFirmwareReleasesListView = (ExpandableHeightListView) findViewById(R.id.firmwareReleasesListView);
         mFirmwareReleasesListView.setExpanded(true);
-        mFirmwareReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, mBoardRelease == null ? null : mBoardRelease.firmwareReleases);      // mBoardRelease is still null here (except if we are restoring the activity because onConfigChanges)
+        mFirmwareReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, mBoardRelease == null ? null : mBoardRelease.firmwareReleases, mShowBetaVersions);      // mBoardRelease is still null here (except if we are restoring the activity because onConfigChanges)
         mFirmwareReleasesListView.setAdapter(mFirmwareReleasesListAdapter);
 
         mBootloaderReleasesView = findViewById(R.id.bootloaderReleasesView);
         mCustomBootloaderButton = (Button) findViewById(R.id.customBootloaderButton);
         mBootloaderReleasesListView = (ExpandableHeightListView) findViewById(R.id.bootloaderReleasesListView);
         mBootloaderReleasesListView.setExpanded(true);
-        mBootloaderReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, mBoardRelease == null ? null : mBoardRelease.bootloaderReleases);      // mBoardRelease is still null here (except if we are restoring the activity because onConfigChanges)
+        mBootloaderReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, mBoardRelease == null ? null : mBoardRelease.bootloaderReleases, mShowBetaVersions);      // mBoardRelease is still null here (except if we are restoring the activity because onConfigChanges)
         mBootloaderReleasesListView.setAdapter(mBootloaderReleasesListAdapter);
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mShowBetaVersions = sharedPreferences.getBoolean("pref_showbetaversions", false);
 
         // Start
         if (mDeviceInfoData == null) {      // only do this check the first time
@@ -203,9 +208,9 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
                 @Override
                 public void run() {
                     if (mBoardRelease != null) {
-                        mFirmwareReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, mBoardRelease.firmwareReleases);
+                        mFirmwareReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, mBoardRelease.firmwareReleases, mShowBetaVersions);
                         mFirmwareReleasesListView.setAdapter(mFirmwareReleasesListAdapter);
-                        mBootloaderReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, mBoardRelease.bootloaderReleases);
+                        mBootloaderReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, mBoardRelease.bootloaderReleases, mShowBetaVersions);
                         mBootloaderReleasesListView.setAdapter(mBootloaderReleasesListAdapter);
                     }
                     updateUI();
@@ -272,9 +277,18 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
         private Context mContext;
         private List<ReleasesParser.BasicVersionInfo> mReleases;
 
-        public ReleasesListAdapter(Context context, List<? extends ReleasesParser.BasicVersionInfo> releases) {
+        public ReleasesListAdapter(Context context, List<? extends ReleasesParser.BasicVersionInfo> releases, boolean showBetaVersions) {
             mContext = context;
-            mReleases = (List<ReleasesParser.BasicVersionInfo>) releases;
+
+            if (releases != null) {
+                // Add releases (only add beta releases if showBetaVersions is true)
+                mReleases = new ArrayList<>();
+                for (ReleasesParser.BasicVersionInfo release : releases) {
+                    if (showBetaVersions || !release.isBeta) {
+                        mReleases.add(release);
+                    }
+                }
+            }
         }
 
         @Override
@@ -303,8 +317,9 @@ public class ConnectedSettingsActivity extends ActionBarActivity implements Firm
 
             ReleasesParser.BasicVersionInfo release = (ReleasesParser.BasicVersionInfo) getItem(position);
             rowView.setTag(release);
-            String versionString = String.format(getString(R.string.connectedsettings_versionformat), release.version);
+            String versionString = String.format(getString(release.isBeta?R.string.connectedsettings_betaversionformat:R.string.connectedsettings_versionformat), release.version);
             titleTextView.setText(versionString);
+//            String subtitleText = String.format(getString(release.isBeta?R.string.connectedsettings_betasubtitleformat:R.string.connectedsettings_subtitleformat), release.description);
             subtitleTextView.setText(release.description);
 
             return rowView;

@@ -76,6 +76,12 @@
             android:summary="@string/settings_pref_bootloaders_summary"
             android:title="@string/settings_pref_bootloaders_title"/>
 
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="@string/pref_showbetaversions"
+            android:summary="@string/settings_pref_betaversions_summary"
+            android:title="@string/settings_pref_betaversions_title"/>
+
         <EditTextPreference
             android:dialogTitle="@string/settings_updateserver_edittitle"
             android:key="@string/pref_updateserver"

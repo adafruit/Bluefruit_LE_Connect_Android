@@ -34,6 +34,7 @@ public class ReleasesParser {
         public String hexFileUrl;
         public String iniFileUrl;
         public String description;
+        public boolean isBeta;
     }
 
     public static class FirmwareInfo extends BasicVersionInfo {
@@ -72,42 +73,59 @@ public class ReleasesParser {
                     boardReleases.put(boardName, boardInfo);
 
                     // Read firmware releases
-                    NodeList firmwareNodes = boardElement.getElementsByTagName("firmwarerelease");
-                    for (int j = 0; j < firmwareNodes.getLength(); j++) {
-                        Node firmwareNode = firmwareNodes.item(j);
-                        if (firmwareNode.getNodeType() == Node.ELEMENT_NODE) {
-                            FirmwareInfo releaseInfo = new FirmwareInfo();
+                    try {
+                        NodeList firmwareNodes = boardElement.getElementsByTagName("firmware").item(0).getChildNodes();     // children of <firmware>
+                        for (int j = 0; j < firmwareNodes.getLength(); j++) {
+                            Node firmwareNode = firmwareNodes.item(j);
+                            if (firmwareNode.getNodeType() == Node.ELEMENT_NODE) {
+                                String nodeName = firmwareNode.getNodeName();
+                                if (nodeName != null && (nodeName.equalsIgnoreCase("firmwarerelease") || nodeName.equalsIgnoreCase("firmwarebeta"))) {
+                                    FirmwareInfo releaseInfo = new FirmwareInfo();
 
-                            Element firmwareElement = (Element) firmwareNode;
-                            releaseInfo.fileType = DfuService.TYPE_APPLICATION;
-                            releaseInfo.version = firmwareElement.getAttribute("version");
-                            releaseInfo.hexFileUrl = firmwareElement.getAttribute("hexfile");
-                            releaseInfo.iniFileUrl = firmwareElement.getAttribute("initfile");
-                            releaseInfo.minBootloaderVersion = firmwareElement.getAttribute("minbootloader");
-                            releaseInfo.description = boardName;
+                                    Element firmwareElement = (Element) firmwareNode;
+                                    releaseInfo.fileType = DfuService.TYPE_APPLICATION;
+                                    releaseInfo.version = firmwareElement.getAttribute("version");
+                                    releaseInfo.hexFileUrl = firmwareElement.getAttribute("hexfile");
+                                    releaseInfo.iniFileUrl = firmwareElement.getAttribute("initfile");
+                                    releaseInfo.minBootloaderVersion = firmwareElement.getAttribute("minbootloader");
+                                    releaseInfo.description = boardName;
+                                    releaseInfo.isBeta = nodeName.equalsIgnoreCase("firmwarebeta");
 
-                            boardInfo.firmwareReleases.add(releaseInfo);
+                                    boardInfo.firmwareReleases.add(releaseInfo);
+                                }
+                            }
                         }
+                    } catch (Exception e) {
+                        Log.w(TAG, "Error parsing releases: firmwarenodes");
                     }
 
                     // Read bootloader releases
-                    NodeList bootloaderNodes = boardElement.getElementsByTagName("bootloaderrelease");
-                    for (int j = 0; j < bootloaderNodes.getLength(); j++) {
-                        Node booloaderNode = bootloaderNodes.item(j);
-                        if (booloaderNode.getNodeType() == Node.ELEMENT_NODE) {
-                            BootloaderInfo bootloaderInfo = new BootloaderInfo();
+                    try {
+                        NodeList bootloaderNodes = boardElement.getElementsByTagName("bootloader").item(0).getChildNodes();
+                        for (int j = 0; j < bootloaderNodes.getLength(); j++) {
+                            Node booloaderNode = bootloaderNodes.item(j);
+                            if (booloaderNode.getNodeType() == Node.ELEMENT_NODE) {
+                                String nodeName = booloaderNode.getNodeName();
+                                if (nodeName != null && (nodeName.equalsIgnoreCase("bootloaderrelease") || nodeName.equalsIgnoreCase("bootloaderbeta"))) {
+                                    BootloaderInfo bootloaderInfo = new BootloaderInfo();
 
-                            Element bootloaderElement = (Element) booloaderNode;
-                            bootloaderInfo.fileType = DfuService.TYPE_BOOTLOADER;
-                            bootloaderInfo.version = bootloaderElement.getAttribute("version");
-                            bootloaderInfo.hexFileUrl = bootloaderElement.getAttribute("hexfile");
-                            bootloaderInfo.iniFileUrl = bootloaderElement.getAttribute("initfile");
-                            bootloaderInfo.description = boardName;
+                                    Element bootloaderElement = (Element) booloaderNode;
+                                    bootloaderInfo.fileType = DfuService.TYPE_BOOTLOADER;
+                                    bootloaderInfo.version = bootloaderElement.getAttribute("version");
+                                    bootloaderInfo.hexFileUrl = bootloaderElement.getAttribute("hexfile");
+                                    bootloaderInfo.iniFileUrl = bootloaderElement.getAttribute("initfile");
+                                    bootloaderInfo.description = boardName;
+                                    bootloaderInfo.isBeta = nodeName.equalsIgnoreCase("bootloaderbeta");
 
-                            boardInfo.bootloaderReleases.add(bootloaderInfo);
+                                    boardInfo.bootloaderReleases.add(bootloaderInfo);
+                                }
+                            }
                         }
+                    } catch (Exception e) {
+                        Log.w(TAG, "Error parsing releases: bootloadernodes");
                     }
                 }
+
             }
         }
 

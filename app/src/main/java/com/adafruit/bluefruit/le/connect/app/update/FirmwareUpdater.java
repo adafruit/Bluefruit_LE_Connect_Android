@@ -42,13 +42,11 @@ import no.nordicsemi.android.error.GattError;
 /*
     Manages updates for firmware and bootloader
     Note: during updates is important that Activity that starts the update process calls changedParentActivity if is destroyed and recreated (for example on config changes)
-
  */
 public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleManager.BleManagerListener {
     // Config
     public static final String kDefaultUpdateServerUrl = "https://raw.githubusercontent.com/adafruit/Adafruit_BluefruitLE_Firmware/master/releases.xml";
 
-    private final static String kPreferences = "FirmwareUpdater_prefs";
     private static final String kManufacturer = "Adafruit Industries";
     private static final String kDefaultBootloaderVersion = "0.0";
 
@@ -61,8 +59,6 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     private static final String kSoftwareRevisionCharacteristic = "00002A28-0000-1000-8000-00805F9B34FB";
     private static final String kFirmwareRevisionCharacteristic = "00002A26-0000-1000-8000-00805F9B34FB";
 
-  //  private static final String kDfuVersionCharacteristic = "00001534-1212-EFDE-1523-785FEABCD123";
-
     private static final int kDownloadOperation_VersionsDatabase = 0;
     private static final int kDownloadOperation_Software_Hex = 1;
     private static final int kDownloadOperation_Software_Ini = 2;
@@ -74,7 +70,6 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
     private FirmwareUpdaterListener mListener;
     private PowerManager.WakeLock mWakeLock;
 
-    //private ProgressDialogFragment mProgressDialog;
     private ProgressFragmentDialog mProgressDialog;
     private Activity mParentActivity;
 
@@ -625,38 +620,46 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                     if (boardInfo != null) {
                         List<ReleasesParser.FirmwareInfo> modelReleases = boardInfo.firmwareReleases;
                         if (modelReleases != null && modelReleases.size() > 0) {
-                            // Get the latest release
-                            latestRelease = modelReleases.get(0);
+                            // Get the latest release (discard all beta releases)
+                            int selectedRelease = 0;
+                            do {
+                                latestRelease = modelReleases.get(selectedRelease);
+                                selectedRelease++;
+                            }while(latestRelease.isBeta && selectedRelease<modelReleases.size());
 
-                            // Check if the bootloader is compatible with this version
-                            if (mDeviceInfoData.getBootloaderVersion().compareToIgnoreCase(latestRelease.minBootloaderVersion) >= 0) {
+                            if (!latestRelease.isBeta) {
+                                // Check if the bootloader is compatible with this version
+                                if (mDeviceInfoData.getBootloaderVersion().compareToIgnoreCase(latestRelease.minBootloaderVersion) >= 0) {
 
-                                // Check if the user chose to ignore this version
-                                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-                                String versionToIgnore = sharedPreferences.getString("pref_ignoredversion", "");
-                                if (ReleasesParser.versionCompare(latestRelease.version, versionToIgnore) != 0) {
+                                    // Check if the user chose to ignore this version
+                                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+                                    String versionToIgnore = sharedPreferences.getString("pref_ignoredversion", "");
+                                    if (ReleasesParser.versionCompare(latestRelease.version, versionToIgnore) != 0) {
 
-                                    final boolean isNewerVersion = ReleasesParser.versionCompare(latestRelease.version, mDeviceInfoData.softwareRevision) > 0;
-                                    final boolean showUpdateOnlyForNewerVersions = sharedPreferences.getBoolean("pref_updatesversioncheck", true);
+                                        final boolean isNewerVersion = ReleasesParser.versionCompare(latestRelease.version, mDeviceInfoData.softwareRevision) > 0;
+                                        final boolean showUpdateOnlyForNewerVersions = sharedPreferences.getBoolean("pref_updatesversioncheck", true);
 
-                                    isFirmwareUpdateAvailable = isNewerVersion || !showUpdateOnlyForNewerVersions;
+                                        isFirmwareUpdateAvailable = isNewerVersion || !showUpdateOnlyForNewerVersions;
 
-                                    if (BuildConfig.DEBUG) {
-                                        if (isNewerVersion) {
-                                            Log.d(TAG, "Updates: New version found. Ask the user to install: " + latestRelease.version);
-                                        } else {
-                                            Log.d(TAG, "Updates: Device has already latest version: " + mDeviceInfoData.softwareRevision);
+                                        if (BuildConfig.DEBUG) {
+                                            if (isNewerVersion) {
+                                                Log.d(TAG, "Updates: New version found. Ask the user to install: " + latestRelease.version);
+                                            } else {
+                                                Log.d(TAG, "Updates: Device has already latest version: " + mDeviceInfoData.softwareRevision);
 
-                                            if (isFirmwareUpdateAvailable) {
-                                                Log.d(TAG, "Updates: user asked to show old versions too");
+                                                if (isFirmwareUpdateAvailable) {
+                                                    Log.d(TAG, "Updates: user asked to show old versions too");
+                                                }
                                             }
                                         }
+                                    } else {
+                                        Log.d(TAG, "Updates: User ignored version: " + versionToIgnore + ". Skipping...");
                                     }
                                 } else {
-                                    Log.d(TAG, "Updates: User ignored version: " + versionToIgnore + ". Skipping...");
+                                    Log.d(TAG, "Updates: Bootloader version " + mDeviceInfoData.getBootloaderVersion() + " below minimum needed: " + latestRelease.minBootloaderVersion);
                                 }
                             } else {
-                                Log.d(TAG, "Updates: Bootloader version " + mDeviceInfoData.getBootloaderVersion() + " below minimum needed: " + latestRelease.minBootloaderVersion);
+                                Log.d(TAG, "Updates: No non-beta firmware releases found for model: " + mDeviceInfoData.modelNumber);
                             }
                         } else {
                             Log.d(TAG, "Updates: No firmware releases found for model: " + mDeviceInfoData.modelNumber);

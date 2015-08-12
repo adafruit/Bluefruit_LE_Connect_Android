@@ -2,10 +2,8 @@ package com.adafruit.bluefruit.le.connect.app.settings;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -23,7 +21,7 @@ import com.adafruit.bluefruit.le.connect.mqtt.MqttSettings;
 
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
-public class MqttUartSettingsActivity extends ActionBarActivity implements MqttManager.MqttManagerListener {
+public class MqttUartSettingsActivity extends AppCompatActivity implements MqttManager.MqttManagerListener {
     // Log
     private final static String TAG = MqttUartSettingsActivity.class.getSimpleName();
 
