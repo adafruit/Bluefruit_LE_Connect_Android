@@ -82,6 +82,10 @@ public class ConnectedSettingsActivity extends AppCompatActivity implements Firm
         // Restore state
         restoreRetainedDataFragment();
 
+        // Read settings
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mShowBetaVersions = sharedPreferences.getBoolean("pref_showbetaversions", false);
+
         // UI
         mUpdatesWaitView = findViewById(R.id.updatesWaitView);
         mUpdatesWaitIndicatorView = findViewById(R.id.updatesWaitIndicatorView);
@@ -100,9 +104,6 @@ public class ConnectedSettingsActivity extends AppCompatActivity implements Firm
         mBootloaderReleasesListView.setExpanded(true);
         mBootloaderReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, mBoardRelease == null ? null : mBoardRelease.bootloaderReleases, mShowBetaVersions);      // mBoardRelease is still null here (except if we are restoring the activity because onConfigChanges)
         mBootloaderReleasesListView.setAdapter(mBootloaderReleasesListAdapter);
-
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mShowBetaVersions = sharedPreferences.getBoolean("pref_showbetaversions", false);
 
         // Start
         if (mDeviceInfoData == null) {      // only do this check the first time
