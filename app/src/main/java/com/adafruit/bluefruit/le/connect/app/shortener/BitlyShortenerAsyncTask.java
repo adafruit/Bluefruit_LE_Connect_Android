@@ -1,5 +1,6 @@
 package com.adafruit.bluefruit.le.connect.app.shortener;
 
+// TODO: remove Apache library and use HttpURLConnection (Apache is deprecated since Android Marshmallow)  http://developer.android.com/preview/behavior-changes.html#behavior-apache-http-client
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -19,7 +20,7 @@ public class BitlyShortenerAsyncTask extends ShortenerAsyncTask {
 
 
     public BitlyShortenerAsyncTask(ShortenerListener listener) {
-       super(listener);
+        super(listener);
     }
 
     @Override
