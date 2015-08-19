@@ -17,6 +17,7 @@ public class KnownUUIDs extends StandardUUIDs {
         aMap.put("0000febb-0000-1000-8000-00805f9b34fb".toUpperCase(), "Adafruit Unified Sensor");
         aMap.put(UartInterfaceActivity.UUID_SERVICE.toUpperCase(), "Nordic UART");
         aMap.put("00001530-1212-efde-1523-785feabcd123".toUpperCase(), "Nordic Device Firmware Update Service");
+        aMap.put("ee0c2080-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone-URL Config Service");
 
         sServiceUUIDs = Collections.unmodifiableMap(aMap);
     }
@@ -42,6 +43,18 @@ public class KnownUUIDs extends StandardUUIDs {
         aMap.put(UartInterfaceActivity.UUID_RX.toUpperCase(), "RX Buffer");
         aMap.put(UartInterfaceActivity.UUID_TX.toUpperCase(), "TX Buffer");
         aMap.put(UartInterfaceActivity.UUID_DFU.toUpperCase(), "DFU Service");
+
+        // Eddystone
+        aMap.put("ee0c2081-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone Lock State");
+        aMap.put("ee0c2082-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone Lock");
+        aMap.put("ee0c2083-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone Unlock");
+        aMap.put("ee0c2084-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone URI Data");
+        aMap.put("ee0c2085-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone Flags");
+        aMap.put("ee0c2086-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone Adv. TX Power Levels");
+        aMap.put("ee0c2087-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone TX Power Mode");
+        aMap.put("ee0c2088-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone Beacon Period");
+        aMap.put("ee0c2089-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone Reset");
+        aMap.put("ee0c2090-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone (Reserved)");
 
         sCharacteristicUUIDs = Collections.unmodifiableMap(aMap);
     }

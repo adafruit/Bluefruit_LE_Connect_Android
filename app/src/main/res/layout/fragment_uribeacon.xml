@@ -28,17 +28,17 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:layout_gravity="center_vertical"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
                     android:text="@string/beacon_uribeacon_subtitle"
                     android:textColor="@drawable/default_textcolor"/>
 
                 <LinearLayout
-                    android:layout_gravity="center_vertical"
-                    android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
                     android:gravity="right"
                     android:orientation="horizontal">
 
@@ -98,18 +98,13 @@
                     <TextView
                         android:id="@+id/uriEncodeMessage"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-
-                        />
+                        android:layout_height="wrap_content"/>
 
                     <TextView
                         android:id="@+id/uriShortenedUrl"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:visibility="gone"
-
-                        />
-
+                        android:visibility="gone"/>
                 </LinearLayout>
 
             </LinearLayout>
