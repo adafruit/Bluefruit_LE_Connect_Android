@@ -26,7 +26,6 @@ public class BleDevicesScanner {
     private List<UUID> mServicesToDiscover;
     private final Handler mMainThreadHandler = new Handler(Looper.getMainLooper());
     private final LeScansPoster mLeScansPoster;
-    private int mScanSession = 0;
 
     //
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
@@ -60,7 +59,6 @@ public class BleDevicesScanner {
                     if (mIsScanning) {
                         Log.d(TAG, "Scan timer expired. Restart scan");
                         stop();
-                        mScanSession++;
                         start();
                     }
                 }

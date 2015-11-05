@@ -289,19 +289,19 @@ public class BleGattExecutor extends BluetoothGattCallback {
         };
     }
 
-    public static interface BleExecutorListener {
+    public interface BleExecutorListener {
 
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState);
+        void onConnectionStateChange(BluetoothGatt gatt, int status, int newState);
 
-        public void onServicesDiscovered(BluetoothGatt gatt, int status);
+        void onServicesDiscovered(BluetoothGatt gatt, int status);
 
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status);
+        void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status);
 
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic);
+        void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic);
 
-        public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status);
+        void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status);
 
-        public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status);
+        void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status);
 
     }
 }

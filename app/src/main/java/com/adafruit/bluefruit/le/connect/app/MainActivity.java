@@ -12,9 +12,11 @@ import android.bluetooth.BluetoothGattService;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -162,9 +164,10 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
 
             // Check if bluetooth adapter is available
             final boolean wasBluetoothEnabled = manageBluetoothAvailability();
+            final boolean areLocationServicesReadyForScanning = manageLocationServiceAvailabiltyForScanning();
 
             // Reset bluetooth
-            if (autoResetBluetoothOnStart && wasBluetoothEnabled) {
+            if (autoResetBluetoothOnStart && wasBluetoothEnabled && areLocationServicesReadyForScanning) {
                 BleUtils.resetBluetoothAdapter(this, this);
             }
         }
@@ -360,7 +363,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             }
             case BleUtils.STATUS_BLUETOOTH_DISABLED: {
                 isEnabled = false;      // it was already off
-                // if no enabled, launch settings dialog to enableNotification it (user should always be prompted before automatically enabling bluetooth)
+                // if no enabled, launch settings dialog to enable it (user should always be prompted before automatically enabling bluetooth)
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, kActivityRequestCode_EnableBluetooth);
                 // execution will continue at onActivityResult()
@@ -375,6 +378,32 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         }
 
         return isEnabled;
+    }
+
+    private boolean manageLocationServiceAvailabiltyForScanning() {
+
+        boolean areLocationServiceReady = true;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {        // Location services are only needed to be enabled from Android 6.0
+            int locationMode = Settings.Secure.LOCATION_MODE_OFF;
+            try {
+                locationMode = Settings.Secure.getInt(getContentResolver(), Settings.Secure.LOCATION_MODE);
+
+            } catch (Settings.SettingNotFoundException e) {
+                e.printStackTrace();
+            }
+            areLocationServiceReady = locationMode != Settings.Secure.LOCATION_MODE_OFF;
+
+            if (!areLocationServiceReady) {
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(R.string.dialog_error_nolocationservices_requiredforscan_marshmallow)
+                        .setPositiveButton(R.string.dialog_ok, null)
+                        .show();
+            }
+        }
+
+        return areLocationServiceReady;
     }
 
     private void connect(BluetoothDevice device) {
