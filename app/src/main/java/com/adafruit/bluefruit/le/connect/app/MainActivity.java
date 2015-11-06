@@ -40,6 +40,7 @@ import com.adafruit.bluefruit.le.connect.app.update.ReleasesParser;
 import com.adafruit.bluefruit.le.connect.ble.BleDevicesScanner;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ble.BleUtils;
+import com.adafruit.bluefruit.le.connect.ui.utils.DialogUtils;
 import com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightExpandableListView;
 
 import java.util.ArrayList;
@@ -164,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
 
             // Check if bluetooth adapter is available
             final boolean wasBluetoothEnabled = manageBluetoothAvailability();
-            final boolean areLocationServicesReadyForScanning = manageLocationServiceAvailabiltyForScanning();
+            final boolean areLocationServicesReadyForScanning = manageLocationServiceAvailabilityForScanning();
 
             // Reset bluetooth
             if (autoResetBluetoothOnStart && wasBluetoothEnabled && areLocationServicesReadyForScanning) {
@@ -372,15 +373,16 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         }
         if (errorMessageId > 0) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(errorMessageId)
+            AlertDialog dialog = builder.setMessage(errorMessageId)
                     .setPositiveButton(R.string.dialog_ok, null)
                     .show();
+            DialogUtils.keepDialogOnOrientationChanges(dialog);
         }
 
         return isEnabled;
     }
 
-    private boolean manageLocationServiceAvailabiltyForScanning() {
+    private boolean manageLocationServiceAvailabilityForScanning() {
 
         boolean areLocationServiceReady = true;
 
@@ -397,9 +399,10 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             if (!areLocationServiceReady) {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage(R.string.dialog_error_nolocationservices_requiredforscan_marshmallow)
+                AlertDialog dialog = builder.setMessage(R.string.dialog_error_nolocationservices_requiredforscan_marshmallow)
                         .setPositiveButton(R.string.dialog_ok, null)
                         .show();
+                DialogUtils.keepDialogOnOrientationChanges(dialog);
             }
         }
 
@@ -433,9 +436,11 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
                 resumeScanning();
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage(R.string.dialog_error_no_bluetooth)
+                AlertDialog dialog = builder.setMessage(R.string.dialog_error_no_bluetooth)
                         .setPositiveButton(R.string.dialog_ok, null)
                         .show();
+                DialogUtils.keepDialogOnOrientationChanges(dialog);
+
             }
         } else if (requestCode == kActivityRequestCode_Settings) {
             // Return from activity settings. Update app behaviour if needed
