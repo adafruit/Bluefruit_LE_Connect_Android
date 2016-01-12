@@ -524,6 +524,8 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             mSelectedDeviceData = mScannedDevices.get(scannedDeviceIndex);
             BluetoothDevice device = mSelectedDeviceData.device;
 
+            mBleManager.setBleListener(MainActivity.this);           // Force set listener (could be still checking for updates...)
+
             if (mSelectedDeviceData.type == BluetoothDeviceData.kType_Uart) {      // if is uart, show all the available activities
                 showChooseDeviceServiceDialog(device);
             } else {                          // if no uart, then go directly to info

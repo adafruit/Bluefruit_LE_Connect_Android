@@ -72,6 +72,20 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
     private MenuItem mMqttMenuItem;
     private Handler mMqttMenuItemAnimationHandler;
 
+    // UI TextBuffer (refreshing the text buffer is managed with a timer because a lot of changes an arrive really fast and could stall the main thread)
+    private Handler mUIRefreshTimerHandler = new Handler();
+    private Runnable mUIRefreshTimerRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (isUITimerRunning) {
+                updateUI();
+               // Log.d(TAG, "updateUI");
+                mUIRefreshTimerHandler.postDelayed(this, 200);
+            }
+        }
+    };
+    private boolean isUITimerRunning = false;
+
     // Data
     private boolean mShowDataInHexFormat;
 
@@ -185,11 +199,20 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
         mMqttManager.setListener(this);
         updateMqttStatus();
+
+        // Start UI refresh
+        //Log.d(TAG, "add ui timer");
+        isUITimerRunning = true;
+        mUIRefreshTimerHandler.postDelayed(mUIRefreshTimerRunnable, 0);
     }
 
     @Override
     public void onPause() {
         super.onPause();
+
+        //Log.d(TAG, "remove ui timer");
+        isUITimerRunning = false;
+        mUIRefreshTimerHandler.removeCallbacksAndMessages(mUIRefreshTimerRunnable);
 
         // Save preferences
         SharedPreferences preferences = getSharedPreferences(kPreferences, MODE_PRIVATE);
@@ -300,7 +323,6 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         mShowDataInHexFormat = true;
         updateUI();
     }
-
 
     // region Menu
     @Override
@@ -429,6 +451,16 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
                 addTextToSpanBuffer(mAsciiSpanBuffer, data, mRxColor);
                 addTextToSpanBuffer(mHexSpanBuffer, asciiToHex(data), mRxColor);
 
+                // MQTT publish to RX
+                MqttSettings settings = MqttSettings.getInstance(UartActivity.this);
+                if (settings.isPublishEnabled()) {
+                    String topic = settings.getPublishTopic(MqttUartSettingsActivity.kPublishFeed_RX);
+                    final int qos = settings.getPublishQos(MqttUartSettingsActivity.kPublishFeed_RX);
+                    mMqttManager.publish(topic, data, qos);
+                }
+
+
+                /*
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -443,6 +475,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
                         }
                     }
                 });
+                */
             }
         }
     }
@@ -465,9 +498,13 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         spanBuffer.setSpan(new ForegroundColorSpan(color), from, from + text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
+    private int mBufferTextViewLastTextLength = 0;
     private void updateUI() {
-        mBufferTextView.setText(mShowDataInHexFormat ? mHexSpanBuffer : mAsciiSpanBuffer);
-        mBufferTextView.setSelection(0, mBufferTextView.getText().length());        // to automatically scroll to the end
+        if (mBufferTextViewLastTextLength != mAsciiSpanBuffer.length()) {       // update only if text has changed
+            mBufferTextViewLastTextLength = mAsciiSpanBuffer.length();
+            mBufferTextView.setText(mShowDataInHexFormat ? mHexSpanBuffer : mAsciiSpanBuffer);
+            mBufferTextView.setSelection(0, mBufferTextView.getText().length());        // to automatically scroll to the end
+        }
     }
 
     private String asciiToHex(String text) {
@@ -479,7 +516,6 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         }
         return stringBuffer.toString();
     }
-
 
     // region DataFragment
     public static class DataFragment extends Fragment {
