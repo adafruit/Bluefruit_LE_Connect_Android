@@ -94,8 +94,8 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
     private SpannableStringBuilder mAsciiSpanBuffer;
     private SpannableStringBuilder mHexSpanBuffer;
-    private int sentBytes;
-    private int receivedBytes;
+    private volatile int sentBytes;
+    private volatile int receivedBytes;
 
     private DataFragment mRetainedDataFragment;
 
@@ -461,6 +461,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
                 final String data = new String(bytes, Charset.forName("UTF-8"));
 
                 receivedBytes += bytes.length;
+                //Log.d(TAG, "rec total: "+receivedBytes);
                 addTextToSpanBuffer(mAsciiSpanBuffer, data, mRxColor);
                 addTextToSpanBuffer(mHexSpanBuffer, asciiToHex(data), mRxColor);
 
