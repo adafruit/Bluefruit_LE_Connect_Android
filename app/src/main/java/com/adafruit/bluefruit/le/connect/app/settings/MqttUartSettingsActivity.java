@@ -193,7 +193,6 @@ public class MqttUartSettingsActivity extends AppCompatActivity implements MqttM
             }
         });
 
-
         // UI - Advanced
         mUsernameEditText = (EditText) findViewById(R.id.usernameEditText);
         mUsernameEditText.setText(settings.getUsername());
@@ -293,8 +292,10 @@ public class MqttUartSettingsActivity extends AppCompatActivity implements MqttM
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
         if (resultCode == RESULT_OK) {
+            // Update password with barcode contents
             String contents = data.getStringExtra(MqttUartSettingsCodeReaderActivity.kActivityResult_ScannedContents);
             mPasswordEditText.setText(contents);
+            mPasswordEditText.requestFocus();
         }
     }
 

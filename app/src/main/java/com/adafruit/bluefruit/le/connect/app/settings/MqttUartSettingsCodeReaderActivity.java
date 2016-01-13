@@ -99,7 +99,6 @@ public class MqttUartSettingsCodeReaderActivity extends AppCompatActivity implem
         finish();
     }
 
-
     private void requestCameraPermission() {
         Log.w(TAG, "Camera permission is not granted. Requesting permission");
 
