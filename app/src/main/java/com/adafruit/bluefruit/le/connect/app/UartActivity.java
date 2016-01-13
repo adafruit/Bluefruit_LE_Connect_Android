@@ -60,6 +60,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
     private final static String kPreferences_echo = "echo";
     private final static String kPreferences_asciiMode = "ascii";
 
+    // Colors
     private int mTxColor;
     private int mRxColor;
     private int mMqttSubscribedColor;
@@ -71,6 +72,8 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
     private EditText mSendEditText;
     private MenuItem mMqttMenuItem;
     private Handler mMqttMenuItemAnimationHandler;
+    private TextView mSentBytesTextView;
+    private TextView mReceivedBytesTextView;
 
     // UI TextBuffer (refreshing the text buffer is managed with a timer because a lot of changes an arrive really fast and could stall the main thread)
     private Handler mUIRefreshTimerHandler = new Handler();
@@ -79,7 +82,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         public void run() {
             if (isUITimerRunning) {
                 updateUI();
-               // Log.d(TAG, "updateUI");
+                // Log.d(TAG, "updateUI");
                 mUIRefreshTimerHandler.postDelayed(this, 200);
             }
         }
@@ -91,6 +94,8 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
     private SpannableStringBuilder mAsciiSpanBuffer;
     private SpannableStringBuilder mHexSpanBuffer;
+    private int sentBytes;
+    private int receivedBytes;
 
     private DataFragment mRetainedDataFragment;
 
@@ -176,9 +181,11 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
             }
         });
 
-
         mBufferTextView = (EditText) findViewById(R.id.bufferTextView);
         mBufferTextView.setKeyListener(null);     // make it not editable
+
+        mSentBytesTextView = (TextView) findViewById(R.id.sentBytesTextView);
+        mReceivedBytesTextView = (TextView) findViewById(R.id.receivedBytesTextView);
 
         // Continue
         onServicesDiscovered();
@@ -202,6 +209,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
         // Start UI refresh
         //Log.d(TAG, "add ui timer");
+        updateUI();
         isUITimerRunning = true;
         mUIRefreshTimerHandler.postDelayed(mUIRefreshTimerRunnable, 0);
     }
@@ -269,6 +277,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         // Send to uart
         if (!wasReceivedFromMqtt || settings.getSubscribeBehaviour() == MqttSettings.kSubscribeBehaviour_Transmit) {
             sendData(data);
+            sentBytes += data.length();
         }
 
         // Show on UI
@@ -291,6 +300,8 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
     public void onClickClear(View view) {
         mAsciiSpanBuffer.clear();
         mHexSpanBuffer.clear();
+        sentBytes = 0;
+        receivedBytes = 0;
         updateUI();
     }
 
@@ -446,8 +457,10 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         // UART RX
         if (characteristic.getService().getUuid().toString().equalsIgnoreCase(UUID_SERVICE)) {
             if (characteristic.getUuid().toString().equalsIgnoreCase(UUID_RX)) {
-                final String data = new String(characteristic.getValue(), Charset.forName("UTF-8"));
+                final byte[] bytes = characteristic.getValue();
+                final String data = new String(bytes, Charset.forName("UTF-8"));
 
+                receivedBytes += bytes.length;
                 addTextToSpanBuffer(mAsciiSpanBuffer, data, mRxColor);
                 addTextToSpanBuffer(mHexSpanBuffer, asciiToHex(data), mRxColor);
 
@@ -489,7 +502,6 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
     public void onReadRemoteRssi(int rssi) {
 
     }
-
     // endregion
 
     private void addTextToSpanBuffer(SpannableStringBuilder spanBuffer, String text, int color) {
@@ -498,12 +510,16 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         spanBuffer.setSpan(new ForegroundColorSpan(color), from, from + text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
-    private int mBufferTextViewLastTextLength = 0;
+    private int mBufferTextViewLastTextLength = -1;
+
     private void updateUI() {
         if (mBufferTextViewLastTextLength != mAsciiSpanBuffer.length()) {       // update only if text has changed
             mBufferTextViewLastTextLength = mAsciiSpanBuffer.length();
             mBufferTextView.setText(mShowDataInHexFormat ? mHexSpanBuffer : mAsciiSpanBuffer);
             mBufferTextView.setSelection(0, mBufferTextView.getText().length());        // to automatically scroll to the end
+
+            mSentBytesTextView.setText(String.format(getString(R.string.uart_sentbytes_format), sentBytes));
+            mReceivedBytesTextView.setText(String.format(getString(R.string.uart_receivedbytes_format), receivedBytes));
         }
     }
 

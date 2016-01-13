@@ -103,7 +103,8 @@
 
     <string name="uart_sharechooser_title">Send UART text to...</string>
 
-
+    <string name="uart_sentbytes_format">Sent: %d bytes </string>
+    <string name="uart_receivedbytes_format">Received: %d bytes</string>
 
     <!-- PinIO Activity -->
     <string name="title_activity_pin_io">PinIO</string>
