@@ -94,8 +94,8 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
     private SpannableStringBuilder mAsciiSpanBuffer;
     private SpannableStringBuilder mHexSpanBuffer;
-    private volatile int sentBytes;
-    private volatile int receivedBytes;
+    private volatile int mSentBytes;
+    private volatile int mReceivedBytes;
 
     private DataFragment mRetainedDataFragment;
 
@@ -277,7 +277,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         // Send to uart
         if (!wasReceivedFromMqtt || settings.getSubscribeBehaviour() == MqttSettings.kSubscribeBehaviour_Transmit) {
             sendData(data);
-            sentBytes += data.length();
+            mSentBytes += data.length();
         }
 
         // Show on UI
@@ -300,8 +300,8 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
     public void onClickClear(View view) {
         mAsciiSpanBuffer.clear();
         mHexSpanBuffer.clear();
-        sentBytes = 0;
-        receivedBytes = 0;
+        mSentBytes = 0;
+        mReceivedBytes = 0;
         updateUI();
     }
 
@@ -460,8 +460,8 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
                 final byte[] bytes = characteristic.getValue();
                 final String data = new String(bytes, Charset.forName("UTF-8"));
 
-                receivedBytes += bytes.length;
-                //Log.d(TAG, "rec total: "+receivedBytes);
+                mReceivedBytes += bytes.length;
+                //Log.d(TAG, "rec total: "+mReceivedBytes);
                 addTextToSpanBuffer(mAsciiSpanBuffer, data, mRxColor);
                 addTextToSpanBuffer(mHexSpanBuffer, asciiToHex(data), mRxColor);
 
@@ -510,8 +510,8 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
             mBufferTextView.setText(mShowDataInHexFormat ? mHexSpanBuffer : mAsciiSpanBuffer);
             mBufferTextView.setSelection(0, mBufferTextView.getText().length());        // to automatically scroll to the end
 
-            mSentBytesTextView.setText(String.format(getString(R.string.uart_sentbytes_format), sentBytes));
-            mReceivedBytesTextView.setText(String.format(getString(R.string.uart_receivedbytes_format), receivedBytes));
+            mSentBytesTextView.setText(String.format(getString(R.string.uart_sentbytes_format), mSentBytes));
+            mReceivedBytesTextView.setText(String.format(getString(R.string.uart_receivedbytes_format), mReceivedBytes));
         }
     }
 
@@ -530,6 +530,8 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         private boolean mShowDataInHexFormat;
         private SpannableStringBuilder mAsciiSpanBuffer;
         private SpannableStringBuilder mHexSpanBuffer;
+        private int mSentBytes;
+        private int mReceivedBytes;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -555,6 +557,9 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
             mShowDataInHexFormat = mRetainedDataFragment.mShowDataInHexFormat;
             mAsciiSpanBuffer = mRetainedDataFragment.mAsciiSpanBuffer;
             mHexSpanBuffer = mRetainedDataFragment.mHexSpanBuffer;
+            mSentBytes = mRetainedDataFragment.mSentBytes;
+            mReceivedBytes = mRetainedDataFragment.mReceivedBytes;
+
         }
     }
 
@@ -562,6 +567,8 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         mRetainedDataFragment.mShowDataInHexFormat = mShowDataInHexFormat;
         mRetainedDataFragment.mAsciiSpanBuffer = mAsciiSpanBuffer;
         mRetainedDataFragment.mHexSpanBuffer = mHexSpanBuffer;
+        mRetainedDataFragment.mSentBytes = mSentBytes;
+        mRetainedDataFragment.mReceivedBytes = mReceivedBytes;
     }
     // endregion
 
