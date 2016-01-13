@@ -473,20 +473,11 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
                     mMqttManager.publish(topic, data, qos);
                 }
 
-
                 /*
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         updateUI();
-
-                        // MQTT publish to RX
-                        MqttSettings settings = MqttSettings.getInstance(UartActivity.this);
-                        if (settings.isPublishEnabled()) {
-                            String topic = settings.getPublishTopic(MqttUartSettingsActivity.kPublishFeed_RX);
-                            final int qos = settings.getPublishQos(MqttUartSettingsActivity.kPublishFeed_RX);
-                            mMqttManager.publish(topic, data, qos);
-                        }
                     }
                 });
                 */

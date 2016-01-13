@@ -239,7 +239,7 @@ public class ConnectedSettingsActivity extends AppCompatActivity implements Firm
 
         mIsUpdating = false;
         Toast.makeText(this, R.string.scan_softwareupdate_completed, Toast.LENGTH_LONG).show();
-        setResult(Activity.RESULT_OK);
+        setResult(RESULT_OK);
         finish();
     }
 
@@ -252,7 +252,7 @@ public class ConnectedSettingsActivity extends AppCompatActivity implements Firm
         if (!isDownloadError) {
             // if is a software update error, the bluetooth state could be corrupted so we force a disconnect
             BleManager.getInstance(this).disconnect();
-            setResult(Activity.RESULT_OK);
+            setResult(RESULT_OK);
             finish();
         }
     }
@@ -265,7 +265,7 @@ public class ConnectedSettingsActivity extends AppCompatActivity implements Firm
                 @Override
                 public void run() {
                     Toast.makeText(ConnectedSettingsActivity.this, R.string.scan_unexpecteddisconnect, Toast.LENGTH_LONG).show();
-                    setResult(Activity.RESULT_OK);
+                    setResult(RESULT_OK);
                     finish();
                 }
             });

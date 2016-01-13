@@ -307,6 +307,9 @@
     <string name="mqtt_disable">Disable</string>
     <string name="mqtt_service_status">Mqtt Service Status:</string>
 
+    <string name="mqtt_qrconfig">Configure using AdafruitIO QR-Code</string>
+    <string name="mqtt_qrconfig_action">Scan Code</string>
+
     <string name="mqtt_status_connected">Connected</string>
     <string name="mqtt_status_disconnected">Disconnected</string>
     <string name="mqtt_status_connecting">Connecting...</string>
@@ -317,6 +320,11 @@
         <item>Local Only</item>
         <item>Transmit</item>
     </string-array>
+
+    <!-- Mqtt Settings Code Reader -->
+    <string name="mqttcodereader_cameraneeded">Access to the camera is needed for detection</string>
+    <string name="mqttcodereader_lowstorageerror">Code detector dependencies cannot be downloaded due to low device storage. Please increase the available storage</string>
+    <string name="mqttcodereader_nocamerapermission">Code detector cannot run because it does not have the camera permission</string>
 
 
     <!-- Mqtt -->
@@ -331,9 +339,9 @@
 
     <!-- Common -->
     <string name="dialog_ok">Ok</string>
+    <string name="title_activity_mqtt_uart_settings_code_reader">MqttUartSettingsCodeReader</string>
 
     <!-- Debug -->
-
 
 
 </resources>

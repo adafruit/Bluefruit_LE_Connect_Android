@@ -1,6 +1,8 @@
 package com.adafruit.bluefruit.le.connect.app.settings;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -30,12 +32,16 @@ public class MqttUartSettingsActivity extends AppCompatActivity implements MqttM
     public static final int kPublishFeed_RX = 0;
     public static final int kPublishFeed_TX = 1;
 
+    // Activity request codes (used for onActivityResult)
+    private static final int kActivityRequestCode_ScanQrCode = 1;
+
     // UI
     private EditText mServerAddressEditText;
     private EditText mServerPortEditText;
     private EditText mSubscribeTopicEditText;
     private Switch mSubscribeSwitch;
     private Button mConnectButton;
+    private Button mQrConfigButton;
     private ProgressBar mConnectProgressBar;
     private TextView mStatusTextView;
     private Spinner mSubscribeSpinner;
@@ -231,6 +237,7 @@ public class MqttUartSettingsActivity extends AppCompatActivity implements MqttM
             }
         });
 
+        // UI - Connect
         mConnectButton = (Button) findViewById(R.id.connectButton);
         mConnectButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -262,7 +269,33 @@ public class MqttUartSettingsActivity extends AppCompatActivity implements MqttM
         });
         mConnectProgressBar = (ProgressBar) findViewById(R.id.connectProgressBar);
         mStatusTextView = (TextView) findViewById(R.id.statusTextView);
+
+        // UI - QRCode
+        mQrConfigButton = (Button) findViewById(R.id.qrConfigButton);
+
+        mQrConfigButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Dismiss keyboard
+                Context context = MqttUartSettingsActivity.this;
+                dismissKeyboard(v);
+
+                // Launch reader
+                Intent intent = new Intent(MqttUartSettingsActivity.this, MqttUartSettingsCodeReaderActivity.class);
+                startActivityForResult(intent, kActivityRequestCode_ScanQrCode);
+            }
+        });
+
+        // Refresh UI
         updateStatusUI();
+    }
+
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        if (resultCode == RESULT_OK) {
+            String contents = data.getStringExtra(MqttUartSettingsCodeReaderActivity.kActivityResult_ScannedContents);
+            mPasswordEditText.setText(contents);
+        }
     }
 
     private void dismissKeyboard(View view) {
