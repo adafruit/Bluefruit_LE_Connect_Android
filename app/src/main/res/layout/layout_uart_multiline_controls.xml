@@ -90,4 +90,33 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1" />
+
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/textDisplayModeRadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:onClick="onClickDisplayFormatText"
+            android:text="@string/uart_displaymode_text"
+            android:textColor="@drawable/default_textcolor" />
+
+        <RadioButton
+            android:id="@+id/timestampDisplayModeRadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onClickDisplayFormatTimestamp"
+            android:text="@string/uart_displaymode_timestamp"
+            android:textColor="@drawable/default_textcolor" />
+    </RadioGroup>
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1" />
 </LinearLayout>

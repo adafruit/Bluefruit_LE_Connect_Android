@@ -89,9 +89,11 @@
     <!-- Uart Activity -->
     <string name="title_activity_uart">UART</string>
     <string name="uart_echo">Echo:</string>
-    <string name="uart_eol">Add EOL:</string>
+    <string name="uart_eol">EOL:</string>
     <string name="uart_format_ascii">Ascii</string>
     <string name="uart_format_hex">Hex</string>
+    <string name="uart_displaymode_text">Text</string>
+    <string name="uart_displaymode_timestamp">Timestamp</string>
     <string name="uart_help_title">UART Help</string>
 
     <string name="uart_copy">Copy</string>
@@ -105,6 +107,8 @@
 
     <string name="uart_sentbytes_format">Sent: %d bytes </string>
     <string name="uart_receivedbytes_format">Received: %d bytes</string>
+
+    <string name="uart_text_dataomitted">(Previous data ommited to improve performance...)</string>
 
     <!-- PinIO Activity -->
     <string name="title_activity_pin_io">PinIO</string>
@@ -322,10 +326,10 @@
     </string-array>
 
     <!-- Mqtt Settings Code Reader -->
+    <string name="title_activity_mqtt_uart_settings_code_reader">Scan QR-Code</string>
     <string name="mqttcodereader_cameraneeded">Access to the camera is needed for detection</string>
     <string name="mqttcodereader_lowstorageerror">Code detector dependencies cannot be downloaded due to low device storage. Please increase the available storage</string>
     <string name="mqttcodereader_nocamerapermission">Code detector cannot run because it does not have the camera permission</string>
-
 
     <!-- Mqtt -->
     <string name="mqtt_connection_lost">Mqtt connection to server lost</string>
@@ -339,9 +343,7 @@
 
     <!-- Common -->
     <string name="dialog_ok">Ok</string>
-    <string name="title_activity_mqtt_uart_settings_code_reader">MqttUartSettingsCodeReader</string>
 
     <!-- Debug -->
-
 
 </resources>

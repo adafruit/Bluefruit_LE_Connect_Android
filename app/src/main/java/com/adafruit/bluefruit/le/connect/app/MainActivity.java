@@ -54,7 +54,7 @@ import static android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 public class MainActivity extends AppCompatActivity implements BleManager.BleManagerListener, BleUtils.ResetBluetoothAdapterListener, FirmwareUpdater.FirmwareUpdaterListener {
     // Constants
     private final static String TAG = MainActivity.class.getSimpleName();
-    private final static long kMinDelayToUpdateUI = 800;    // in milliseconds
+    private final static long kMinDelayToUpdateUI = 200;    // in milliseconds
     private static final String kGenericAttributeService = "00001801-0000-1000-8000-00805F9B34FB";
     private static final String kServiceChangedCharacteristic = "00002A05-0000-1000-8000-00805F9B34FB";
 
