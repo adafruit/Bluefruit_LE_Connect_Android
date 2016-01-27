@@ -15,6 +15,7 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
@@ -39,6 +40,7 @@ import android.widget.TextView;
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.app.settings.ConnectedSettingsActivity;
 import com.adafruit.bluefruit.le.connect.app.settings.MqttUartSettingsActivity;
+import com.adafruit.bluefruit.le.connect.app.settings.PreferencesFragment;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.mqtt.MqttManager;
 import com.adafruit.bluefruit.le.connect.mqtt.MqttSettings;
@@ -56,7 +58,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
     // Configuration
     private final static boolean kUseColorsForData = true;
-    private final static int kMaxPacketsToPaintAsText = 500;
+    public final static int kDefaultMaxPacketsToPaintAsText = 500;
 
     // Activity request codes (used for onActivityResult)
     private static final int kActivityRequestCode_ConnectedSettingsActivity = 0;
@@ -112,6 +114,8 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
     private MqttManager mMqttManager;
 
+    private int maxPacketsToPaintAsText;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -156,6 +160,9 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         final boolean eol = preferences.getBoolean(kPreferences_eol, true);
         final boolean asciiMode = preferences.getBoolean(kPreferences_asciiMode, true);
         final boolean timestampDisplayMode = preferences.getBoolean(kPreferences_timestampDisplayMode, false);
+
+        maxPacketsToPaintAsText = PreferencesFragment.getUartTextMaxPackets(this);
+        //Log.d(TAG, "maxPacketsToPaintAsText: "+maxPacketsToPaintAsText);
 
         // UI
         mEchoSwitch = (Switch) findViewById(R.id.echoSwitch);
@@ -553,8 +560,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
             final int from = spanBuffer.length();
             spanBuffer.append(text);
             spanBuffer.setSpan(new ForegroundColorSpan(color), from, from + text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        }
-        else {
+        } else {
             spanBuffer.append(text);
         }
     }
@@ -573,14 +579,14 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
             if (mDataBufferLastSize != mDataBuffer.size()) {
 
                 final int bufferSize = mDataBuffer.size();
-                if (bufferSize > kMaxPacketsToPaintAsText) {
-                    mDataBufferLastSize = bufferSize- kMaxPacketsToPaintAsText;
+                if (bufferSize > maxPacketsToPaintAsText) {
+                    mDataBufferLastSize = bufferSize - maxPacketsToPaintAsText;
                     mTextSpanBuffer.clear();
-                    addTextToSpanBuffer(mTextSpanBuffer, getString(R.string.uart_text_dataomitted)+"\n", mInfoColor);
+                    addTextToSpanBuffer(mTextSpanBuffer, getString(R.string.uart_text_dataomitted) + "\n", mInfoColor);
                 }
 
-               // Log.d(TAG, "update packets: "+(bufferSize-mDataBufferLastSize));
-                for (int i=mDataBufferLastSize; i<bufferSize ; i++) {
+                // Log.d(TAG, "update packets: "+(bufferSize-mDataBufferLastSize));
+                for (int i = mDataBufferLastSize; i < bufferSize; i++) {
                     final UartDataChunk dataChunk = mDataBuffer.get(i);
                     final boolean isRX = dataChunk.getMode() == UartDataChunk.TRANSFERMODE_RX;
                     final String data = dataChunk.getData();
@@ -612,8 +618,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
                 mBufferListAdapter.add("[" + currentDateTimeString + "] " + (isRX ? "RX" : "TX") + ": " + formattedData);
             }
             mBufferListView.setSelection(mBufferListAdapter.getCount());
-        }
-        else {
+        } else {
             mDataBufferLastSize = 0;
             mTextSpanBuffer.clear();
             mBufferTextView.setText("");

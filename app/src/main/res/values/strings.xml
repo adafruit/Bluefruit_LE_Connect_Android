@@ -260,13 +260,11 @@
     <string name="settings_category_reset">Reset</string>
     <string name="settings_pref_reset_title">Reset Preferences</string>
     <string name="settings_pref_reset_summmary">Restore default values for all settings</string>
-    <string name="pref_key_update_settings">pref_key_update_settings</string>
-    <string name="pref_updateserver">pref_updateserver</string>
-    <string name="pref_updatesversioncheck">pref_updatesversioncheck</string>
-    <string name="pref_ignoredversion">pref_ignoredversion</string>
-    <string name="pref_showbootloaders">pref_showbootloaders</string>
-    <string name="pref_showbetaversions">pref_showbetaversions</string>
-    <string name="pref_reset">pref_reset</string>
+    <string name="settings_category_uart">Uart</string>
+    <string name="settings_uarttextmaxpackets_title">Text packets limit</string>
+    <string name="settings_uarttextmaxpackets_summary_format">Maximum number of packets displayed: %d\n(high values could impact performance)</string>
+    <string name="settings_uarttextmaxpackets_edittitle">Update text packets limit</string>
+
 
     <!-- Firmware & Bootloader updates -->
     <string name="firmware_downloading">Downloading firmware...</string>

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+
     <PreferenceCategory
         android:key="pref_key_connectivity_settings"
         android:title="@string/settings_category_connectivity">
@@ -49,8 +51,23 @@
 
     </PreferenceCategory>
 
+
     <PreferenceCategory
-        android:key="@string/pref_key_update_settings"
+        android:key="pref_key_uart_settings"
+        android:title="@string/settings_category_uart">
+
+        <EditTextPreference
+            android:dialogTitle="@string/settings_uarttextmaxpackets_edittitle"
+            android:key="pref_uarttextmaxpackets"
+            android:numeric="integer"
+            android:summary="@string/settings_uarttextmaxpackets_summary_format"
+            android:title="@string/settings_uarttextmaxpackets_title"/>
+
+    </PreferenceCategory>
+
+
+    <PreferenceCategory
+        android:key="pref_key_update_settings"
         android:title="@string/settings_category_update">
         <CheckBoxPreference
             android:defaultValue="true"
@@ -60,42 +77,42 @@
 
         <CheckBoxPreference
             android:defaultValue="true"
-            android:key="@string/pref_updatesversioncheck"
+            android:key="pref_updatesversioncheck"
             android:summary="@string/settings_pref_updatesversioncheck_summary"
             android:title="@string/settings_pref_updatesversioncheck_title"/>
 
         <EditTextPreference
             android:dialogTitle="@string/settings_ignoredversion_edittitle"
-            android:key="@string/pref_ignoredversion"
+            android:key="pref_ignoredversion"
             android:summary="@string/settings_ignoredversion_summary"
             android:title="@string/settings_ignoredversion_title"/>
 
         <CheckBoxPreference
             android:defaultValue="false"
-            android:key="@string/pref_showbootloaders"
+            android:key="pref_showbootloaders"
             android:summary="@string/settings_pref_bootloaders_summary"
             android:title="@string/settings_pref_bootloaders_title"/>
 
         <CheckBoxPreference
             android:defaultValue="false"
-            android:key="@string/pref_showbetaversions"
+            android:key="pref_showbetaversions"
             android:summary="@string/settings_pref_betaversions_summary"
             android:title="@string/settings_pref_betaversions_title"/>
 
         <EditTextPreference
             android:dialogTitle="@string/settings_updateserver_edittitle"
-            android:key="@string/pref_updateserver"
+            android:key="pref_updateserver"
             android:summary="@string/settings_updateserver_summary"
             android:title="@string/settings_updateserver_title"/>
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:key="@string/pref_key_reset_settings"
+        android:key="pref_key_reset_settings"
         android:title="@string/settings_category_reset">
         <Preference
-            android:key="@string/pref_reset"
-            android:title="@string/settings_pref_reset_title"
+            android:key="pref_reset"
             android:summary="@string/settings_pref_reset_summmary"
+            android:title="@string/settings_pref_reset_title"
             />
     </PreferenceCategory>
 </PreferenceScreen>

@@ -1,6 +1,7 @@
 package com.adafruit.bluefruit.le.connect.app.settings;
 
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
@@ -15,6 +16,7 @@ import android.util.Log;
 
 import com.adafruit.bluefruit.le.connect.BuildConfig;
 import com.adafruit.bluefruit.le.connect.R;
+import com.adafruit.bluefruit.le.connect.app.UartActivity;
 import com.adafruit.bluefruit.le.connect.app.update.FirmwareUpdater;
 
 
@@ -50,13 +52,9 @@ public class PreferencesFragment extends PreferenceFragment implements SharedPre
     private void setupSpecialPreferences() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
-        // Set updateserver
-        {
-            String updateServer = sharedPreferences.getString("pref_updateserver", FirmwareUpdater.kDefaultUpdateServerUrl);
-            EditTextPreference etp = (EditTextPreference) findPreference("pref_updateserver");
-            etp.setSummary(updateServer);
-            etp.setText(updateServer);
-        }
+        // Update summaries
+        updateEditTextPreferenceSummary("pref_uarttextmaxpackets");
+        updateEditTextPreferenceSummary("pref_updateserver");
 
         // Set ignored version
         {
@@ -67,7 +65,7 @@ public class PreferencesFragment extends PreferenceFragment implements SharedPre
         }
 
         // Set reset button
-        Preference button = findPreference(getString(R.string.pref_reset));
+        Preference button = findPreference("pref_reset");
         button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference arg0) {
@@ -93,13 +91,12 @@ public class PreferencesFragment extends PreferenceFragment implements SharedPre
 
         // Hide advanced options (if not debug)
         if (!BuildConfig.DEBUG) {
-            PreferenceCategory category = (PreferenceCategory) findPreference(getResources().getString(R.string.pref_key_update_settings));
-            Preference updateServerPreference = findPreference(getResources().getString(R.string.pref_updateserver));
+            PreferenceCategory category = (PreferenceCategory) findPreference("pref_key_update_settings");
+            Preference updateServerPreference = findPreference("pref_updateserver");
             category.removePreference(updateServerPreference);
 
-            Preference versionCheckPreference = findPreference(getResources().getString(R.string.pref_updatesversioncheck));
+            Preference versionCheckPreference = findPreference("pref_updatesversioncheck");
             category.removePreference(versionCheckPreference);
-
         }
     }
 
@@ -119,13 +116,49 @@ public class PreferencesFragment extends PreferenceFragment implements SharedPre
             ListPreference listPref = (ListPreference) p;
             p.setSummary(listPref.getEntry());
         } else if (p instanceof EditTextPreference) {
-            EditTextPreference editTextPref = (EditTextPreference) p;
-            p.setSummary(editTextPref.getText());
+            updateEditTextPreferenceSummary(p.getKey());
         } else if (p instanceof MultiSelectListPreference) {
             EditTextPreference editTextPref = (EditTextPreference) p;
             p.setSummary(editTextPref.getText());
         }
+    }
 
+    private void updateEditTextPreferenceSummary(String key)
+    {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
+        if (key.equals("pref_uarttextmaxpackets"))
+        {
+            // Set pref_uarttextmaxpackets
+            final int uartTextMaxPackets = getUartTextMaxPackets(getActivity());
+
+            EditTextPreference etp = (EditTextPreference) findPreference("pref_uarttextmaxpackets");
+            String summary = String.format(getString(R.string.settings_uarttextmaxpackets_summary_format), uartTextMaxPackets);
+            etp.setSummary(summary);
+            etp.setText("" + uartTextMaxPackets);
+        }
+        else if (key.equals("pref_updateserver"))
+        {
+            // Set updateserver
+            String updateServer = sharedPreferences.getString("pref_updateserver", FirmwareUpdater.kDefaultUpdateServerUrl);
+            EditTextPreference etp = (EditTextPreference) findPreference("pref_updateserver");
+            etp.setSummary(updateServer);
+            etp.setText(updateServer);
+        }
+    }
+
+    public static int getUartTextMaxPackets(Context context) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        String uartTextMaxPacketsString = sharedPreferences.getString("pref_uarttextmaxpackets", "" + UartActivity.kDefaultMaxPacketsToPaintAsText);
+
+        // Extract integer (and check for exceptions)
+        int uartTextMaxPackets = UartActivity.kDefaultMaxPacketsToPaintAsText;
+        try {
+            uartTextMaxPackets = Integer.parseInt(uartTextMaxPacketsString);
+        } catch (NumberFormatException e) {
+        }
+        if (uartTextMaxPackets<1) uartTextMaxPackets = 1;       // Mininum value is 1
+
+        return uartTextMaxPackets;
     }
 }
