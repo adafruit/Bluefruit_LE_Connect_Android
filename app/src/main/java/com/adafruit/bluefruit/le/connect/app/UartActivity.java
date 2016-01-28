@@ -12,29 +12,25 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.Display;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RadioButton;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.adafruit.bluefruit.le.connect.R;
@@ -51,6 +47,7 @@ import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class UartActivity extends UartInterfaceActivity implements BleManager.BleManagerListener, MqttManager.MqttManagerListener {
     // Log
@@ -58,7 +55,9 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
     // Configuration
     private final static boolean kUseColorsForData = true;
+    private final static boolean kShowUartControlsInTopBar = true;
     public final static int kDefaultMaxPacketsToPaintAsText = 500;
+
 
     // Activity request codes (used for onActivityResult)
     private static final int kActivityRequestCode_ConnectedSettingsActivity = 0;
@@ -77,11 +76,9 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
     private int mInfoColor = Color.parseColor("#F21625");
 
     // UI
-    private Switch mEchoSwitch;
-    private Switch mEolSwitch;
     private EditText mBufferTextView;
     private ListView mBufferListView;
-    private ArrayAdapter<String> mBufferListAdapter;
+    private TimestampListAdapter mBufferListAdapter;
     private EditText mSendEditText;
     private MenuItem mMqttMenuItem;
     private Handler mMqttMenuItemAnimationHandler;
@@ -104,7 +101,10 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
     // Data
     private boolean mShowDataInHexFormat;
-    private boolean mIsTimeStampDisplayMode;
+    private boolean mIsTimestampDisplayMode;
+    private boolean mIsEchoEnabled;
+    private boolean mIsEolEnabled;
+
     private volatile SpannableStringBuilder mTextSpanBuffer;
     private volatile ArrayList<UartDataChunk> mDataBuffer;
     private volatile int mSentBytes;
@@ -125,6 +125,8 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         restoreRetainedDataFragment();
 
         // Choose UI controls component based on available width
+        /*
+        if (!kShowUartControlsInTopBar)
         {
             LinearLayout headerLayout = (LinearLayout) findViewById(R.id.headerLayout);
             ViewGroup controlsLayout = (ViewGroup) getLayoutInflater().inflate(R.layout.layout_uart_singleline_controls, headerLayout, false);
@@ -144,7 +146,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
             headerLayout.addView(controlsLayout);
         }
-
+        */
 
         // Get default theme colors
         TypedValue typedValue = new TypedValue();
@@ -154,41 +156,14 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         theme.resolveAttribute(R.attr.colorControlActivated, typedValue, true);
         mRxColor = typedValue.data;
 
-        // Read preferences
-        SharedPreferences preferences = getSharedPreferences(kPreferences, MODE_PRIVATE);
-        final boolean echo = preferences.getBoolean(kPreferences_echo, true);
-        final boolean eol = preferences.getBoolean(kPreferences_eol, true);
-        final boolean asciiMode = preferences.getBoolean(kPreferences_asciiMode, true);
-        final boolean timestampDisplayMode = preferences.getBoolean(kPreferences_timestampDisplayMode, false);
-
-        maxPacketsToPaintAsText = PreferencesFragment.getUartTextMaxPackets(this);
-        //Log.d(TAG, "maxPacketsToPaintAsText: "+maxPacketsToPaintAsText);
-
         // UI
-        mEchoSwitch = (Switch) findViewById(R.id.echoSwitch);
-        mEchoSwitch.setChecked(echo);
-        mEolSwitch = (Switch) findViewById(R.id.eolSwitch);
-        mEolSwitch.setChecked(eol);
-
         mBufferListView = (ListView) findViewById(R.id.bufferListView);
-        mBufferListAdapter = new ArrayAdapter<>(this, R.layout.layout_uart_datachunkitem);
+        mBufferListAdapter = new TimestampListAdapter(this, R.layout.layout_uart_datachunkitem);
         mBufferListView.setAdapter(mBufferListAdapter);
         mBufferListView.setDivider(null);
 
         mBufferTextView = (EditText) findViewById(R.id.bufferTextView);
         mBufferTextView.setKeyListener(null);     // make it not editable
-
-        RadioButton asciiFormatRadioButton = (RadioButton) findViewById(R.id.asciiFormatRadioButton);
-        asciiFormatRadioButton.setChecked(asciiMode);
-        RadioButton hexFormatRadioButton = (RadioButton) findViewById(R.id.hexFormatRadioButton);
-        hexFormatRadioButton.setChecked(!asciiMode);
-        mShowDataInHexFormat = !asciiMode;
-
-        RadioButton textDisplayFormatRadioButton = (RadioButton) findViewById(R.id.textDisplayModeRadioButton);
-        textDisplayFormatRadioButton.setChecked(!timestampDisplayMode);
-        RadioButton timestampDisplayFormatRadioButton = (RadioButton) findViewById(R.id.timestampDisplayModeRadioButton);
-        timestampDisplayFormatRadioButton.setChecked(timestampDisplayMode);
-        setDisplayFormatToTimestamp(timestampDisplayMode);
 
         mSendEditText = (EditText) findViewById(R.id.sendEditText);
         mSendEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -213,6 +188,70 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
         mSentBytesTextView = (TextView) findViewById(R.id.sentBytesTextView);
         mReceivedBytesTextView = (TextView) findViewById(R.id.receivedBytesTextView);
+
+        // Read shared preferences
+        maxPacketsToPaintAsText = PreferencesFragment.getUartTextMaxPackets(this);
+        //Log.d(TAG, "maxPacketsToPaintAsText: "+maxPacketsToPaintAsText);
+
+        // Read local preferences
+        SharedPreferences preferences = getSharedPreferences(kPreferences, MODE_PRIVATE);
+        mShowDataInHexFormat = !preferences.getBoolean(kPreferences_asciiMode, true);
+        final boolean isTimestampDisplayMode = preferences.getBoolean(kPreferences_timestampDisplayMode, false);
+        setDisplayFormatToTimestamp(isTimestampDisplayMode);
+        mIsEchoEnabled = preferences.getBoolean(kPreferences_echo, true);
+        mIsEolEnabled = preferences.getBoolean(kPreferences_eol, true);
+        invalidateOptionsMenu();        // udpate options menu with current values
+
+           /*
+        if (!kShowUartControlsInTopBar) {
+
+            Switch mEchoSwitch;
+            Switch mEolSwitch;
+            mEchoSwitch = (Switch) findViewById(R.id.echoSwitch);
+            mEchoSwitch.setChecked(mIsEchoEnabled);
+            mEolSwitch = (Switch) findViewById(R.id.eolSwitch);
+            mEolSwitch.setChecked(mIsEolEnabled);
+
+            RadioButton asciiFormatRadioButton = (RadioButton) findViewById(R.id.asciiFormatRadioButton);
+            asciiFormatRadioButton.setChecked(!mShowDataInHexFormat);
+            asciiFormatRadioButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    mShowDataInHexFormat = !isChecked;
+                }
+            });
+            RadioButton hexFormatRadioButton = (RadioButton) findViewById(R.id.hexFormatRadioButton);
+            hexFormatRadioButton.setChecked(mShowDataInHexFormat);
+            hexFormatRadioButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    mShowDataInHexFormat = isChecked;
+                }
+            });
+
+            RadioButton textDisplayFormatRadioButton = (RadioButton) findViewById(R.id.textDisplayModeRadioButton);
+            textDisplayFormatRadioButton.setChecked(!mIsTimestampDisplayMode);
+            textDisplayFormatRadioButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    mIsTimestampDisplayMode = !isChecked;
+                }
+            });
+
+
+            RadioButton timestampDisplayFormatRadioButton = (RadioButton) findViewById(R.id.timestampDisplayModeRadioButton);
+            timestampDisplayFormatRadioButton.setChecked(mIsTimestampDisplayMode);
+            timestampDisplayFormatRadioButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    mIsTimestampDisplayMode = isChecked;
+                }
+            });
+
+            setDisplayFormatToTimestamp(mIsTimestampDisplayMode);
+
+        }
+        */
 
         // Continue
         onServicesDiscovered();
@@ -254,10 +293,10 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         // Save preferences
         SharedPreferences preferences = getSharedPreferences(kPreferences, MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putBoolean(kPreferences_echo, mEchoSwitch.isChecked());
-        editor.putBoolean(kPreferences_eol, mEolSwitch.isChecked());
+        editor.putBoolean(kPreferences_echo, mIsEchoEnabled);
+        editor.putBoolean(kPreferences_eol, mIsEolEnabled);
         editor.putBoolean(kPreferences_asciiMode, !mShowDataInHexFormat);
-        editor.putBoolean(kPreferences_timestampDisplayMode, mIsTimeStampDisplayMode);
+        editor.putBoolean(kPreferences_timestampDisplayMode, mIsTimestampDisplayMode);
 
         editor.commit();
     }
@@ -299,7 +338,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         }
 
         // Add eol
-        if (mEolSwitch.isChecked()) {
+        if (mIsEolEnabled) {
             // Add newline character if checked
             data += "\n";
         }
@@ -315,9 +354,9 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         mDataBuffer.add(dataChunk);
 
         final String formattedData = mShowDataInHexFormat ? asciiToHex(data) : data;
-        if (mIsTimeStampDisplayMode) {
+        if (mIsTimestampDisplayMode) {
             final String currentDateTimeString = DateFormat.getTimeInstance().format(new Date(dataChunk.getTimestamp()));
-            mBufferListAdapter.add("[" + currentDateTimeString + "] TX: " + formattedData);
+            mBufferListAdapter.add(new TimestampData("[" + currentDateTimeString + "] TX: " + formattedData, mTxColor));
             mBufferListView.setSelection(mBufferListAdapter.getCount());
         }
 
@@ -385,7 +424,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
     }
 
     private void setDisplayFormatToTimestamp(boolean enabled) {
-        mIsTimeStampDisplayMode = enabled;
+        mIsTimestampDisplayMode = enabled;
         mBufferTextView.setVisibility(enabled ? View.GONE : View.VISIBLE);
         mBufferListView.setVisibility(enabled ? View.VISIBLE : View.GONE);
     }
@@ -396,9 +435,46 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_uart, menu);
 
+        // Mqtt
         mMqttMenuItem = menu.findItem(R.id.action_mqttsettings);
         mMqttMenuItemAnimationHandler = new Handler();
         mMqttMenuItemAnimationRunnable.run();
+
+        // DisplayMode
+        MenuItem displayModeMenuItem = menu.findItem(R.id.action_displaymode);
+        displayModeMenuItem.setTitle(String.format(getString(R.string.uart_action_displaymode_format), getString(mIsTimestampDisplayMode ? R.string.uart_displaymode_timestamp : R.string.uart_displaymode_text)));
+        SubMenu displayModeSubMenu = displayModeMenuItem.getSubMenu();
+        if (mIsTimestampDisplayMode) {
+            MenuItem displayModeTimestampMenuItem = displayModeSubMenu.findItem(R.id.action_displaymode_timestamp);
+            displayModeTimestampMenuItem.setChecked(true);
+        }
+        else {
+            MenuItem displayModeTextMenuItem = displayModeSubMenu.findItem(R.id.action_displaymode_text);
+            displayModeTextMenuItem.setChecked(true);
+        }
+
+        // DataMode
+        MenuItem dataModeMenuItem = menu.findItem(R.id.action_datamode);
+        dataModeMenuItem.setTitle(String.format(getString(R.string.uart_action_datamode_format), getString(mShowDataInHexFormat ? R.string.uart_format_hexadecimal : R.string.uart_format_ascii)));
+        SubMenu dataModeSubMenu = dataModeMenuItem.getSubMenu();
+        if (mShowDataInHexFormat) {
+            MenuItem dataModeHexMenuItem = dataModeSubMenu.findItem(R.id.action_datamode_hex);
+            dataModeHexMenuItem.setChecked(true);
+        }
+        else {
+            MenuItem dataModeAsciiMenuItem = dataModeSubMenu.findItem(R.id.action_datamode_ascii);
+            dataModeAsciiMenuItem.setChecked(true);
+        }
+
+        // Echo
+        MenuItem echoMenuItem = menu.findItem(R.id.action_echo);
+        echoMenuItem.setTitle(R.string.uart_action_echo);
+        echoMenuItem.setChecked(mIsEchoEnabled);
+
+        // Eol
+        MenuItem eolMenuItem = menu.findItem(R.id.action_eol);
+        eolMenuItem.setTitle(R.string.uart_action_eol);
+        eolMenuItem.setChecked(mIsEolEnabled);
 
         return true;
     }
@@ -436,22 +512,61 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        final int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_help) {
-            startHelp();
-            return true;
-        } else if (id == R.id.action_connected_settings) {
-            startConnectedSettings();
-            return true;
-        } else if (id == R.id.action_refreshcache) {
-            if (mBleManager != null) {
-                mBleManager.refreshDeviceCache();
-            }
-        } else if (id == R.id.action_mqttsettings) {
-            Intent intent = new Intent(this, MqttUartSettingsActivity.class);
-            startActivityForResult(intent, kActivityRequestCode_MqttSettingsActivity);
+        switch (id) {
+            case R.id.action_help:
+                startHelp();
+                return true;
+
+            case R.id.action_connected_settings:
+                startConnectedSettings();
+                return true;
+
+            case R.id.action_refreshcache:
+                if (mBleManager != null) {
+                    mBleManager.refreshDeviceCache();
+                }
+                break;
+
+            case R.id.action_mqttsettings:
+                Intent intent = new Intent(this, MqttUartSettingsActivity.class);
+                startActivityForResult(intent, kActivityRequestCode_MqttSettingsActivity);
+                break;
+
+            case R.id.action_displaymode_timestamp:
+                setDisplayFormatToTimestamp(true);
+                recreateDataView();
+                invalidateOptionsMenu();
+                return true;
+
+            case R.id.action_displaymode_text:
+                setDisplayFormatToTimestamp(false);
+                recreateDataView();
+                invalidateOptionsMenu();
+                return true;
+
+            case R.id.action_datamode_hex:
+                mShowDataInHexFormat = true;
+                recreateDataView();
+                invalidateOptionsMenu();
+                return true;
+
+            case R.id.action_datamode_ascii:
+                mShowDataInHexFormat = false;
+                recreateDataView();
+                invalidateOptionsMenu();
+                return true;
+
+            case R.id.action_echo:
+                mIsEchoEnabled = !mIsEchoEnabled;
+                invalidateOptionsMenu();
+                return true;
+
+            case R.id.action_eol:
+                mIsEolEnabled = !mIsEolEnabled;
+                invalidateOptionsMenu();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -522,9 +637,11 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (mIsTimeStampDisplayMode) {
+                        if (mIsTimestampDisplayMode) {
                             final String currentDateTimeString = DateFormat.getTimeInstance().format(new Date(dataChunk.getTimestamp()));
-                            mBufferListAdapter.add("[" + currentDateTimeString + "] RX: " + formattedData);
+
+                            mBufferListAdapter.add(new TimestampData("[" + currentDateTimeString + "] TX: " + formattedData, mRxColor));
+                            //mBufferListAdapter.add("[" + currentDateTimeString + "] RX: " + formattedData);
                             //mBufferListView.smoothScrollToPosition(mBufferListAdapter.getCount() - 1);
                             mBufferListView.setSelection(mBufferListAdapter.getCount());
                         }
@@ -575,7 +692,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
     private void updateTextDataUI() {
 
-        if (!mIsTimeStampDisplayMode) {
+        if (!mIsTimestampDisplayMode) {
             if (mDataBufferLastSize != mDataBuffer.size()) {
 
                 final int bufferSize = mDataBuffer.size();
@@ -603,7 +720,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
     private void recreateDataView() {
 
-        if (mIsTimeStampDisplayMode) {
+        if (mIsTimestampDisplayMode) {
             mBufferListAdapter.clear();
 
             final int bufferSize = mDataBuffer.size();
@@ -615,7 +732,8 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
                 final String formattedData = mShowDataInHexFormat ? asciiToHex(data) : data;
 
                 final String currentDateTimeString = DateFormat.getTimeInstance().format(new Date(dataChunk.getTimestamp()));
-                mBufferListAdapter.add("[" + currentDateTimeString + "] " + (isRX ? "RX" : "TX") + ": " + formattedData);
+                mBufferListAdapter.add(new TimestampData("[" + currentDateTimeString + "] " + (isRX ? "RX" : "TX") + ": " + formattedData, isRX?mRxColor:mTxColor));
+//                mBufferListAdapter.add("[" + currentDateTimeString + "] " + (isRX ? "RX" : "TX") + ": " + formattedData);
             }
             mBufferListView.setSelection(mBufferListAdapter.getCount());
         } else {
@@ -624,7 +742,6 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
             mBufferTextView.setText("");
         }
     }
-
 
     private String asciiToHex(String text) {
         StringBuffer stringBuffer = new StringBuffer();
@@ -670,7 +787,6 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
             mDataBuffer = mRetainedDataFragment.mDataBuffer;
             mSentBytes = mRetainedDataFragment.mSentBytes;
             mReceivedBytes = mRetainedDataFragment.mReceivedBytes;
-
         }
     }
 
@@ -713,84 +829,41 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
 
     // endregion
 
-/*
-    private class UartListAdapter extends BaseExpandableListAdapter {
-        private Activity mActivity;
 
-        public UartListAdapter(Activity activity) {
-m           mActivity = activity;
+    // region TimestampAdapter
+    private class TimestampData {
+        String text;
+        int textColor;
+
+        public TimestampData(String text, int textColor) {
+            this.text = text;
+            this.textColor = textColor;
+        }
+    }
+
+    private class TimestampListAdapter extends ArrayAdapter<TimestampData> {
+
+        public TimestampListAdapter(Context context, int textViewResourceId) {
+            super(context, textViewResourceId);
+        }
+
+        public TimestampListAdapter(Context context, int resource, List<TimestampData> items) {
+            super(context, resource, items);
         }
 
         @Override
-        public int getGroupCount() {
-            return 1;
-        }
-
-        @Override
-        public int getChildrenCount(int groupPosition) {
-            final boolean isEolEnabled = mEolSwitch.isChecked();
-            final int bufferSize =  mDataBuffer.size();
-            if (isEolEnabled) {
-                mCachedDataBuffer = mDataBuffer;
-                return bufferSize;
-            }
-            else {
-                mCachedDataBuffer = new ArrayList<>();
-                for (int i=0; i<bufferSize; i++) {
-                    UartDataChunk dataChunk = mDataBuffer.get(i);
-                    if (dataChunk.getMode() == UartDataChunk.TRANSFERMODE_RX) {
-                        mCachedDataBuffer.add(dataChunk);
-                    }
-                }
-                return mCachedDataBuffer.size();
-            }
-        }
-
-        @Override
-        public Object getGroup(int groupPosition) {
-            return null;
-        }
-
-        @Override
-        public Object getChild(int groupPosition, int childPosition) {
-            return null;
-        }
-
-        @Override
-        public long getGroupId(int groupPosition) {
-            return 0;
-        }
-
-        @Override
-        public long getChildId(int groupPosition, int childPosition) {
-            return childPosition;
-        }
-
-        @Override
-        public boolean hasStableIds() {
-            return true;
-        }
-
-        @Override
-        public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
-            return null;
-        }
-
-        @Override
-        public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, ViewGroup parent) {
             if (convertView == null) {
-                convertView = mActivity.getLayoutInflater().inflate(R.layout.layout_uart_datachunkitem, parent, false);
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.layout_uart_datachunkitem, parent, false);
             }
 
-            UartDataChunk dataChunk = mDataBuffer.get(childPosition);
+            TimestampData data = getItem(position);
+            TextView textView = (TextView) convertView;
+            textView.setText(data.text);
+            textView.setTextColor(data.textColor);
 
             return convertView;
         }
-
-        @Override
-        public boolean isChildSelectable(int groupPosition, int childPosition) {
-            return false;
-        }
     }
-    */
+    // endregion
 }

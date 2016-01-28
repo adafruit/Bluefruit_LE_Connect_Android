@@ -12,16 +12,15 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.adafruit.bluefruit.le.connect.app.UartActivity">
 
+    <!--
+        <LinearLayout
+            android:id="@+id/headerLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-    <LinearLayout
-        android:id="@+id/headerLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <!--     <include layout="@layout/layout_uart_singleline_controls"/> -->
-    </LinearLayout>
-
+        </LinearLayout>
+    -->
     <LinearLayout
         android:id="@+id/sendLayout"
         android:layout_width="match_parent"
@@ -82,10 +81,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@id/sendLayout"
-        android:layout_below="@id/headerLayout"
-        android:layout_marginTop="10dp"
+        android:layout_alignParentTop="true"
         android:orientation="vertical">
-
+        <!--
+          android:layout_below="@id/headerLayout"
+          android:layout_marginTop="10dp"
+          !-->
         <ListView
             android:id="@+id/bufferListView"
             android:layout_width="match_parent"

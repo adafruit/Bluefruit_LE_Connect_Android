@@ -92,9 +92,18 @@
     <string name="uart_eol">EOL:</string>
     <string name="uart_format_ascii">Ascii</string>
     <string name="uart_format_hex">Hex</string>
+    <string name="uart_format_hexadecimal">Hexadecimal</string>
     <string name="uart_displaymode_text">Text</string>
     <string name="uart_displaymode_timestamp">Timestamp</string>
     <string name="uart_help_title">UART Help</string>
+
+    <string name="uart_action_displaymode_format">Display Mode: %s</string>
+    <string name="uart_action_datamode_format">Data Mode: %s</string>
+
+    <string name="uart_action_echo">Show Echo</string>
+    <string name="uart_action_eol">Add Eol</string>
+    <string name="uart_action_enabled">On</string>
+    <string name="uart_action_disabled">Off</string>
 
     <string name="uart_copy">Copy</string>
     <string name="uart_share">Share</string>
