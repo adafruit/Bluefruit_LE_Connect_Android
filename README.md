@@ -8,7 +8,10 @@ This application works with the following Adafruit breakouts:
 - [Bluefruit LE Friend](https://www.adafruit.com/product/2267)
 - [Bluefruit LE UART Friend](https://www.adafruit.com/product/2479)
 - [Bluefruit LE SPI Friend](https://www.adafruit.com/product/2633)
+- [Bluefruit LE Shield](https://www.adafruit.com/products/2746)
 - [Bluefruit LE Micro](https://www.adafruit.com/product/2661)
+- [Feather 32u4 Bluefruit LE](https://www.adafruit.com/product/2829)
+- [Feather M0 Bluefruit LE](https://www.adafruit.com/products/2995)
 
 Bluefruit LE Connect enables the exchange of information between your Bluefruit LE breakout and your BLE enabled Android device (Android 4.4 and higher required).  
 
