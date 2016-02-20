@@ -202,7 +202,7 @@ public class BleUtils {
     public static String bytesToHexWithSpaces(byte[] bytes) {
         StringBuilder newString = new StringBuilder();
         for (int i=0; i<bytes.length; i++) {
-            String byteHex = String.format("0x%02X", (byte)bytes[i]);
+            String byteHex = String.format("%02X", (byte)bytes[i]);
             newString.append(byteHex).append(" ");
 
         }

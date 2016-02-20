@@ -847,10 +847,6 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
             super(context, textViewResourceId);
         }
 
-        public TimestampListAdapter(Context context, int resource, List<TimestampData> items) {
-            super(context, resource, items);
-        }
-
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             if (convertView == null) {

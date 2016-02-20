@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
     private final static int kComponentsNameIds[] = {
             R.string.scan_connectservice_info,
             R.string.scan_connectservice_uart,
-//            R.string.scan_connectservice_pinio,
+            R.string.scan_connectservice_pinio,
             R.string.scan_connectservice_controller,
             R.string.scan_connectservice_beacon,
     };

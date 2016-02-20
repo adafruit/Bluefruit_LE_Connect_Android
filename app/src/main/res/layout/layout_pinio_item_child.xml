@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="10dp">
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:padding="10dp">
 
     <RadioGroup
         android:layout_width="match_parent"
@@ -13,7 +13,7 @@
         <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1" />
+            android:layout_weight="1"/>
 
         <RadioButton
             android:id="@+id/inputRadioButton"
@@ -21,46 +21,45 @@
             android:layout_height="wrap_content"
             android:checked="true"
             android:onClick="onClickMode"
-            android:text="@string/pinio_pintype_input" />
+            android:text="@string/pinio_pintype_input"/>
 
         <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1" />
+            android:layout_weight="1"/>
 
         <RadioButton
             android:id="@+id/outputRadioButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="onClickMode"
-            android:text="@string/pinio_pintype_output" />
+            android:text="@string/pinio_pintype_output"/>
 
         <View
             android:id="@+id/spacer2View"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1" />
+            android:layout_weight="1"/>
 
         <RadioButton
             android:id="@+id/pwmRadioButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="onClickMode"
-            android:text="@string/pinio_pintype_pwm" />
+            android:text="@string/pinio_pintype_pwm"/>
 
         <RadioButton
             android:id="@+id/analogRadioButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="onClickMode"
-            android:text="@string/pinio_pintype_analog" />
+            android:text="@string/pinio_pintype_analog"/>
 
         <View
             android:id="@+id/spacer3View"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1" />
-
+            android:layout_weight="1"/>
 
     </RadioGroup>
 
@@ -74,7 +73,7 @@
         <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1" />
+            android:layout_weight="1"/>
 
         <RadioButton
             android:id="@+id/lowRadioButton"
@@ -82,31 +81,50 @@
             android:layout_height="wrap_content"
             android:checked="true"
             android:onClick="onClickOutputType"
-            android:text="@string/pinio_pintype_low" />
+            android:text="@string/pinio_pintype_low"/>
 
         <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1" />
+            android:layout_weight="1"/>
 
         <RadioButton
             android:id="@+id/highRadioButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="onClickOutputType"
-            android:text="@string/pinio_pintype_high" />
+            android:text="@string/pinio_pintype_high"/>
 
         <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1" />
+            android:layout_weight="1"/>
 
     </RadioGroup>
 
-    <SeekBar
-        android:id="@+id/pmwSeekBar"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:max="255" />
+        android:layout_marginTop="20dp"
+        android:orientation="horizontal">
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.1"/>
+
+        <SeekBar
+            android:id="@+id/pmwSeekBar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="0.8"
+            android:max="255"/>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.1"/>
+
+    </LinearLayout>
 </LinearLayout>

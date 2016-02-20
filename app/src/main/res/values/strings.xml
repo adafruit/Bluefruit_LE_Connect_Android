@@ -22,7 +22,7 @@
 
     <!-- Scan Activity -->
     <string name="scan_scanbutton_scan">Scan for peripherals</string>
-    <string name="scan_scanbutton_scanning">Scanning...</string>
+    <string name="scan_scanbutton_scanning">Scanning…</string>
     <string name="scan_devicesheadertitle">PERIPHERALS</string>
     <string name="scan_nodevicesfound">No peripherals found</string>
     <string name="scan_device_localname">Local Name</string>
@@ -36,8 +36,8 @@
     <string name="scan_device_beacon_major">Major</string>
     <string name="scan_device_beacon_minor">Minor</string>
     <string name="scan_device_uribeacon_uri">Uri</string>
-    <string name="scan_connecting">Connecting ...</string>
-    <string name="scan_gettingupdateinfo">Waiting for device info...</string>
+    <string name="scan_connecting">Connecting…</string>
+    <string name="scan_gettingupdateinfo">Waiting for device info…</string>
     <string name="scan_connectto_dialog_title_format">Choose mode to connect to %s</string>
     <string name="scan_unexpecteddisconnect">Peripheral disconnected</string>
     <string name="scan_tag_id">Id</string>
@@ -112,28 +112,34 @@
     <string name="uart_share_subject">UART</string>
     <string name="uart_share_empty">Nothing to share. UART text is empty</string>
 
-    <string name="uart_sharechooser_title">Send UART text to...</string>
+    <string name="uart_sharechooser_title">Send UART text to…</string>
 
     <string name="uart_sentbytes_format">Sent: %d bytes </string>
     <string name="uart_receivedbytes_format">Received: %d bytes</string>
 
-    <string name="uart_text_dataomitted">(Previous data ommited to improve performance...)</string>
+    <string name="uart_text_dataomitted">(Previous data omitted to improve performance…)</string>
 
     <!-- PinIO Activity -->
     <string name="title_activity_pin_io">PinIO</string>
-    <string name="pinio_sectiontitle_digital">Digital</string>
-    <string name="pinio_sectiontitle_analog">Analog</string>
+    <string name="pinio_sectiontitle">AVAILABLE PINS</string>
     <string name="pinio_pintype_input">Input</string>
     <string name="pinio_pintype_unknown">Unknown</string>
     <string name="pinio_pintype_output">Output</string>
     <string name="pinio_pintype_pwm">PWM</string>
+    <string name="pinio_pintype_servo">Servo</string>
     <string name="pinio_pintype_analog">Analog</string>
     <string name="pinio_pintype_low">Low</string>
     <string name="pinio_pintype_high">High</string>
-    <string name="pinio_pinname_digital_format">Pin %s</string>
-    <string name="pinio_pinname_analog_format">Pin A%s</string>
+    <string name="pinio_pinname_digital_format">Pin %d</string>
+    <string name="pinio_pinname_analog_format" formatted = "false">Pin %d, Analog %d</string>
     <string name="pinio_tag_mode">Mode</string>
     <string name="pinio_help_title">Pin I/O Help</string>
+
+    <string name="pinio_capabilityquery_querying_title">Querying pin capabilities…</string>
+    <string name="pinio_capabilityquery_expired_title">No response to capability query</string>
+    <string name="pinio_capabilityquery_expired_message">Assuming default pin format (Arduino Uno)</string>
+
+    <string name="pinio_action_refresh">Query capabilities</string>
 
     <!-- Controller Activity -->
     <string name="title_activity_controller">Controller</string>
@@ -141,7 +147,7 @@
     <string name="controller_sectiontitle_stream">Stream Sensor Data</string>
     <string name="controller_sectiontitle_interface">Interface</string>
     <string name="controller_help_title">Controller Help</string>
-    <string name="controller_location_unknown">Waiting for location data...</string>
+    <string name="controller_location_unknown">Waiting for location data…</string>
     <string name="controller_location_disabled">Location is disabled. Go to settings and enable it to receive location data</string>
 
     <string-array name="controller_stream_items">
@@ -212,7 +218,7 @@
     <string name="beacon_uribeacon_uritoolong">Uri too long</string>
     <string name="beacon_uribeacon_shorteneduriformat">Shortened uri: %s</string>
     <string name="beacon_uribeacon_shorteningerror">Shortening error</string>
-    <string name="beacon_uribeacon_shortening">Shortening...</string>
+    <string name="beacon_uribeacon_shortening">Shortening…</string>
     <string name="beacon_uribeacon_validuri">Valid URI</string>
 
     <!-- Connected Settings -->
@@ -220,7 +226,7 @@
     <string name="connectedsettings_updatesheadertitle">UPDATES</string>
     <string name="connectedsettings_firmwarereleasesheadertitle">FIRMWARE RELEASES</string>
     <string name="connectedsettings_bootloaderreleasesheadertitle">BOOTLOADER RELEASES</string>
-    <string name="connectedsettings_retrievinginfo">Retrieving device info...</string>
+    <string name="connectedsettings_retrievinginfo">Retrieving device info…</string>
     <string name="connectedsettings_dfunotfound">Firmware Update Service not detected. Can\'t update this device</string>
     <string name="connectedsettings_usecustomfirmware">Use custom firmware</string>
     <string name="connectedsettings_usecustombootloader">Use custom bootloader</string>
@@ -230,7 +236,7 @@
     <string name="connectedsettings_firmwareinstall_messageformat">Download and install firmware version %s</string>
     <string name="connectedsettings_bootloaderinstall_messageformat">Download and install bootloader version %s</string>
     <string name="connectedsettings_noexplorer_title">Unavailable</string>
-    <string name="connectedsettings_noexplorer_message">File browser app not has not been found on your device. You should install an app like Dropbox, GoogleDrive...</string>
+    <string name="connectedsettings_noexplorer_message">File browser app not has not been found on your device. You should install an app like Dropbox, GoogleDrive…</string>
 
     <!-- Settings -->
     <string name="title_activity_settings">Settings</string>
@@ -276,9 +282,9 @@
 
 
     <!-- Firmware & Bootloader updates -->
-    <string name="firmware_downloading">Downloading firmware...</string>
-    <string name="bootloader_downloading">Downloading bootloader...</string>
-    <string name="firmware_startupdate">Starting firmware update...</string>
+    <string name="firmware_downloading">Downloading firmware…</string>
+    <string name="bootloader_downloading">Downloading bootloader…</string>
+    <string name="firmware_startupdate">Starting firmware update…</string>
     <string name="firmware_connectionnotavailable">No internet connection detected</string>
     <string name="firmware_noconnecteddevice">Error: Device is no longer connected. Can\'t update</string>
     <string name="firmware_updatefailed_format">Update failed: %s</string>
@@ -323,8 +329,8 @@
 
     <string name="mqtt_status_connected">Connected</string>
     <string name="mqtt_status_disconnected">Disconnected</string>
-    <string name="mqtt_status_connecting">Connecting...</string>
-    <string name="mqtt_status_disconnecting">Disconnecting...</string>
+    <string name="mqtt_status_connecting">Connecting…</string>
+    <string name="mqtt_status_disconnecting">Disconnecting…</string>
     <string name="mqtt_status_error">Error</string>
 
     <string-array name="mqtt_uart_subscribe_behaviour">
@@ -349,7 +355,7 @@
     </string-array>
 
     <!-- Common -->
-    <string name="dialog_ok">Ok</string>
+    <string name="dialog_ok">OK</string>
 
     <!-- Debug -->
 

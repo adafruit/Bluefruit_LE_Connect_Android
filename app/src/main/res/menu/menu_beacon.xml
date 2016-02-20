@@ -3,19 +3,17 @@
       xmlns:tools="http://schemas.android.com/tools"
       tools:context="com.adafruit.bluefruit.le.connect.app.BeaconActivity">
 
-
     <item
         android:id="@+id/action_help"
+        android:icon="@drawable/ic_info_outline_menu"
         android:title="@string/action_info"
-        android:icon="@android:drawable/ic_menu_info_details"
-        app:showAsAction="always" />
+        app:showAsAction="always"/>
 
     <item
         android:id="@+id/action_connected_settings"
-        android:title="@string/action_firmwareupdates"
         android:icon="@drawable/ic_settings_white_24dp"
-        app:showAsAction="never" />
-
+        android:title="@string/action_firmwareupdates"
+        app:showAsAction="never"/>
 
     <item
         android:id="@+id/action_refreshcache"

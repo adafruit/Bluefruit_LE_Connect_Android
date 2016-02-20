@@ -1,20 +1,25 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.adafruit.bluefruit.le.connect.app.PinIOActivity">
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context="com.adafruit.bluefruit.le.connect.app.PinIOActivity">
+
+    <item
+        android:id="@+id/action_query"
+        android:icon="@drawable/ic_refresh_menu"
+        android:title="@string/pinio_action_refresh"
+        app:showAsAction="always"/>
 
     <item
         android:id="@+id/action_help"
+        android:icon="@drawable/ic_info_outline_menu"
         android:title="@string/action_info"
-        android:icon="@android:drawable/ic_menu_info_details"
-        app:showAsAction="always" />
+        app:showAsAction="always"/>
 
     <item
         android:id="@+id/action_connected_settings"
-        android:title="@string/action_firmwareupdates"
         android:icon="@drawable/ic_settings_white_24dp"
-        app:showAsAction="never" />
-
+        android:title="@string/action_firmwareupdates"
+        app:showAsAction="never"/>
 
     <item
         android:id="@+id/action_refreshcache"

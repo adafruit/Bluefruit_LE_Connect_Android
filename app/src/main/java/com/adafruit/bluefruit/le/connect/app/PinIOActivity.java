@@ -1,18 +1,21 @@
 package com.adafruit.bluefruit.le.connect.app;
 
-import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.ExpandableListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
@@ -26,6 +29,8 @@ import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ble.BleUtils;
 import com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightExpandableListView;
 
+import java.util.ArrayList;
+
 public class PinIOActivity extends UartInterfaceActivity implements BleManager.BleManagerListener {
     // Log
     private final static String TAG = UartActivity.class.getSimpleName();
@@ -33,27 +38,72 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
     // Activity request codes (used for onActivityResult)
     private static final int kActivityRequestCode_ConnectedSettingsActivity = 0;
 
+    // Config
+    private static final long CAPABILITY_QUERY_TIMEOUT = 5000;      // in milliseconds
+
     // Pin Constants
+    private static final byte SYSEX_START = (byte) 0xF0;
+    private static final byte SYSEX_END = (byte) 0xF7;
+
+    private static final int DEFAULT_PINS_COUNT = 20;
     private static final int FIRST_DIGITAL_PIN = 3;
     private static final int LAST_DIGITAL_PIN = 8;
     private static final int FIRST_ANALOG_PIN = 14;
     private static final int LAST_ANALOG_PIN = 19;
 
+    // Uart
+    private static final int kUartStatus_InputOutput = 0;       // Default mode (sending and receiving pin data)
+    private static final int kUartStatus_QueryCapabilities = 1;
+    private static final int kUartStatus_QueryAnalogMapping = 2;
+
+    private class PinData {
+        private static final int kMode_Unknown = 255;
+        private static final int kMode_Input = 0;
+        private static final int kMode_Output = 1;
+        private static final int kMode_Analog = 2;
+        private static final int kMode_PWM = 3;
+        private static final int kMode_Servo = 4;
+
+        private static final int kDigitalValue_Low = 0;
+        private static final int kDigitalValue_High = 1;
+
+        int digitalPinId = -1;
+        int analogPinId = -1;
+        boolean isDigital;
+        boolean isAnalog;
+        boolean isPwm;
+
+        int mode = kMode_Input;
+        int digitalValue = kDigitalValue_Low;
+        int analogValue = 0;
+
+        PinData(int digitalPinId, boolean isDigital, boolean isAnalog, boolean isPwm) {
+            this.digitalPinId = digitalPinId;
+            this.isDigital = isDigital;
+            this.isAnalog = isAnalog;
+            this.isPwm = isPwm;
+        }
+    }
+
     // UI
-    private ExpandableHeightExpandableListView mDigitalListView;
-    private ExpandableListAdapter mDigitalListAdapter;
-    private ExpandableHeightExpandableListView mAnalogListView;
-    private ExpandableListAdapter mAnalogListAdapter;
+    private ExpandableHeightExpandableListView mPinListView;
+    private ExpandableListAdapter mPinListAdapter;
     private ScrollView mPinScrollView;
+    private AlertDialog mQueryCapabilitiesDialog;
 
     // Data
     private boolean mIsActivityFirstRun;
-    private PinData[] mDigitalPins;
-    private PinData[] mAnalogPins;
-    private byte[] portMasks;
+    private ArrayList<PinData> mPins = new ArrayList<>();
+    private int mUartStatus = kUartStatus_InputOutput;
+    private Handler mQueryCapabilitiesTimerHandler;
+    private Runnable mQueryCapabilitiesTimerRunnable = new Runnable() {
+        @Override
+        public void run() {
+            cancelQueryCapabilities();
+        }
+    };
 
     private DataFragment mRetainedDataFragment;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,15 +114,10 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
         restoreRetainedDataFragment();
 
         // UI
-        mDigitalListView = (ExpandableHeightExpandableListView) findViewById(R.id.digitalPinListView);
-        mDigitalListAdapter = new ExpandableListAdapter(this, true, mDigitalPins);
-        mDigitalListView.setAdapter(mDigitalListAdapter);
-        mDigitalListView.setExpanded(true);
-
-        mAnalogListView = (ExpandableHeightExpandableListView) findViewById(R.id.analogPinListView);
-        mAnalogListAdapter = new ExpandableListAdapter(this, false, mAnalogPins);
-        mAnalogListView.setAdapter(mAnalogListAdapter);
-        mAnalogListView.setExpanded(true);
+        mPinListView = (ExpandableHeightExpandableListView) findViewById(R.id.pinListView);
+        mPinListAdapter = new ExpandableListAdapter();
+        mPinListView.setAdapter(mPinListAdapter);
+        mPinListView.setExpanded(true);
 
         mPinScrollView = (ScrollView) findViewById(R.id.pinScrollView);
 
@@ -92,6 +137,8 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
 
     @Override
     public void onDestroy() {
+        cancelQueryCapabilitiesTimer();
+
         // Retain data
         saveRetainedDataFragment();
 
@@ -124,6 +171,8 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
             if (mBleManager != null) {
                 mBleManager.refreshDeviceCache();
             }
+        } else if (id == R.id.action_query) {
+            reset();
         }
 
         return super.onOptionsItemSelected(item);
@@ -151,35 +200,583 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
     }
     // endregion
 
-    public void onClickPinIOTitle(final View view) {
-        boolean isDigital = (Boolean) view.getTag(R.string.pinio_tag_mode);
-        final ExpandableHeightExpandableListView listView = isDigital ? mDigitalListView : mAnalogListView;
-        ExpandableListAdapter listAdapter = isDigital ? mDigitalListAdapter : mAnalogListAdapter;
+    private boolean isQueryingCapabilities() {
+        return mUartStatus != kUartStatus_InputOutput;
+    }
 
-        final int groupPosition = (Integer) view.getTag();
-        if (listView.isGroupExpanded(groupPosition)) {
-            listView.collapseGroup(groupPosition);
-        } else {
-            // Expand this, Collapse the rest
-            int len = listAdapter.getGroupCount();
-            for (int i = 0; i < len; i++) {
-                if (i != groupPosition) {
-                    listView.collapseGroup(i);
+    @Override
+    public void onDataAvailable(BluetoothGattCharacteristic characteristic) {
+        byte[] data = characteristic.getValue();
+        Log.d(TAG, "received: "+ BleUtils.bytesToHexWithSpaces(data));
+
+        switch (mUartStatus) {
+            case kUartStatus_QueryCapabilities:
+                receivedQueryCapabilities(data);
+                break;
+            case kUartStatus_QueryAnalogMapping:
+                receivedAnalogMapping(data);
+                break;
+            default:
+                receivedPinState(data);
+                break;
+        }
+    }
+
+    // region Query Capabilities
+
+    private void reset() {
+        mUartStatus = kUartStatus_InputOutput;
+        mPins.clear();
+
+        mPinListAdapter.notifyDataSetChanged();
+
+        // Reset Firmata
+        byte bytes[] = new byte[]{(byte) 0xff};
+        sendHexData(bytes);
+
+        startQueryCapabilitiesProcess();
+    }
+
+    private ArrayList<Byte> queryCapabilitiesDataBuffer = new ArrayList<>();
+
+    private void queryCapabilities() {
+        Log.d(TAG, "queryCapabilities");
+
+        // Set status
+        mPins.clear();
+        mUartStatus = kUartStatus_QueryCapabilities;
+        queryCapabilitiesDataBuffer.clear();
+
+        // Query Capabilities
+        byte bytes[] = new byte[]{SYSEX_START, (byte) 0x6B, SYSEX_END};
+        sendHexData(bytes);
+
+
+        mQueryCapabilitiesTimerHandler = new Handler();
+        mQueryCapabilitiesTimerHandler.postDelayed(mQueryCapabilitiesTimerRunnable, CAPABILITY_QUERY_TIMEOUT);
+    }
+
+    private void receivedQueryCapabilities(byte[] data) {
+        // Read received packet
+        for (final byte dataByte : data) {
+            queryCapabilitiesDataBuffer.add(dataByte);
+            if (dataByte == SYSEX_END) {
+                Log.d(TAG, "Finished receiving capabilities");
+                queryAnalogMapping();
+                break;
+            }
+        }
+    }
+
+    private void cancelQueryCapabilitiesTimer() {
+        if (mQueryCapabilitiesTimerHandler != null) {
+            mQueryCapabilitiesTimerHandler.removeCallbacks(mQueryCapabilitiesTimerRunnable);
+            mQueryCapabilitiesTimerHandler = null;
+        }
+    }
+    // endregion
+
+    // region Query AnalogMapping
+
+    private ArrayList<Byte> queryAnalogMappingDataBuffer = new ArrayList<>();
+
+    private void queryAnalogMapping() {
+        Log.d(TAG, "queryAnalogMapping");
+
+        // Set status
+        mUartStatus = kUartStatus_QueryAnalogMapping;
+        queryAnalogMappingDataBuffer.clear();
+
+        // Query Analog Mapping
+        byte bytes[] = new byte[]{SYSEX_START, (byte) 0x69, SYSEX_END};
+        sendHexData(bytes);
+    }
+
+    private void receivedAnalogMapping(byte[] data) {
+        cancelQueryCapabilitiesTimer();
+
+        // Read received packet
+        for (final byte dataByte : data) {
+            queryAnalogMappingDataBuffer.add(dataByte);
+            if (dataByte == SYSEX_END) {
+                Log.d(TAG, "Finished receiving Analog Mapping");
+                endPinQuery(false);
+                break;
+            }
+        }
+    }
+
+    public void cancelQueryCapabilities() {
+        Log.d(TAG, "timeout: cancelQueryCapabilities");
+        endPinQuery(true);
+    }
+
+    // endregion
+
+    // region Process Capabilities
+    private void endPinQuery(boolean abortQuery) {
+        cancelQueryCapabilitiesTimer();
+        mUartStatus = kUartStatus_InputOutput;
+
+        boolean capabilitiesParsed = false;
+        boolean mappingDataParsed = false;
+        if (!abortQuery && queryCapabilitiesDataBuffer.size() > 0 && queryAnalogMappingDataBuffer.size() > 0) {
+            capabilitiesParsed = parseCapabilities(queryCapabilitiesDataBuffer);
+            mappingDataParsed = parseAnalogMappingData(queryAnalogMappingDataBuffer);
+        }
+
+        final boolean isDefaultConfigurationAssumed = abortQuery || !capabilitiesParsed || !mappingDataParsed;
+        if (isDefaultConfigurationAssumed) {
+            initializeDefaultPins();
+        }
+        enableReadReports();
+
+        // Clean received data
+        queryCapabilitiesDataBuffer.clear();
+        queryAnalogMappingDataBuffer.clear();
+
+        // Refresh
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mQueryCapabilitiesDialog != null) {
+                    mQueryCapabilitiesDialog.dismiss();
+                }
+                mPinListAdapter.notifyDataSetChanged();
+
+                 if (isDefaultConfigurationAssumed) {
+                     defaultCapabilitiesAssumedDialog();
+                 }
+            }
+        });
+    }
+
+    private boolean parseCapabilities(ArrayList<Byte> capabilitiesData) {
+        int endIndex = capabilitiesData.indexOf(SYSEX_END);
+        if (capabilitiesData.size() > 2 && capabilitiesData.get(0) == SYSEX_START && capabilitiesData.get(1) == 0x6C && endIndex >= 0) {
+            // Separate pin data
+            ArrayList<ArrayList<Byte>> pinsBytes = new ArrayList<>();
+            ArrayList<Byte> currentPin = new ArrayList<>();
+            for (int i = 2; i < endIndex; i++) {        // Skip 2 header bytes and end byte
+                byte dataByte = capabilitiesData.get(i);
+                if (dataByte != 0x7f) {
+                    currentPin.add(dataByte);
+                } else {      // Finished current pin
+                    pinsBytes.add(currentPin);
+                    currentPin = new ArrayList<>();
                 }
             }
 
-            listView.expandGroup(groupPosition, true);
+            // Extract pin info
+            mPins.clear();
+            int pinNumber = 0;
+            for (int j = 0; j < pinsBytes.size(); j++) {
+                ArrayList<Byte> pinBytes = pinsBytes.get(j);
+
+                boolean isInput = false, isOutput = false, isAnalog = false, isPWM = false;
+
+
+                if (pinBytes.size() > 0) {
+                    int i = 0;
+                    while (i < pinBytes.size()) {
+                        int dataByte = pinBytes.get(i) & 0xff;
+                        switch (dataByte) {
+                            case 0x00:
+                                isInput = true;
+                                i++;        // skip resolution byte
+                                break;
+                            case 0x01:
+                                isOutput = true;
+                                i++;        // skip resolution byte
+                                break;
+                            case 0x02:
+                                isAnalog = true;
+                                i++;        // skip resolution byte
+                                break;
+                            case 0x03:
+                                isPWM = true;
+                                i++;        // skip resolution byte
+                                break;
+                            case 0x04:
+                                // Servo
+                                i++;        // skip resolution byte
+                                break;
+                            case 0x06:
+                                // I2C
+                                i++;        // skip resolution byte
+                                break;
+                            default:
+                                break;
+                        }
+                        i++;
+                    }
+
+                    PinData pinData = new PinData(pinNumber, isInput && isOutput, isAnalog, isPWM);
+                    Log.d(TAG, "pin id: " + pinNumber + " digital: " + (pinData.isDigital ? "yes" : "no") + " analog: " + (pinData.isAnalog ? "yes" : "no"));
+                    mPins.add(pinData);
+                }
+
+                pinNumber++;
+            }
+            return true;
+
+        } else {
+            Log.d(TAG, "invalid capabilities received");
+            if (capabilitiesData.size() <= 2) {
+                Log.d(TAG, "capabilitiesData size <= 2");
+            }
+            if (capabilitiesData.get(0) != SYSEX_START) {
+                Log.d(TAG, "SYSEX_START not present");
+            }
+            if (endIndex<0) {
+                Log.d(TAG, "SYSEX_END not present");
+            }
+
+            return false;
+        }
+    }
+
+    private boolean parseAnalogMappingData(ArrayList<Byte> analogData) {
+        int endIndex = analogData.indexOf(SYSEX_END);
+        if (analogData.size() > 2 && analogData.get(0) == SYSEX_START && analogData.get(1) == 0x6A && endIndex >= 0) {
+            int pinNumber = 0;
+
+            for (int i = 2; i < endIndex; i++) {        // Skip 2 header bytes and end byte
+                byte dataByte = analogData.get(i);
+                if (dataByte != 0x7f) {
+                    int indexOfPinNumber = indexOfPinWithDigitalId(pinNumber);
+                    if (indexOfPinNumber >= 0) {
+                        mPins.get(indexOfPinNumber).analogPinId = dataByte & 0xff;
+                        Log.d(TAG, "pin id: " + pinNumber + " analog id: " + dataByte);
+                    } else {
+                        Log.d(TAG, "warning: trying to set analog id: " + dataByte + " for pin id: " + pinNumber);
+                    }
+
+                }
+                pinNumber++;
+            }
+            return true;
+        } else {
+            Log.d(TAG, "invalid analog mapping received");
+            return false;
+        }
+    }
+
+    private int indexOfPinWithDigitalId(int digitalPinId) {
+        int i = 0;
+        while (i < mPins.size() && mPins.get(i).digitalPinId != digitalPinId) {
+            i++;
+        }
+        return i < mPins.size() ? i : -1;
+    }
+
+    private int indexOfPinWithAnalogId(int analogPinId) {
+        int i = 0;
+        while (i < mPins.size() && mPins.get(i).analogPinId != analogPinId) {
+            i++;
+        }
+        return i < mPins.size() ? i : -1;
+    }
+    // endregion
+
+    // region Pin Management
+    private void initializeDefaultPins() {
+        mPins.clear();
+
+        for (int i = 0; i < DEFAULT_PINS_COUNT; i++) {
+            PinData pin = null;
+            if (i == 3 || i == 5 || i == 6) {
+                pin = new PinData(i, true, false, false);
+            } else if (i >= FIRST_DIGITAL_PIN && i <= LAST_DIGITAL_PIN) {
+                pin = new PinData(i, true, false, false);
+            } else if (i >= FIRST_ANALOG_PIN && i <= LAST_ANALOG_PIN) {
+                pin = new PinData(i, true, true, false);
+                pin.analogPinId = i - FIRST_ANALOG_PIN;
+            }
+
+            if (pin != null) {
+                mPins.add(pin);
+            }
+        }
+    }
+
+    private void enableReadReports() {
+
+        // Enable read reports by port
+        for (int i = 0; i <= 2; i++) {
+            byte data0 = (byte) (0xd0 + i);     // start port 0 digital reporting (0xD0 + port#)
+            byte data1 = 1;                     // enable
+            byte bytes[] = new byte[]{data0, data1};
+            sendHexData(bytes);
+        }
+
+        // Set all pin modes active
+        for (int i = 0; i < mPins.size(); i++) {
+            // Write pin mode
+            PinData pin = mPins.get(i);
+            setControlMode(pin, pin.mode);
+        }
+    }
+
+    private void setControlMode(PinData pin, int mode) {
+        int previousMode = pin.mode;
+
+        // Store
+        pin.mode = mode;
+        pin.digitalValue = PinData.kDigitalValue_Low;       // Reset dialog value when chaning mode
+        pin.analogValue = 0;                                // Reset analog value when chaging mode
+
+        // Write pin mode
+        byte bytes[] = new byte[]{(byte) 0xf4, (byte) pin.digitalPinId, (byte) mode};
+        sendHexData(bytes);
+
+        // Update reporting for Analog pins
+        if (mode == PinData.kMode_Analog) {
+            setAnalogValueReporting(pin, true);
+        } else if (previousMode == PinData.kMode_Analog) {
+            setAnalogValueReporting(pin, false);
+        }
+    }
+
+    private void setAnalogValueReporting(PinData pin, boolean enabled) {
+        // Write pin mode
+        byte data0 = (byte) (0xc0 + pin.analogPinId);       // start analog reporting for pin (192 + pin#)
+        byte data1 = (byte) (enabled ? 1 : 0);       // enable
+
+        // send data
+        byte bytes[] = {data0, data1};
+        sendHexData(bytes);
+    }
+
+    private void setDigitalValue(PinData pin, int value) {
+        // Store
+        pin.digitalValue = value;
+        Log.d(TAG, "setDigitalValue: " + value + " for pin id: " + pin.digitalPinId);
+
+        // Write value
+        int port = pin.digitalPinId / 8;
+        byte data0 = (byte) (0x90 + port);
+
+        int offset = 8 * port;
+        int state = 0;
+        for (int i = 0; i <= 7; i++) {
+            int pinIndex = indexOfPinWithDigitalId(offset + i);
+            if (pinIndex >= 0) {
+                int pinValue = mPins.get(pinIndex).digitalValue & 0x1;
+                int pinMask = pinValue << i;
+                state |= pinMask;
+            }
+        }
+
+        byte data1 = (byte) (state & 0x7f);      // only 7 bottom bits
+        byte data2 = (byte) (state >> 7);        // top bit in second byte
+
+        // send data
+        byte bytes[] = new byte[]{data0, data1, data2};
+        sendHexData(bytes);
+    }
+
+    private long lastSentAnalogValueTime = 0;
+
+    private boolean setPMWValue(PinData pin, int value) {
+
+        // Limit the amount of messages sent over Uart
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastSentAnalogValueTime >= 100) {
+            Log.d(TAG, "pwm elapsed: "+(currentTime - lastSentAnalogValueTime));
+            lastSentAnalogValueTime = currentTime;
+
+            // Store
+            pin.analogValue = value;
+
+            // Send
+            byte data0 = (byte) (0xe0 + pin.digitalPinId);
+            byte data1 = (byte) (value & 0x7f);      // only 7 bottom bits
+            byte data2 = (byte) (value >> 7);        // top bit in second byte
+
+            byte bytes[] = new byte[]{data0, data1, data2};
+            sendHexData(bytes);
+
+            return true;
+        } else {
+            Log.d(TAG, "Won't send: Too many slider messages");
+            return false;
+        }
+    }
+
+    private ArrayList<Byte> receivedPinStateDataBuffer2 = new ArrayList<>();
+    private int getUnsignedReceivedPinState(int index) {
+        return receivedPinStateDataBuffer2.get(index) & 0xff;
+    }
+
+    private void receivedPinState(byte[] data) {
+
+        // Append received bytes to buffer
+        for (final byte dataByte : data) {
+            receivedPinStateDataBuffer2.add(dataByte);
+        }
+
+        // Check if we received a pin state response
+        int endIndex = receivedPinStateDataBuffer2.indexOf(SYSEX_END);
+        if (receivedPinStateDataBuffer2.size() >= 5 && getUnsignedReceivedPinState(0) == SYSEX_START && getUnsignedReceivedPinState(1) == 0x6e && endIndex >= 0) {
+            /* pin state response
+            * -------------------------------
+            * 0  START_SYSEX (0xF0) (MIDI System Exclusive)
+            * 1  pin state response (0x6E)
+            * 2  pin (0 to 127)
+            * 3  pin mode (the currently configured mode)
+            * 4  pin state, bits 0-6
+            * 5  (optional) pin state, bits 7-13
+            * 6  (optional) pin state, bits 14-20
+            ...  additional optional bytes, as many as needed
+            * N  END_SYSEX (0xF7)
+            */
+
+            int pinDigitalId = getUnsignedReceivedPinState(2);
+            int pinMode = getUnsignedReceivedPinState(3);
+            int pinState = getUnsignedReceivedPinState(4);
+
+            int index = indexOfPinWithDigitalId(pinDigitalId);
+            if (index >= 0) {
+                PinData pin = mPins.get(index);
+                pin.mode = pinMode;
+                if (pinMode == PinData.kMode_Analog || pinMode == PinData.kMode_PWM || pinMode == PinData.kMode_Servo) {
+                    if (receivedPinStateDataBuffer2.size() >= 6) {
+                        pin.analogValue = pinState + (getUnsignedReceivedPinState(5) << 7);
+                    } else {
+                        Log.d(TAG, "Warning: received pinstate for analog pin without analogValue");
+                    }
+                } else {
+                    if (pinState == PinData.kDigitalValue_Low || pinState == PinData.kDigitalValue_High) {
+                        pin.digitalValue = pinState;
+                    } else {
+                        Log.d(TAG, "Warning: received pinstate with unknown digital value. Valid (0,1). Received: " + pinState);
+                    }
+                }
+
+            } else {
+                Log.d(TAG, "Warning: received pinstate for unknown digital pin id: " + pinDigitalId);
+            }
+
+            //  Remove from the buffer the bytes parsed
+            for (int i = 0; i < endIndex; i++) {
+                receivedPinStateDataBuffer2.remove(0);
+            }
+        } else {
+            // Each pin message is 3 bytes long
+            int data0 = getUnsignedReceivedPinState(0);
+            boolean isDigitalReportingMessage = data0 >= 0x90 && data0 <= 0x9F;
+            boolean isAnalogReportingMessage = data0 >= 0xe0 && data0 <= 0xef;
+//            Log.d(TAG, "data0: "+data0);
+
+            Log.d(TAG, "receivedPinStateDataBuffer size: "+receivedPinStateDataBuffer2.size());
+  //          Log.d(TAG, "data[0]="+BleUtils.byteToHex(receivedPinStateDataBuffer.get(0))+ "data[1]="+BleUtils.byteToHex(receivedPinStateDataBuffer.get(1)));
+
+            while (receivedPinStateDataBuffer2.size() >= 3 && (isDigitalReportingMessage || isAnalogReportingMessage)) {     // Check that current message length is at least 3 bytes
+                if (isDigitalReportingMessage) {            // Digital Reporting (per port)
+                     /* two byte digital data format, second nibble of byte 0 gives the port number (e.g. 0x92 is the third port, port 2)
+                    * 0  digital data, 0x90-0x9F, (MIDI NoteOn, but different data format)
+                    * 1  digital pins 0-6 bitmask
+                    * 2  digital pin 7 bitmask
+                    */
+
+                    int port = getUnsignedReceivedPinState(0) - 0x90;
+                    int pinStates = getUnsignedReceivedPinState(1);
+                    pinStates |= getUnsignedReceivedPinState(2) << 7;        // PORT 0: use LSB of third byte for pin7, PORT 1: pins 14 & 15
+                    updatePinsForReceivedStates(pinStates, port);
+                } else if (isAnalogReportingMessage) {        // Analog Reporting (per pin)
+                    /* analog 14-bit data format
+                    * 0  analog pin, 0xE0-0xEF, (MIDI Pitch Wheel)
+                    * 1  analog least significant 7 bits
+                    * 2  analog most significant 7 bits
+                    */
+
+                    int analogPinId = getUnsignedReceivedPinState(0) - 0xe0;
+                    int value = getUnsignedReceivedPinState(1) + (getUnsignedReceivedPinState(2) << 7);
+
+                    int index = indexOfPinWithAnalogId(analogPinId);
+                    if (index >= 0) {
+                        PinData pin = mPins.get(index);
+                        pin.analogValue = value;
+                        Log.d(TAG, "received analog value: "+value+" pin analog id: "+analogPinId+" digital Id: "+index);
+                    } else {
+                        Log.d(TAG, "Warning: received pinstate for unknown analog pin id: " + index);
+                    }
+                }
+
+                //  Remove from the buffer the bytes parsed
+                for (int i = 0; i < 3; i++) {
+                    receivedPinStateDataBuffer2.remove(0);
+                }
+
+                // Setup vars for next message
+                if (receivedPinStateDataBuffer2.size() >= 3) {
+                    data0 = getUnsignedReceivedPinState(0);
+                    isDigitalReportingMessage = data0 >= 0x90 && data0 <= 0x9F;
+                    isAnalogReportingMessage = data0 >= 0xe0 && data0 <= 0xef;
+
+                } else {
+                    isDigitalReportingMessage = false;
+                    isAnalogReportingMessage = false;
+                }
+            }
+        }
+
+        // Refresh
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mPinListAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+    private void updatePinsForReceivedStates(int pinStates, int port) {
+        int offset = 8 * port;
+
+        // Iterate through all pins
+        for (int i = 0; i <= 7; i++) {
+            int mask = 1 << i;
+            int state = (pinStates & mask) >> i;
+
+            int digitalId = offset + i;
+
+            int index = indexOfPinWithDigitalId(digitalId);
+            if (index >= 0) {
+                PinData pin = mPins.get(index);
+                pin.digitalValue = state;
+                //Log.d(TAG, "update pinid: " + digitalId + " digitalValue: " + state);
+            }
+        }
+    }
+
+    // endregion
+
+    public void onClickPinIOTitle(final View view) {
+        final int groupPosition = (Integer) view.getTag();
+        if (mPinListView.isGroupExpanded(groupPosition)) {
+            mPinListView.collapseGroup(groupPosition);
+        } else {
+            // Expand this, Collapse the rest
+            int len = mPinListAdapter.getGroupCount();
+            for (int i = 0; i < len; i++) {
+                if (i != groupPosition) {
+                    mPinListView.collapseGroup(i);
+                }
+            }
+
+            mPinListView.expandGroup(groupPosition, true);
 
             // Force scrolling to view the children
             mPinScrollView.post(new Runnable() {
                 @Override
                 public void run() {
-                    listView.scrollToGroup(groupPosition, view, mPinScrollView);
+                    mPinListView.scrollToGroup(groupPosition, view, mPinScrollView);
                 }
             });
-
         }
     }
+
 
     public void onClickMode(View view) {
         PinData pinData = (PinData) view.getTag();
@@ -200,32 +797,27 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
                 break;
         }
 
-        modeControlChanged(pinData, newMode);
-        pinData.mode = newMode;
+        setControlMode(pinData, newMode);
 
-        ExpandableListAdapter listAdapter = pinData.isDigital ? mDigitalListAdapter : mAnalogListAdapter;
-        listAdapter.notifyDataSetChanged();
-
+        mPinListAdapter.notifyDataSetChanged();
     }
 
     public void onClickOutputType(View view) {
         PinData pinData = (PinData) view.getTag();
 
-        int newState = PinData.kState_Low;
+        int newState = PinData.kDigitalValue_Low;
         switch (view.getId()) {
             case R.id.lowRadioButton:
-                newState = PinData.kState_Low;
+                newState = PinData.kDigitalValue_Low;
                 break;
             case R.id.highRadioButton:
-                newState = PinData.kState_High;
+                newState = PinData.kDigitalValue_High;
                 break;
         }
 
-        digitalControlChanged(pinData, newState);
-        pinData.state = newState;
+        setDigitalValue(pinData, newState);
 
-        ExpandableListAdapter listAdapter = pinData.isDigital ? mDigitalListAdapter : mAnalogListAdapter;
-        listAdapter.notifyDataSetChanged();
+        mPinListAdapter.notifyDataSetChanged();
     }
 
     // region BleManagerListener
@@ -253,99 +845,8 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
 
         // PinIo init
         if (mIsActivityFirstRun) {
-            enableReadReports();
+            reset();
         }
-    }
-
-    @Override
-    public void onDataAvailable(BluetoothGattCharacteristic characteristic) {
-        byte[] data = characteristic.getValue();
-
-        if (data.length <= UartInterfaceActivity.kTxMaxCharacters) {
-            processInputData(data);
-        } else {
-            Log.w(TAG, "unexpected received data length: " + data.length);
-        }
-    }
-
-    private void processInputData(byte[] data) {
-
-        Log.d(TAG, "received data: data = " + data[0] + " length = " + data.length);
-
-        for (int i = 0; i < data.length; i += 3) {
-            int data0 = data[i];
-
-            //Digital Reporting (per port)
-            if (data0 == 0x90) {                            //Port 0
-                int pinStates = (int) (data[i + 1]);
-                pinStates |= (int) (data[i + 2]) << 7;      //use LSB of third byte for pin7
-                updateForPinStates(pinStates, 0);
-            } else if (data0 == 0x91) {                       //Port 1
-                int pinStates = (int) (data[i + 1]);
-                pinStates |= (int) (data[i + 2]) << 7;      //pins 14 & 15
-                updateForPinStates(pinStates, 1);
-            } else if (data0 == 0x92) {                       // Port 2
-                int pinStates = (int) (data[i + 1]);
-                updateForPinStates(pinStates, 2);
-            }
-
-            //Analog Reporting (per pin)
-            else if ((data0 >= 0xe0) && (data0 <= 0xe5)) {
-                int pin = data0 - 0xe0;
-                int val = (int) (data[i + 1]) + ((int) (data[i + 2]) << 7);
-
-                if (pin < mAnalogPins.length) {
-                    PinData pinData = mAnalogPins[pin];
-                    pinData.state = val;
-
-                    // Update UI
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mAnalogListAdapter.notifyDataSetChanged();
-
-                        }
-                    });
-                }
-            }
-        }
-    }
-
-    private void updateForPinStates(int pinStates, int port) {
-
-        // Update all ports
-        for (int i = 0; i < 8; i++) {
-            int state = pinStates;
-            int mask = 1 << i;
-            state = state & mask;
-            state = state >> i;
-
-            // update port
-            if (port < mDigitalPins.length) {
-                PinData pinData = mDigitalPins[port];
-                if (pinData.mode == PinData.kMode_Input || pinData.mode == PinData.kMode_Output) {
-                    if (state == 0 || state == 1) {
-                        pinData.state = state == 0 ? PinData.kState_Low : PinData.kState_High;
-                    } else {
-                        Log.w(TAG, "Attempting set digital pin to analog value");
-                    }
-                } else {
-                    Log.w(TAG, "Attempting set analog pin to digital value");
-                }
-            }
-        }
-
-        // Save reference state mask
-        portMasks[port] = (byte) pinStates;
-
-        // Update UI
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mDigitalListAdapter.notifyDataSetChanged();
-
-            }
-        });
     }
 
     @Override
@@ -360,155 +861,6 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
     // endregion
 
 
-    private void enableReadReports() {
-        // Read Reports
-        for (int i = 0; i < mDigitalPins.length; i++) {
-            setDigitalStateReportingForPin((byte) (i + FIRST_DIGITAL_PIN), true);
-        }
-        for (int i = 0; i < mAnalogPins.length; i++) {
-            setDigitalStateReportingForPin((byte) (i + FIRST_ANALOG_PIN), true);
-        }
-
-        // set all pin modes active
-        for (int i = 0; i < mDigitalPins.length; i++) {
-            modeControlChanged(mDigitalPins[i], mDigitalPins[i].mode);      // new mode is equal to old mode (just to initialize)
-        }
-        for (int i = 0; i < mAnalogPins.length; i++) {
-            modeControlChanged(mAnalogPins[i], mAnalogPins[i].mode);        // new mode is equal to old mode (just to initialize)
-        }
-    }
-
-    private void setDigitalStateReportingForPin(byte digitalPin, boolean enabled) {
-
-        //Enable input/output for a digital pin
-
-        //port 0: digital pins 0-7
-        //port 1: digital pins 8-15
-        //port 2: digital pins 16-23
-
-        //find port for pin
-        byte port;
-        byte pin;
-
-        //find pin for port
-        if (digitalPin <= 7) {       //Port 0 (aka port D)
-            port = 0;
-            pin = digitalPin;
-        } else if (digitalPin <= 15) { //Port 1 (aka port B)
-            port = 1;
-            pin = (byte) (digitalPin - 8);
-        } else {                       //Port 2 (aka port C)
-            port = 2;
-            pin = (byte) (digitalPin - 16);
-        }
-
-        byte data0 = (byte) (0xd0 + port);         //start port 0 digital reporting (0xd0 + port#)
-        byte data1 = portMasks[port];            //retrieve saved pin mask for port;
-
-        if (enabled) {
-            data1 |= 1 << pin;
-        } else {
-            data1 ^= 1 << pin;
-        }
-
-        portMasks[port] = data1;    //save new pin mask
-
-        // send data
-        byte bytes[] = {data0, data1};
-        sendHexData(bytes);
-    }
-
-    private void modeControlChanged(PinData pinData, int newMode) {
-        // Write pin
-        writePinMode(newMode, pinData.pinId);
-
-        // Update reporting for Analog pins
-        if (newMode == PinData.kMode_Analog) {
-            setAnalogValueReportingforPin(pinData.pinNumber, true);
-        } else if (pinData.mode == PinData.kMode_Analog) {
-            setAnalogValueReportingforPin(pinData.pinNumber, false);
-        }
-    }
-
-    private void writePinMode(int newMode, byte pin) {
-        byte data0 = (byte) 0xf4;       // status byte == 244
-        byte data1 = pin;
-        byte data2 = (byte) newMode;
-
-        // send data
-        byte bytes[] = {data0, data1, data2};
-        sendHexData(bytes);
-    }
-
-    private void digitalControlChanged(PinData pinData, int newState) {
-        writePinState(newState, pinData.pinId);
-    }
-
-    private void writePinState(int newState, byte pin) {
-        byte port = (byte) (pin / 8);
-
-        //Status byte == 144 + port#
-        byte data0 = (byte) (0x90 + port);       //Status
-        byte data1;                             //LSB of bitmask
-        byte data2;                             //MSB of bitmask
-
-        //Data1 == pin0State + 2*pin1State + 4*pin2State + 8*pin3State + 16*pin4State + 32*pin5State
-        byte pinIndex = (byte) (pin - (port * 8));
-        byte newMask = (byte) (newState * (int) (Math.pow(2, pinIndex)));
-
-        if (port == 0) {
-            portMasks[port] &= ~(1 << pinIndex); //prep the saved mask by zeroing this pin's corresponding bit
-            newMask |= portMasks[port]; //merge with saved port state
-            portMasks[port] = newMask;
-            data1 = (byte) (newMask << 1);
-            data1 >>= 1;  //remove MSB
-            data2 = (byte) (newMask >> 7); //use data1's MSB as data2's LSB
-        } else {
-            portMasks[port] &= ~(1 << pinIndex); //prep the saved mask by zeroing this pin's corresponding bit
-            newMask |= portMasks[port]; //merge with saved port state
-            portMasks[port] = newMask;
-            data1 = newMask;
-            data2 = 0;
-
-            //Hack for firmata pin15 reporting bug?
-            if (port == 1) {
-                data2 = (byte) (newMask >> 7);
-                data1 &= ~(1 << 7);
-            }
-        }
-
-        // send data
-        byte bytes[] = {data0, data1, data2};
-        sendHexData(bytes);
-    }
-
-
-    private void valueControlChanged(byte value, byte pin) {
-        writePWMValue(value, pin);
-    }
-
-    private void writePWMValue(byte value, byte pin) {
-
-        //Set an PWM output pin's value
-
-        byte data0 = (byte) (0xe0 + pin);       //Status
-        byte data1 = (byte) (value & 0x7F);     //LSB of bitmask
-        byte data2 = (byte) (value >> 7);       //MSB of bitmask
-
-        // send data
-        byte bytes[] = {data0, data1, data2};
-        sendHexData(bytes);
-    }
-
-    private void setAnalogValueReportingforPin(byte pin, boolean enabled) {
-        byte data0 = (byte) (0xc0 + pin);       // start analog reporting for pin (192 + pin#)
-        byte data1 = (byte) (enabled ? 1 : 0);       // enable
-
-        // send data
-        byte bytes[] = {data0, data1};
-        sendHexData(bytes);
-    }
-
     private void sendHexData(byte[] data) {
         if (BuildConfig.DEBUG) {
             String hexRepresentation = BleUtils.bytesToHexWithSpaces(data);
@@ -517,42 +869,50 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
         sendData(data);
     }
 
-    private class PinData {
-        // Mode Constants
-        final static int kMode_Unknown = -1;
-        final static int kMode_Input = 0;
-        final static int kMode_Output = 1;
-        final static int kMode_Analog = 2;
-        final static int kMode_PWM = 3;
-        final static int kMode_Servo = 4;
+    // region UI
 
-        // State Constants
-        final static int kState_Low = 0;
-        final static int kState_High = 1;
+    private void startQueryCapabilitiesProcess() {
+        if (!isQueryingCapabilities()) {
 
-        boolean isDigital;
-        byte pinNumber;
-        byte pinId;
-        int mode = kMode_Unknown;
-        int state = kState_Low;         // low-high for digital or int value for analog
-        int pwm = 0;
+            // Show dialog
+            mQueryCapabilitiesDialog = new AlertDialog.Builder(this)
+                    .setMessage(R.string.pinio_capabilityquery_querying_title)
+                    .setCancelable(true)
+                    .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            endPinQuery(true);
+                        }
+                    })
+                    .create();
+
+            mQueryCapabilitiesDialog.show();
+
+            // Start process
+            queryCapabilities();
+        } else {
+            Log.d(TAG, "error: queryCapabilities called while querying capabilities");
+        }
     }
 
+    private void defaultCapabilitiesAssumedDialog() {
+        Log.d(TAG, "QueryCapabilities not found");
+
+        // Show dialog
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.pinio_capabilityquery_expired_title)
+                .setMessage(R.string.pinio_capabilityquery_expired_message)
+                .create()
+                .show();
+    }
+
+    // endregion
+
     private class ExpandableListAdapter extends BaseExpandableListAdapter {
-        private Activity mActivity;
-        private boolean mIsDigital;
-        private PinData[] mPins;
-
-        public ExpandableListAdapter(Activity activity, boolean isDigital, PinData[] pins) {
-            mActivity = activity;
-            mIsDigital = isDigital;
-            mPins = pins;
-        }
-
 
         @Override
         public int getGroupCount() {
-            return mIsDigital ? (LAST_DIGITAL_PIN - FIRST_DIGITAL_PIN + 1) : (LAST_ANALOG_PIN - FIRST_ANALOG_PIN + 1);
+            return mPins.size();
         }
 
         @Override
@@ -588,109 +948,161 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
         @Override
         public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
             if (convertView == null) {
-                convertView = mActivity.getLayoutInflater().inflate(R.layout.layout_pinio_item_title, parent, false);
+                convertView = getLayoutInflater().inflate(R.layout.layout_pinio_item_title, parent, false);
             }
 
             // Tag
             convertView.setTag(groupPosition);
-            convertView.setTag(R.string.pinio_tag_mode, mIsDigital);
 
             // Data
-            PinData pinData = mPins[groupPosition];
+            PinData pin = mPins.get(groupPosition);
 
             // UI: Name
             TextView nameTextView = (TextView) convertView.findViewById(R.id.nameTextView);
 
             String name;
-            if (mIsDigital) {
-                name = String.format(getString(R.string.pinio_pinname_digital_format), "" + (groupPosition + FIRST_DIGITAL_PIN));
+            if (pin.isAnalog) {
+                name = String.format(getString(R.string.pinio_pinname_analog_format), pin.digitalPinId, pin.analogPinId);
             } else {
-                name = String.format(getString(R.string.pinio_pinname_analog_format), "" + (groupPosition));
+                name = String.format(getString(R.string.pinio_pinname_digital_format), pin.digitalPinId);
             }
             nameTextView.setText(name);
 
             // UI: Mode
             TextView modeTextView = (TextView) convertView.findViewById(R.id.modeTextView);
-            int modeStringResourceId;
-            if (pinData.mode == PinData.kMode_Input)
-                modeStringResourceId = R.string.pinio_pintype_input;
-            else if (pinData.mode == PinData.kMode_Output)
-                modeStringResourceId = R.string.pinio_pintype_output;
-            else if (pinData.mode == PinData.kMode_Analog)
-                modeStringResourceId = R.string.pinio_pintype_analog;
-            else if (pinData.mode == PinData.kMode_PWM)
-                modeStringResourceId = R.string.pinio_pintype_pwm;
-            else modeStringResourceId = R.string.pinio_pintype_unknown;
-            modeTextView.setText(getString(modeStringResourceId));
+            modeTextView.setText(stringForPinMode(pin.mode));
 
             // UI: State
-            TextView stateTextView = (TextView) convertView.findViewById(R.id.stateTextView);
-            int stateStringResourceId;
-            if (pinData.mode == PinData.kMode_Analog) {
-                stateTextView.setText("" + pinData.state);
-            } else if (pinData.mode == PinData.kMode_PWM) {
-                stateTextView.setText("" + pinData.pwm);
-            } else {
-                if (pinData.state == PinData.kState_Low)
-                    stateStringResourceId = R.string.pinio_pintype_low;
-                else if (pinData.state == PinData.kState_High)
-                    stateStringResourceId = R.string.pinio_pintype_high;
-                else stateStringResourceId = R.string.pinio_pintype_unknown;
-                stateTextView.setText(getString(stateStringResourceId));
+            TextView valueTextView = (TextView) convertView.findViewById(R.id.stateTextView);
+            String valueString;
+            switch (pin.mode) {
+                case PinData.kMode_Input:
+                    valueString = stringForPinDigitalValue(pin.digitalValue);
+                    break;
+                case PinData.kMode_Output:
+                    valueString = stringForPinDigitalValue(pin.digitalValue);
+                    break;
+                case PinData.kMode_Analog:
+                    valueString = String.valueOf(pin.analogValue);
+                    break;
+                case PinData.kMode_PWM:
+                    valueString = String.valueOf(pin.analogValue);
+                    break;
+                default:
+                    valueString = "";
+                    break;
             }
+            valueTextView.setText(valueString);
+
+
             return convertView;
         }
 
-        @Override
-        public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
-            if (convertView == null) {
-                convertView = mActivity.getLayoutInflater().inflate(R.layout.layout_pinio_item_child, parent, false);
+        private String stringForPinMode(int mode) {
+            int modeStringResourceId;
+            switch (mode) {
+                case PinData.kMode_Input:
+                    modeStringResourceId = R.string.pinio_pintype_input;
+                    break;
+                case PinData.kMode_Output:
+                    modeStringResourceId = R.string.pinio_pintype_output;
+                    break;
+                case PinData.kMode_Analog:
+                    modeStringResourceId = R.string.pinio_pintype_analog;
+                    break;
+                case PinData.kMode_PWM:
+                    modeStringResourceId = R.string.pinio_pintype_pwm;
+                    break;
+                case PinData.kMode_Servo:
+                    modeStringResourceId = R.string.pinio_pintype_servo;
+                    break;
+                default:
+                    modeStringResourceId = R.string.pinio_pintype_unknown;
+                    break;
             }
 
+            return getString(modeStringResourceId);
+        }
+
+        private String stringForPinDigitalValue(int digitalValue) {
+            int stateStringResourceId;
+            switch (digitalValue) {
+                case PinData.kDigitalValue_Low:
+                    stateStringResourceId = R.string.pinio_pintype_low;
+                    break;
+                case PinData.kDigitalValue_High:
+                    stateStringResourceId = R.string.pinio_pintype_high;
+                    break;
+                default:
+                    stateStringResourceId = R.string.pinio_pintype_unknown;
+                    break;
+            }
+
+            return getString(stateStringResourceId);
+        }
+
+        @Override
+        public View getChildView(final int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+            if (convertView == null) {
+                convertView = getLayoutInflater().inflate(R.layout.layout_pinio_item_child, parent, false);
+            }
             // set tags
-            final PinData pinData = mPins[groupPosition];
+            final PinData pin = mPins.get(groupPosition);
+
+            // Setup mode
             RadioButton inputRadioButton = (RadioButton) convertView.findViewById(R.id.inputRadioButton);
-            inputRadioButton.setTag(pinData);
-            inputRadioButton.setChecked(pinData.mode == PinData.kMode_Input);
+            inputRadioButton.setTag(pin);
+            inputRadioButton.setChecked(pin.mode == PinData.kMode_Input);
+            inputRadioButton.setVisibility(pin.isDigital ? View.VISIBLE : View.GONE);
+
             RadioButton outputRadioButton = (RadioButton) convertView.findViewById(R.id.outputRadioButton);
-            outputRadioButton.setTag(pinData);
-            outputRadioButton.setChecked(pinData.mode == PinData.kMode_Output);
+            outputRadioButton.setTag(pin);
+            outputRadioButton.setChecked(pin.mode == PinData.kMode_Output);
+            outputRadioButton.setVisibility(pin.isDigital ? View.VISIBLE : View.GONE);
+
             RadioButton pwmRadioButton = (RadioButton) convertView.findViewById(R.id.pwmRadioButton);
-            pwmRadioButton.setTag(pinData);
-            pwmRadioButton.setChecked(pinData.mode == PinData.kMode_PWM);
+            pwmRadioButton.setTag(pin);
+            pwmRadioButton.setChecked(pin.mode == PinData.kMode_PWM);
+            pwmRadioButton.setVisibility(pin.isPwm ? View.VISIBLE : View.GONE);
+
             RadioButton analogRadioButton = (RadioButton) convertView.findViewById(R.id.analogRadioButton);
-            analogRadioButton.setTag(pinData);
-            analogRadioButton.setChecked(pinData.mode == PinData.kMode_Analog);
+            analogRadioButton.setTag(pin);
+            analogRadioButton.setChecked(pin.mode == PinData.kMode_Analog);
+            analogRadioButton.setVisibility(pin.isAnalog ? View.VISIBLE : View.GONE);
+
+            // Setup state
             RadioButton lowRadioButton = (RadioButton) convertView.findViewById(R.id.lowRadioButton);
-            lowRadioButton.setTag(pinData);
-            lowRadioButton.setChecked(pinData.state == PinData.kState_Low);
+            lowRadioButton.setTag(pin);
+            lowRadioButton.setChecked(pin.digitalValue == PinData.kDigitalValue_Low);
+
             RadioButton highRadioButton = (RadioButton) convertView.findViewById(R.id.highRadioButton);
-            highRadioButton.setTag(pinData);
-            highRadioButton.setChecked(pinData.state == PinData.kState_High);
+            highRadioButton.setTag(pin);
+            highRadioButton.setChecked(pin.digitalValue == PinData.kDigitalValue_High);
 
-            // pwm visibility
-            int digitalPinId = groupPosition + FIRST_DIGITAL_PIN;
-            boolean isPwmVisible = mIsDigital && ((digitalPinId == 3) || (digitalPinId == 5) || (digitalPinId == 6));
-            pwmRadioButton.setVisibility(isPwmVisible ? View.VISIBLE : View.GONE);
-
-            // analog visibility
-            analogRadioButton.setVisibility(!mIsDigital ? View.VISIBLE : View.GONE);
-
-            // state visibility
-            boolean isStateVisible = pinData.mode == PinData.kMode_Output;
+            boolean isStateVisible = pin.mode == PinData.kMode_Output;
             RadioGroup stateRadioGroup = (RadioGroup) convertView.findViewById(R.id.stateRadioGroup);
             stateRadioGroup.setVisibility(isStateVisible ? View.VISIBLE : View.GONE);
 
-            // pmw bar visibility
-            boolean isPwmBarVisible = pinData.mode == PinData.kMode_PWM;
+            // pwm slider bar
+            boolean isPwmBarVisible = pin.mode == PinData.kMode_PWM;
             SeekBar pmwSeekBar = (SeekBar) convertView.findViewById(R.id.pmwSeekBar);
             pmwSeekBar.setVisibility(isPwmBarVisible ? View.VISIBLE : View.GONE);
-            pmwSeekBar.setProgress(pinData.pwm);
+            pmwSeekBar.setProgress(pin.analogValue);
             pmwSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                     if (fromUser) {
-                        pinData.pwm = progress;
+//                        pin.analogValue = progress;
+                        setPMWValue(pin, progress);
+
+                        // Update only the value in the parent group
+                        long parentPacketPosition = ExpandableListView.getPackedPositionForGroup(groupPosition);
+                        long parentFlatPosition = mPinListView.getFlatListPosition(parentPacketPosition);
+                        if (parentFlatPosition >= mPinListView.getFirstVisiblePosition() && parentFlatPosition <= mPinListView.getLastVisiblePosition()) {
+                            View view = mPinListView.getChildAt((int)parentFlatPosition);
+                            TextView valueTextView = (TextView) view.findViewById(R.id.stateTextView);
+                            valueTextView.setText(String.valueOf(progress));
+                        }
                     }
                 }
 
@@ -700,21 +1112,20 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
 
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    valueControlChanged((byte) pinData.pwm, pinData.pinId);
-
-                    ExpandableListAdapter listAdapter = pinData.isDigital ? mDigitalListAdapter : mAnalogListAdapter;
-                    listAdapter.notifyDataSetChanged();
+                    setPMWValue(pin, pin.analogValue);
+                    mPinListAdapter.notifyDataSetChanged();
                 }
             });
 
             // spacer visibility (spacers are shown if pwm or analog are visible)
-            final boolean isSpacer2Visible = isPwmVisible || !mIsDigital;
+            final boolean isSpacer2Visible = pin.isPwm || pin.isAnalog;
             View spacer2View = convertView.findViewById(R.id.spacer2View);
             spacer2View.setVisibility(isSpacer2Visible ? View.VISIBLE : View.GONE);
-            final boolean isSpacer3Visible = isSpacer2Visible || (!isPwmVisible && mIsDigital);
+            /*
+            final boolean isSpacer3Visible = isSpacer2Visible || (!pin.isPwm && pin.isDigital);
             View spacer3View = convertView.findViewById(R.id.spacer3View);
             spacer3View.setVisibility(isSpacer3Visible ? View.VISIBLE : View.GONE);
-
+*/
             return convertView;
         }
 
@@ -726,10 +1137,7 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
 
     // region DataFragment
     public static class DataFragment extends Fragment {
-        private PinData[] mDigitalPins;
-        private PinData[] mAnalogPins;
-        private byte[] portMasks;
-
+        private ArrayList<PinData> mPins;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -749,37 +1157,16 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
             fm.beginTransaction().add(mRetainedDataFragment, TAG).commit();
 
             // Init variables
-            portMasks = new byte[3];           // initialized to 0 values
-            mDigitalPins = new PinData[LAST_DIGITAL_PIN - FIRST_DIGITAL_PIN + 1];
-            for (int i = 0; i < mDigitalPins.length; i++) {
-                PinData pinData = new PinData();
-                pinData.isDigital = true;
-                pinData.pinNumber = (byte) i;
-                pinData.pinId = (byte) (i + FIRST_DIGITAL_PIN);
-                pinData.mode = PinData.kMode_Input;
-                mDigitalPins[i] = pinData;
-            }
-            mAnalogPins = new PinData[LAST_ANALOG_PIN - FIRST_ANALOG_PIN + 1];
-            for (int i = 0; i < mAnalogPins.length; i++) {
-                PinData pinData = new PinData();
-                pinData.isDigital = false;
-                pinData.pinNumber = (byte) i;
-                pinData.pinId = (byte) (i + FIRST_ANALOG_PIN);
-                pinData.mode = i == 5 ? PinData.kMode_Analog : PinData.kMode_Input;
-                mAnalogPins[i] = pinData;
-            }
+            mPins = new ArrayList<>();
+
         } else {
             // Restore status
-            mDigitalPins = mRetainedDataFragment.mDigitalPins;
-            mAnalogPins = mRetainedDataFragment.mAnalogPins;
-            portMasks = mRetainedDataFragment.portMasks;
+            mPins = mRetainedDataFragment.mPins;
         }
     }
 
     private void saveRetainedDataFragment() {
-        mRetainedDataFragment.mDigitalPins = mDigitalPins;
-        mRetainedDataFragment.mAnalogPins = mAnalogPins;
-        mRetainedDataFragment.portMasks = portMasks;
+        mRetainedDataFragment.mPins = mPins;
     }
     // endregion
 }
