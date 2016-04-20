@@ -18,6 +18,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -45,6 +46,9 @@ import com.google.android.gms.location.LocationServices;
 import java.nio.ByteBuffer;
 
 public class ControllerActivity extends UartInterfaceActivity implements BleManager.BleManagerListener, SensorEventListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+    // Config
+    private final static boolean kKeepUpdatingParentValuesInChildActivities = true;
+
     // Log
     private final static String TAG = ControllerActivity.class.getSimpleName();
 
@@ -70,8 +74,6 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
     private ExpandableHeightExpandableListView mControllerListView;
     private ExpandableListAdapter mControllerListAdapter;
 
-    private ExpandableHeightListView mInterfaceListView;
-    private ArrayAdapter<String> mInterfaceListAdapter;
     private ViewGroup mUartTooltipViewGroup;
 
     // Data
@@ -89,11 +91,14 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
 
     private DataFragment mRetainedDataFragment;
 
+    private boolean isSensorPollingEnabled = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_controller);
+
+        Log.d(TAG, "onCreate");
 
         mBleManager = BleManager.getInstance(this);
         restoreRetainedDataFragment();
@@ -104,11 +109,12 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
         mControllerListView.setAdapter(mControllerListAdapter);
         mControllerListView.setExpanded(true);
 
-        mInterfaceListView = (ExpandableHeightListView) findViewById(R.id.interfaceListView);
-        mInterfaceListAdapter = new ArrayAdapter<>(this, R.layout.layout_controller_interface_title, R.id.titleTextView, getResources().getStringArray(R.array.controller_interface_items));
-        mInterfaceListView.setAdapter(mInterfaceListAdapter);
-        mInterfaceListView.setExpanded(true);
-        mInterfaceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        ExpandableHeightListView interfaceListView = (ExpandableHeightListView) findViewById(R.id.interfaceListView);
+        ArrayAdapter<String> interfaceListAdapter = new ArrayAdapter<>(this, R.layout.layout_controller_interface_title, R.id.titleTextView, getResources().getStringArray(R.array.controller_interface_items));
+        assert interfaceListView != null;
+        interfaceListView.setAdapter(interfaceListAdapter);
+        interfaceListView.setExpanded(true);
+        interfaceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (position == 0) {
@@ -144,17 +150,24 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
     protected void onStart() {
         super.onStart();
 
+        Log.d(TAG, "onStart");
         mGoogleApiClient.connect();
     }
 
     @Override
     protected void onStop() {
-        mGoogleApiClient.disconnect();
+        Log.d(TAG, "onStop");
+
+        if (!kKeepUpdatingParentValuesInChildActivities) {
+            mGoogleApiClient.disconnect();
+        }
         super.onStop();
     }
 
     @Override
     public void onResume() {
+        Log.d(TAG, "onResume");
+
         super.onResume();
 
         int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
@@ -174,20 +187,39 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
         registerEnabledSensorListeners(true);
 
         // Setup send data task
-        sendDataHandler.postDelayed(mPeriodicallySendData, kSendDataInterval);
+        if (!isSensorPollingEnabled) {
+            sendDataHandler.postDelayed(mPeriodicallySendData, kSendDataInterval);
+            isSensorPollingEnabled = true;
+        }
     }
 
     @Override
     protected void onPause() {
-        super.onPause();
-        registerEnabledSensorListeners(false);
+        Log.d(TAG, "onPause");
 
-        // Remove send data task
-        sendDataHandler.removeCallbacksAndMessages(null);
+        super.onPause();
+
+        if (!kKeepUpdatingParentValuesInChildActivities) {
+            registerEnabledSensorListeners(false);
+
+            // Remove send data task
+            sendDataHandler.removeCallbacksAndMessages(null);
+            isSensorPollingEnabled = false;
+        }
     }
 
     @Override
     public void onDestroy() {
+        Log.d(TAG, "onDestroy");
+
+        if (kKeepUpdatingParentValuesInChildActivities) {
+            // Remove all sensor polling
+            registerEnabledSensorListeners(false);
+            sendDataHandler.removeCallbacksAndMessages(null);
+            isSensorPollingEnabled = false;
+            mGoogleApiClient.disconnect();
+        }
+
         // Retain data
         saveRetainedDataFragment();
 
@@ -485,7 +517,7 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
     }
 
     @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d(TAG, "Google Play Services connection failed");
 
 
@@ -651,7 +683,6 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
     // region DataFragment
     public static class DataFragment extends Fragment {
         private SensorData[] mSensorData;
-        private GoogleApiClient mGoogleApiClient;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
