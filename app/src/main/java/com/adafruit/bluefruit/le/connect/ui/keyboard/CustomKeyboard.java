@@ -70,6 +70,58 @@ public class CustomKeyboard {
 
         // Configure keyboard view
         mKeyboardView.setPreviewEnabled(false);
+        KeyboardView.OnKeyboardActionListener mOnKeyboardActionListener = new KeyboardView.OnKeyboardActionListener() {
+            @Override
+            public void onKey(int primaryCode, int[] keyCodes) {
+                View focusCurrent = mActivity.getWindow().getCurrentFocus();
+                if (focusCurrent != null && (focusCurrent instanceof EditText)) {
+                    EditText edittext = (EditText) focusCurrent;
+                    Editable editable = edittext.getText();
+                    int start = edittext.getSelectionStart();
+
+                    if (primaryCode == kKeyDelete) {
+                        if (editable != null && start > 0) editable.delete(start - 1, start);
+                    } else if (primaryCode == kKeyReturn) {
+                        View nextFocusView = edittext.focusSearch(View.FOCUS_DOWN);
+                        if (nextFocusView != null && (nextFocusView instanceof EditText)) {
+                            nextFocusView.requestFocus();
+                        } else {
+                            hideCustomKeyboard();
+                        }
+                    } else {
+                        editable.insert(start, Character.toString((char) primaryCode));
+                    }
+                }
+            }
+
+            @Override
+            public void onPress(int arg0) {
+            }
+
+            @Override
+            public void onRelease(int primaryCode) {
+            }
+
+            @Override
+            public void onText(CharSequence text) {
+            }
+
+            @Override
+            public void swipeDown() {
+            }
+
+            @Override
+            public void swipeLeft() {
+            }
+
+            @Override
+            public void swipeRight() {
+            }
+
+            @Override
+            public void swipeUp() {
+            }
+        };
         mKeyboardView.setOnKeyboardActionListener(mOnKeyboardActionListener);
 
         // Hide the standard keyboard initially
@@ -104,7 +156,7 @@ public class CustomKeyboard {
         editText.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent event) {
-                if (!isCustomKeyboardVisible() || mCurrentKeyboardId != view.getTag()) {
+                if (!isCustomKeyboardVisible() || mCurrentKeyboardId != (Integer)(view.getTag())) {
                     view.requestFocus();
                     showCustomKeyboard(view);
                 }
@@ -145,59 +197,6 @@ public class CustomKeyboard {
     }
 
 
-    private KeyboardView.OnKeyboardActionListener mOnKeyboardActionListener = new KeyboardView.OnKeyboardActionListener() {
-        @Override
-        public void onKey(int primaryCode, int[] keyCodes) {
-            View focusCurrent = mActivity.getWindow().getCurrentFocus();
-            if (focusCurrent != null && (focusCurrent instanceof EditText)) {
-                EditText edittext = (EditText) focusCurrent;
-                Editable editable = edittext.getText();
-                int start = edittext.getSelectionStart();
-
-                if (primaryCode == kKeyDelete) {
-                    if (editable != null && start > 0) editable.delete(start - 1, start);
-                } else if (primaryCode == kKeyReturn) {
-                    View nextFocusView = edittext.focusSearch(View.FOCUS_DOWN);
-                    if (nextFocusView != null && (nextFocusView instanceof EditText)) {
-                        nextFocusView.requestFocus();
-                    } else {
-                        hideCustomKeyboard();
-                    }
-                } else {
-                    editable.insert(start, Character.toString((char) primaryCode));
-                }
-            }
-        }
-
-        @Override
-        public void onPress(int arg0) {
-        }
-
-        @Override
-        public void onRelease(int primaryCode) {
-        }
-
-        @Override
-        public void onText(CharSequence text) {
-        }
-
-        @Override
-        public void swipeDown() {
-        }
-
-        @Override
-        public void swipeLeft() {
-        }
-
-        @Override
-        public void swipeRight() {
-        }
-
-        @Override
-        public void swipeUp() {
-        }
-    };
-
     public void hideCustomKeyboard() {
         mKeyboardView.setVisibility(View.GONE);
         mKeyboardView.setEnabled(false);
@@ -213,9 +212,7 @@ public class CustomKeyboard {
         }
         mKeyboardView.setVisibility(View.VISIBLE);
         mKeyboardView.setEnabled(true);
-        if (view != null) {
-            ((InputMethodManager) mActivity.getSystemService(Activity.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(view.getWindowToken(), 0);
-        }
+        ((InputMethodManager) mActivity.getSystemService(Activity.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
     public boolean isCustomKeyboardVisible() {
