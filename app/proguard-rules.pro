@@ -40,6 +40,9 @@
     public static *** v(...);
 }
 
+# Nordic DFU library
+-keep class no.nordicsemi.android.dfu.** { *; }
+
 # Paho library logger
 -keep class org.eclipse.paho.client.mqttv3.logging.JSR47Logger {
     *;
