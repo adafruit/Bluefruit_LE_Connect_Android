@@ -297,6 +297,7 @@ public class NeopixelActivity extends UartInterfaceActivity {
                     ledView.setLayoutParams(layoutParams);
                     ledButton.setTag(k);
 
+                    setViewBackgroundColor(ledButton, kDefaultLedColor);
                     canvasView.addView(ledView);
                 }
             }
@@ -370,8 +371,8 @@ public class NeopixelActivity extends UartInterfaceActivity {
     private void updateStatusUI() {
         mConnectButton.setEnabled((!mIsSketchDetected || !mIsSketchChecked) && !isWaitingForSendDataResponse());
 
-        mCustomPanningView.setAlpha(mIsSketchChecked ? 1.0f : 0.2f);
-//        mBoardControlsViewGroup.setAlpha(mIsSketchChecked ? 1.0f : 0.2f);
+        mCustomPanningView.setAlpha(mIsSketchDetected ? 1.0f : 0.2f);
+//        mBoardControlsViewGroup.setAlpha(mIsSketchDetected ? 1.0f : 0.2f);
 
         int statusMessageId;
         if (!mIsSketchChecked) {
@@ -437,7 +438,6 @@ public class NeopixelActivity extends UartInterfaceActivity {
                     mBoard.type = boardType;
                     changeBoard(mBoard);
                 }
-
             }
         }
     }
@@ -446,7 +446,6 @@ public class NeopixelActivity extends UartInterfaceActivity {
         mBoard = board;
         createBoardUI();
         updateStatusUI();
-
     }
 
     public void onClickClear(View view) {
@@ -530,7 +529,6 @@ public class NeopixelActivity extends UartInterfaceActivity {
         if (success) {
             clearBoard(kDefaultLedColor);
             mBoardCachedColors = new ArrayList<>(Collections.nCopies(mBoard.width * mBoard.height, kDefaultLedColor));
-
         }
 
         runOnUiThread(new Runnable() {
