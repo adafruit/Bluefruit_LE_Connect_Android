@@ -381,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         if (errorMessageId > 0) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             AlertDialog dialog = builder.setMessage(errorMessageId)
-                    .setPositiveButton(R.string.dialog_ok, null)
+                    .setPositiveButton(android.R.string.ok, null)
                     .show();
             DialogUtils.keepDialogOnOrientationChanges(dialog);
         }
@@ -407,7 +407,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 AlertDialog dialog = builder.setMessage(R.string.dialog_error_nolocationservices_requiredforscan_marshmallow)
-                        .setPositiveButton(R.string.dialog_ok, null)
+                        .setPositiveButton(android.R.string.ok, null)
                         .show();
                 DialogUtils.keepDialogOnOrientationChanges(dialog);
             }
@@ -444,7 +444,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 AlertDialog dialog = builder.setMessage(R.string.dialog_error_no_bluetooth)
-                        .setPositiveButton(R.string.dialog_ok, null)
+                        .setPositiveButton(android.R.string.ok, null)
                         .show();
                 DialogUtils.keepDialogOnOrientationChanges(dialog);
 

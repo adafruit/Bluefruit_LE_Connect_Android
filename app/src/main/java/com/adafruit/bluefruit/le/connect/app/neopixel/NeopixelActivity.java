@@ -1,8 +1,12 @@
 package com.adafruit.bluefruit.le.connect.app.neopixel;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
@@ -42,6 +46,11 @@ public class NeopixelActivity extends UartInterfaceActivity {
     // Log
     private final static String TAG = NeopixelActivity.class.getSimpleName();
 
+    // Contants
+    private final static String kPreferences = "NeopixelActivity_prefs";
+    private final static String kPreferences_showSketchTooltip = "showSketchTooltip";
+
+
     // Config
     private static final int kDefaultLedColor = Color.WHITE;
     private final static float kMinBoardScale = 0.1f;
@@ -80,6 +89,7 @@ public class NeopixelActivity extends UartInterfaceActivity {
 
 
     private DataFragment mRetainedDataFragment;
+    private boolean isSketchTooltipAlreadyShown = false;
 
 
     @Override
@@ -163,6 +173,31 @@ public class NeopixelActivity extends UartInterfaceActivity {
 
         // Continue
         onServicesDiscovered();
+
+
+        // Tooltip
+        final SharedPreferences preferences = getSharedPreferences(kPreferences, Context.MODE_PRIVATE);
+        boolean showSketchTooltip = preferences.getBoolean(kPreferences_showSketchTooltip, true);
+
+        if (!isSketchTooltipAlreadyShown && showSketchTooltip) {
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.dialog_notice).setMessage(R.string.neopixel_sketch_tooltip)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .setNegativeButton(R.string.dialog_dontshowagain, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            SharedPreferences.Editor editor = preferences.edit();
+                            editor.putBoolean(kPreferences_showSketchTooltip, false);
+                            editor.apply();
+                        }
+                    });
+            builder.create().show();
+
+            isSketchTooltipAlreadyShown = true;
+
+        }
+
 
     }
 
@@ -302,6 +337,8 @@ public class NeopixelActivity extends UartInterfaceActivity {
                 }
             }
 
+
+
             // Setup initial scroll and scale
             resetScaleAndPanning();
         }
@@ -314,14 +351,18 @@ public class NeopixelActivity extends UartInterfaceActivity {
         final int boardWidth = mBoard.width * kLedSize;
         final int boardHeight = mBoard.height * kLedSize;
 
+        int panningViewWidth = mCustomPanningView.getWidth();
+        mBoardScale = 1f/Math.min(1f, (panningViewWidth/(float)boardWidth)*0.85f)+0;
+        mBoardContentView.setScaleX(1f / mBoardScale);
+        mBoardContentView.setScaleY(1f / mBoardScale);
+        mRotationViewGroup.setRotation(0);
+        Log.d(TAG, "Initial scale: "+mBoardScale);
+
+
         int offsetX = Math.max(0, (canvasViewWidth - boardWidth) / 2);
         int offsetY = Math.max(0, (canvasViewHeight - boardHeight) / 2);
         mCustomPanningView.scrollTo(offsetX, offsetY);
 
-        mBoardScale = 1;
-        mBoardContentView.setScaleX(1f / mBoardScale);
-        mBoardContentView.setScaleY(1f / mBoardScale);
-        mRotationViewGroup.setRotation(0);
     }
 
     public void onLedClicked(View view) {
@@ -444,6 +485,9 @@ public class NeopixelActivity extends UartInterfaceActivity {
 
     private void changeBoard(NeopixelBoard board) {
         mBoard = board;
+        if (mIsSketchDetected) {
+            setupNeopixel(mBoard);
+        }
         createBoardUI();
         updateStatusUI();
     }
@@ -468,7 +512,6 @@ public class NeopixelActivity extends UartInterfaceActivity {
             setViewBackgroundColor(ledButton, color);
         }
     }
-
 
     private void checkSketchVersion() {
         // Send version command and check if returns a valid response

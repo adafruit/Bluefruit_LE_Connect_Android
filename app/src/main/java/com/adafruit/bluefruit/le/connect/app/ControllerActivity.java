@@ -5,8 +5,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -120,18 +118,17 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
                 if (position == 0) {
                     Intent intent = new Intent(ControllerActivity.this, ColorPickerActivity.class);
                     startActivityForResult(intent, 0);
-                }
-                else {
+                } else {
                     Intent intent = new Intent(ControllerActivity.this, PadActivity.class);
                     startActivityForResult(intent, 0);
                 }
             }
         });
 
-        mUartTooltipViewGroup = (ViewGroup)findViewById(R.id.uartTooltipViewGroup);
+        mUartTooltipViewGroup = (ViewGroup) findViewById(R.id.uartTooltipViewGroup);
         SharedPreferences preferences = getSharedPreferences(kPreferences, Context.MODE_PRIVATE);
         final boolean showUartTooltip = preferences.getBoolean(kPreferences_uartToolTip, true);
-        mUartTooltipViewGroup.setVisibility(showUartTooltip?View.VISIBLE:View.GONE);
+        mUartTooltipViewGroup.setVisibility(showUartTooltip ? View.VISIBLE : View.GONE);
 
         // Sensors
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -247,7 +244,7 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
                     }
 
                     byte[] result = buffer.array();
-                    Log.d(TAG, "Send data for sensor: "+i);
+                    Log.d(TAG, "Send data for sensor: " + i);
                     sendDataWithCRC(result);
                 }
             }
@@ -274,13 +271,11 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
         if (id == R.id.action_help) {
             startHelp();
             return true;
-        }
-        else if (id == R.id.action_connected_settings) {
+        } else if (id == R.id.action_connected_settings) {
             startConnectedSettings();
             return true;
-        }
-        else if (id == R.id.action_refreshcache)  {
-            if (mBleManager != null ) {
+        } else if (id == R.id.action_refreshcache) {
+            if (mBleManager != null) {
                 mBleManager.refreshDeviceCache();
             }
         }
@@ -420,13 +415,13 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
     public final void onSensorChanged(SensorEvent event) {
         int sensorType = event.sensor.getType();
         if (sensorType == Sensor.TYPE_ACCELEROMETER) {
-     //       Log.d(TAG, "Received data for accelerometer / quaternion");
+            //       Log.d(TAG, "Received data for accelerometer / quaternion");
             mSensorData[kSensorType_Accelerometer].values = event.values;
 
             updateOrientation();            // orientation depends on Accelerometer and Magnetometer
             mControllerListAdapter.notifyDataSetChanged();
         } else if (sensorType == Sensor.TYPE_GYROSCOPE) {
-     //       Log.d(TAG, "Received data for gyroscope");
+            //       Log.d(TAG, "Received data for gyroscope");
             mSensorData[kSensorType_Gyroscope].values = event.values;
 
             mControllerListAdapter.notifyDataSetChanged();
@@ -457,8 +452,7 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
                 mQuaternion[3] = w;
 
                 mSensorData[kSensorType_Quaternion].values = mQuaternion;
-            }
-            else {
+            } else {
                 mSensorData[kSensorType_Quaternion].values = mOrientation;
             }
         }

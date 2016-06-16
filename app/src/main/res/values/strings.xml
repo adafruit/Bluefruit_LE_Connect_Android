@@ -244,6 +244,9 @@
     <string name="title_activity_neopixel">Neopixel</string>
     <string name="neopixel_help_title">Neopixel Help</string>
 
+    <string name="neopixel_sketch_tooltip">Neopixel support requires a custom sketch to be running on your Arduino. You can export this sketch from the app by clicking the INFO icon in the top-right corner.</string>
+
+
     <string name="neopixel_status">Status:</string>
 
     <string name="neopixel_status_readytoconnect">Ready to Connect</string>
@@ -397,7 +400,8 @@
     </string-array>
 
     <!-- Common -->
-    <string name="dialog_ok">OK</string>
+    <string name="dialog_notice">Notice</string>
+    <string name="dialog_dontshowagain">Don\'t show again</string>
 
     <!-- Debug -->
 

@@ -121,7 +121,7 @@ public class MqttUartSettingsCodeReaderActivity extends AppCompatActivity implem
 
         Snackbar.make(mGraphicOverlay, R.string.mqttcodereader_cameraneeded,
                 Snackbar.LENGTH_INDEFINITE)
-                .setAction(R.string.dialog_ok, listener)
+                .setAction(android.R.string.ok, listener)
                 .show();
     }
 
@@ -271,7 +271,7 @@ public class MqttUartSettingsCodeReaderActivity extends AppCompatActivity implem
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Multitracker sample")
                 .setMessage(R.string.mqttcodereader_nocamerapermission)
-                .setPositiveButton(R.string.dialog_ok, listener)
+                .setPositiveButton(android.R.string.ok, listener)
                 .show();
     }
 
