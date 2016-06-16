@@ -31,7 +31,7 @@ import com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightExpandableList
 
 import java.util.ArrayList;
 
-public class PinIOActivity extends UartInterfaceActivity implements BleManager.BleManagerListener {
+public class PinIOActivity extends UartInterfaceActivity  {
     // Log
     private final static String TAG = UartActivity.class.getSimpleName();
 
@@ -821,6 +821,7 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
     }
 
     // region BleManagerListener
+    /*
     @Override
     public void onConnected() {
 
@@ -830,9 +831,10 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
     public void onConnecting() {
 
     }
-
+*/
     @Override
     public void onDisconnected() {
+        super.onDisconnected();
         Log.d(TAG, "Disconnected. Back to previous activity");
         setResult(-1);      // Unexpected Disconnect
         finish();
@@ -840,15 +842,15 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
 
     @Override
     public void onServicesDiscovered() {
-        mUartService = mBleManager.getGattService(UUID_SERVICE);
-        mBleManager.enableNotification(mUartService, UUID_RX, true);
+        super.onServicesDiscovered();
+        enableRxNotifications();
 
         // PinIo init
         if (mIsActivityFirstRun) {
             reset();
         }
     }
-
+/*
     @Override
     public void onDataAvailable(BluetoothGattDescriptor descriptor) {
 
@@ -858,6 +860,7 @@ public class PinIOActivity extends UartInterfaceActivity implements BleManager.B
     public void onReadRemoteRssi(int rssi) {
 
     }
+    */
     // endregion
 
 

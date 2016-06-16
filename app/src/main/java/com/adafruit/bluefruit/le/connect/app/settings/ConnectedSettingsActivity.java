@@ -119,10 +119,7 @@ public class ConnectedSettingsActivity extends AppCompatActivity implements Firm
 
     @Override
     public void onResume() {
-
         super.onResume();
-
-
     }
 
     @Override

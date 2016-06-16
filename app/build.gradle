@@ -18,7 +18,11 @@ android {
         }
     }
 
-    useLibrary 'org.apache.http.legacy'         // TODO: remove Apache library and use HttpURLConnection (Apache is deprecated since Android 6.0)
+    useLibrary 'org.apache.http.legacy'     // TODO: remove Apache library and use HttpURLConnection (Apache is deprecated since Android 6.0)
+
+    aaptOptions {
+        noCompress "zip"
+    }
 }
 
 repositories {
@@ -41,4 +45,5 @@ dependencies {
     compile 'com.google.android.gms:play-services-location:9.0.2'
     compile 'com.google.android.gms:play-services-vision:9.0.2'
 
+    compile 'com.google.android.gms:play-services-appindexing:9.0.2'
 }

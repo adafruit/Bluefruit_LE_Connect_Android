@@ -49,15 +49,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class UartActivity extends UartInterfaceActivity implements BleManager.BleManagerListener, MqttManager.MqttManagerListener {
+public class UartActivity extends UartInterfaceActivity implements MqttManager.MqttManagerListener {
     // Log
     private final static String TAG = UartActivity.class.getSimpleName();
 
     // Configuration
     private final static boolean kUseColorsForData = true;
-    private final static boolean kShowUartControlsInTopBar = true;
     public final static int kDefaultMaxPacketsToPaintAsText = 500;
-
 
     // Activity request codes (used for onActivityResult)
     private static final int kActivityRequestCode_ConnectedSettingsActivity = 0;
@@ -124,30 +122,6 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         mBleManager = BleManager.getInstance(this);
         restoreRetainedDataFragment();
 
-        // Choose UI controls component based on available width
-        /*
-        if (!kShowUartControlsInTopBar)
-        {
-            LinearLayout headerLayout = (LinearLayout) findViewById(R.id.headerLayout);
-            ViewGroup controlsLayout = (ViewGroup) getLayoutInflater().inflate(R.layout.layout_uart_singleline_controls, headerLayout, false);
-            controlsLayout.measure(0, 0);
-            int controlWidth = controlsLayout.getMeasuredWidth();
-
-            Display display = getWindowManager().getDefaultDisplay();
-            Point size = new Point();
-            display.getSize(size);
-            int rootWidth = size.x;
-
-            if (controlWidth > rootWidth)       // control too big, use a smaller version
-            {
-                controlsLayout = (ViewGroup) getLayoutInflater().inflate(R.layout.layout_uart_multiline_controls, headerLayout, false);
-            }
-            //Log.d(TAG, "width: " + controlWidth + " baseWidth: " + rootWidth);
-
-            headerLayout.addView(controlsLayout);
-        }
-        */
-
         // Get default theme colors
         TypedValue typedValue = new TypedValue();
         Resources.Theme theme = getTheme();
@@ -163,7 +137,9 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         mBufferListView.setDivider(null);
 
         mBufferTextView = (EditText) findViewById(R.id.bufferTextView);
-        mBufferTextView.setKeyListener(null);     // make it not editable
+        if (mBufferTextView != null) {
+            mBufferTextView.setKeyListener(null);     // make it not editable
+        }
 
         mSendEditText = (EditText) findViewById(R.id.sendEditText);
         mSendEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -201,57 +177,6 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         mIsEchoEnabled = preferences.getBoolean(kPreferences_echo, true);
         mIsEolEnabled = preferences.getBoolean(kPreferences_eol, true);
         invalidateOptionsMenu();        // udpate options menu with current values
-
-           /*
-        if (!kShowUartControlsInTopBar) {
-
-            Switch mEchoSwitch;
-            Switch mEolSwitch;
-            mEchoSwitch = (Switch) findViewById(R.id.echoSwitch);
-            mEchoSwitch.setChecked(mIsEchoEnabled);
-            mEolSwitch = (Switch) findViewById(R.id.eolSwitch);
-            mEolSwitch.setChecked(mIsEolEnabled);
-
-            RadioButton asciiFormatRadioButton = (RadioButton) findViewById(R.id.asciiFormatRadioButton);
-            asciiFormatRadioButton.setChecked(!mShowDataInHexFormat);
-            asciiFormatRadioButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    mShowDataInHexFormat = !isChecked;
-                }
-            });
-            RadioButton hexFormatRadioButton = (RadioButton) findViewById(R.id.hexFormatRadioButton);
-            hexFormatRadioButton.setChecked(mShowDataInHexFormat);
-            hexFormatRadioButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    mShowDataInHexFormat = isChecked;
-                }
-            });
-
-            RadioButton textDisplayFormatRadioButton = (RadioButton) findViewById(R.id.textDisplayModeRadioButton);
-            textDisplayFormatRadioButton.setChecked(!mIsTimestampDisplayMode);
-            textDisplayFormatRadioButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    mIsTimestampDisplayMode = !isChecked;
-                }
-            });
-
-
-            RadioButton timestampDisplayFormatRadioButton = (RadioButton) findViewById(R.id.timestampDisplayModeRadioButton);
-            timestampDisplayFormatRadioButton.setChecked(mIsTimestampDisplayMode);
-            timestampDisplayFormatRadioButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    mIsTimestampDisplayMode = isChecked;
-                }
-            });
-
-            setDisplayFormatToTimestamp(mIsTimestampDisplayMode);
-
-        }
-        */
 
         // Continue
         onServicesDiscovered();
@@ -298,7 +223,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
         editor.putBoolean(kPreferences_asciiMode, !mShowDataInHexFormat);
         editor.putBoolean(kPreferences_timestampDisplayMode, mIsTimestampDisplayMode);
 
-        editor.commit();
+        editor.apply();
     }
 
     @Override
@@ -386,7 +311,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
     public void onClickShare(View view) {
         String textToSend = mBufferTextView.getText().toString(); // (mShowDataInHexFormat ? mHexSpanBuffer : mAsciiSpanBuffer).toString();
 
-        if (textToSend != null && textToSend.length() > 0) {
+        if (textToSend.length() > 0) {
 
             Intent sendIntent = new Intent();
             sendIntent.setAction(Intent.ACTION_SEND);
@@ -597,6 +522,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
     // endregion
 
     // region BleManagerListener
+    /*
     @Override
     public void onConnected() {
 
@@ -606,22 +532,23 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
     public void onConnecting() {
 
     }
-
+*/
     @Override
     public void onDisconnected() {
+        super.onDisconnected();
         Log.d(TAG, "Disconnected. Back to previous activity");
         finish();
     }
 
     @Override
     public void onServicesDiscovered() {
-        mUartService = mBleManager.getGattService(UUID_SERVICE);
-
-        mBleManager.enableNotification(mUartService, UUID_RX, true);
+        super.onServicesDiscovered();
+        enableRxNotifications();
     }
 
     @Override
     public synchronized void onDataAvailable(BluetoothGattCharacteristic characteristic) {
+        super.onDataAvailable(characteristic);
         // UART RX
         if (characteristic.getService().getUuid().toString().equalsIgnoreCase(UUID_SERVICE)) {
             if (characteristic.getUuid().toString().equalsIgnoreCase(UUID_RX)) {
@@ -659,7 +586,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
             }
         }
     }
-
+/*
     @Override
     public void onDataAvailable(BluetoothGattDescriptor descriptor) {
 
@@ -669,6 +596,7 @@ public class UartActivity extends UartInterfaceActivity implements BleManager.Bl
     public void onReadRemoteRssi(int rssi) {
 
     }
+    */
     // endregion
 
     private void addTextToSpanBuffer(SpannableStringBuilder spanBuffer, String text, int color) {

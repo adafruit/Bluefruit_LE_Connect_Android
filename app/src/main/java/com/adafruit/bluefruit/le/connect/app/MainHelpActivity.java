@@ -18,10 +18,14 @@ public class MainHelpActivity extends AppCompatActivity {
         setContentView(R.layout.activity_mainhelp);
 
         TextView versionTextView = (TextView) findViewById(R.id.versionTextView);
-        versionTextView.setText("v" + BuildConfig.VERSION_NAME);
+        if (versionTextView != null) {
+            versionTextView.setText("v" + BuildConfig.VERSION_NAME);
+        }
 
         WebView infoWebView = (WebView) findViewById(R.id.infoWebView);
-        infoWebView.setBackgroundColor(Color.TRANSPARENT);
-        infoWebView.loadUrl("file:///android_asset/app_help.html");
+        if (infoWebView != null) {
+            infoWebView.setBackgroundColor(Color.TRANSPARENT);
+            infoWebView.loadUrl("file:///android_asset/help/app_help.html");
+        }
     }
 }

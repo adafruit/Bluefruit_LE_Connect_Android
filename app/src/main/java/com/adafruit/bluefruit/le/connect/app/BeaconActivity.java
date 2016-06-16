@@ -26,7 +26,7 @@ import com.adafruit.bluefruit.le.connect.ui.tabs.SlidingTabLayout;
 
 import java.nio.charset.Charset;
 
-public class BeaconActivity extends UartInterfaceActivity implements BleManager.BleManagerListener, IBeaconFragment.OnFragmentInteractionListener, URIBeaconFragment.OnFragmentInteractionListener {
+public class BeaconActivity extends UartInterfaceActivity implements IBeaconFragment.OnFragmentInteractionListener, URIBeaconFragment.OnFragmentInteractionListener {
     // Log
     private final static String TAG = BeaconActivity.class.getSimpleName();
 
@@ -256,6 +256,7 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
     }
 
     // region BleManagerListener
+    /*
     @Override
     public void onConnected() {
 
@@ -265,9 +266,10 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
     public void onConnecting() {
 
     }
-
+*/
     @Override
     public void onDisconnected() {
+        super.onDisconnected();
         Log.d(TAG, "Disconnected. Back to previous activity");
         setResult(-1);      // Unexpected Disconnect
         finish();
@@ -275,8 +277,8 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
 
     @Override
     public void onServicesDiscovered() {
-        mUartService = mBleManager.getGattService(UUID_SERVICE);
-        mBleManager.enableNotification(mUartService, UUID_RX, true);
+        super.onServicesDiscovered();
+        enableRxNotifications();
 
         // Test AT parser
         testATParser();
@@ -284,6 +286,7 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
 
     @Override
     public void onDataAvailable(BluetoothGattCharacteristic characteristic) {
+        super.onDataAvailable(characteristic);
         // UART RX
         if (characteristic.getService().getUuid().toString().equalsIgnoreCase(UUID_SERVICE)) {
             if (characteristic.getUuid().toString().equalsIgnoreCase(UUID_RX)) {
@@ -341,14 +344,15 @@ public class BeaconActivity extends UartInterfaceActivity implements BleManager.
         }
     }
 
-
+/*
     @Override
     public void onDataAvailable(BluetoothGattDescriptor descriptor) {
 
     }
-
+*/
     @Override
     public void onReadRemoteRssi(final int rssi) {
+        super.onReadRemoteRssi(rssi);
         if (mCurrentTab == kTab_iBeacon) {
             final Fragment currentFragment = mAdapterViewPager.getCurrentFragment();
             runOnUiThread(new Runnable() {

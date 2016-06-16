@@ -16,7 +16,7 @@ import com.adafruit.bluefruit.le.connect.ble.BleManager;
 
 import java.nio.ByteBuffer;
 
-public class PadActivity extends UartInterfaceActivity implements BleManager.BleManagerListener {
+public class PadActivity extends UartInterfaceActivity  {
     // Log
     private final static String TAG = PadActivity.class.getSimpleName();
 
@@ -152,6 +152,7 @@ public class PadActivity extends UartInterfaceActivity implements BleManager.Ble
         finish();
     }
 
+    /*
     @Override
     public void onConnected() {
 
@@ -161,14 +162,15 @@ public class PadActivity extends UartInterfaceActivity implements BleManager.Ble
     public void onConnecting() {
 
     }
-
+*/
     @Override
     public void onDisconnected() {
+        super.onDisconnected();
         Log.d(TAG, "Disconnected. Back to previous activity");
         setResult(-1);      // Unexpected Disconnect
         finish();
     }
-
+/*
     @Override
     public void onServicesDiscovered() {
         mUartService = mBleManager.getGattService(UUID_SERVICE);
@@ -187,4 +189,6 @@ public class PadActivity extends UartInterfaceActivity implements BleManager.Ble
     public void onReadRemoteRssi(int rssi) {
 
     }
+
+    */
 }

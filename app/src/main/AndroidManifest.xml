@@ -1,28 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-    package="com.adafruit.bluefruit.le.connect"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.adafruit.bluefruit.le.connect">
 
     <uses-feature
         android:name="android.hardware.bluetooth_le"
-        android:required="true"/>
+        android:required="true" />
 
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!-- Needed to download files from dropbox -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <!-- Barcode reading -->
-    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <!-- Wifi permissions are only needed if the app needs to turn off wifi to improve ble connections -->
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
     <application
         android:allowBackup="true"
@@ -32,20 +31,19 @@
         android:theme="@style/AppTheme">
         <meta-data
             android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version"/>
+            android:value="@integer/google_play_services_version" />
 
         <!-- Mqtt Service -->
-        <service android:name="org.eclipse.paho.android.service.MqttService">
-        </service>
+        <service android:name="org.eclipse.paho.android.service.MqttService" />
 
         <activity
             android:name=".app.MainActivity"
             android:label="@string/app_name"
             android:screenOrientation="fullUser">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
@@ -55,7 +53,7 @@
             android:screenOrientation="fullUser">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.adafruit.bluefruit.le.connect.app.MainActivity"/>
+                android:value="com.adafruit.bluefruit.le.connect.app.MainActivity" />
         </activity>
         <activity
             android:name=".app.InfoActivity"
@@ -64,7 +62,7 @@
             android:screenOrientation="fullUser">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.adafruit.bluefruit.le.connect.app.MainActivity"/>
+                android:value="com.adafruit.bluefruit.le.connect.app.MainActivity" />
         </activity>
         <activity
             android:name=".app.CommonHelpActivity"
@@ -72,7 +70,7 @@
             android:screenOrientation="fullUser">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.adafruit.bluefruit.le.connect.app.InfoActivity"/>
+                android:value="com.adafruit.bluefruit.le.connect.app.InfoActivity" />
         </activity>
         <activity
             android:name=".app.UartActivity"
@@ -81,7 +79,7 @@
             android:windowSoftInputMode="adjustResize">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.adafruit.bluefruit.le.connect.app.MainActivity"/>
+                android:value="com.adafruit.bluefruit.le.connect.app.MainActivity" />
         </activity>
         <activity
             android:name=".app.PinIOActivity"
@@ -89,7 +87,7 @@
             android:screenOrientation="fullUser">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.adafruit.bluefruit.le.connect.app.MainActivity"/>
+                android:value="com.adafruit.bluefruit.le.connect.app.MainActivity" />
         </activity>
         <activity
             android:name=".app.ControllerActivity"
@@ -98,7 +96,7 @@
             android:screenOrientation="fullUser">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.adafruit.bluefruit.le.connect.app.MainActivity"/>
+                android:value="com.adafruit.bluefruit.le.connect.app.MainActivity" />
         </activity>
         <activity
             android:name=".app.PadActivity"
@@ -106,35 +104,33 @@
             android:screenOrientation="fullUser">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.adafruit.bluefruit.le.connect.app.MainActivity"/>
+                android:value="com.adafruit.bluefruit.le.connect.app.MainActivity" />
         </activity>
         <activity
             android:name=".app.settings.SettingsActivity"
             android:label="@string/title_activity_settings"
             android:parentActivityName=".app.MainActivity"
-            android:screenOrientation="fullUser"/>
+            android:screenOrientation="fullUser" />
         <activity
             android:name=".app.update.NotificationActivity"
-            android:label="@string/dfu_feature_title"/>
+            android:label="@string/dfu_feature_title" />
 
-        <service android:name=".app.update.DfuService"/>
+        <service android:name=".app.update.DfuService" />
 
         <activity
             android:name=".app.settings.ConnectedSettingsActivity"
-            android:label="@string/title_activity_connected_settings">
-        </activity>
+            android:label="@string/title_activity_connected_settings" />
         <activity
             android:name=".app.BeaconActivity"
             android:label="@string/title_activity_beacon"
-            android:windowSoftInputMode="stateVisible|adjustPan">
-        </activity>
+            android:windowSoftInputMode="stateVisible|adjustPan" />
         <activity
             android:name=".app.ColorPickerActivity"
             android:label="@string/title_activity_color_picker"
             android:parentActivityName=".app.ControllerActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.adafruit.bluefruit.le.connect.app.ControllerActivity"/>
+                android:value="com.adafruit.bluefruit.le.connect.app.ControllerActivity" />
         </activity>
         <activity
             android:name=".app.settings.MqttUartSettingsActivity"
@@ -142,7 +138,7 @@
             android:parentActivityName=".app.UartActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.adafruit.bluefruit.le.connect.app.UartActivity"/>
+                android:value="com.adafruit.bluefruit.le.connect.app.UartActivity" />
         </activity>
         <activity
             android:name=".app.settings.MqttUartSettingsCodeReaderActivity"
@@ -151,8 +147,35 @@
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.adafruit.bluefruit.le.connect.app.settings.MqttUartSettingsActivity"/>
+                android:value="com.adafruit.bluefruit.le.connect.app.settings.MqttUartSettingsActivity" />
         </activity>
+        <activity
+            android:name=".app.neopixel.NeopixelActivity"
+            android:label="@string/title_activity_neopixel"
+            android:parentActivityName=".app.MainActivity"
+            android:screenOrientation="fullUser">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.adafruit.bluefruit.le.connect.app.MainActivity" />
+        </activity>
+        <activity
+            android:name=".app.neopixel.NeopixelColorPickerActivity"
+            android:theme="@style/AppTheme.NoActionBarDialog" />
+        <activity
+            android:name=".app.neopixel.NeopixelBoardSelectorActivity"
+            android:theme="@style/AppTheme.NoActionBarDialog" />
+        <activity
+            android:name=".app.neopixel.NeopixelBoardTypeActivity"
+            android:theme="@style/AppTheme.NoActionBarDialog"/>
+        <activity
+            android:name=".app.neopixel.NeopixelHelpActivity"
+            android:parentActivityName=".app.neopixel.NeopixelActivity"
+            android:screenOrientation="fullUser">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.adafruit.bluefruit.le.connect.app.neopixel.NeopixelActivity" />
+        </activity>
+
     </application>
 
 </manifest>

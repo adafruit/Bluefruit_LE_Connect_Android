@@ -1,14 +1,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:background="@drawable/default_background"
-              android:orientation="vertical"
-              android:paddingBottom="@dimen/activity_vertical_margin"
-              android:paddingLeft="@dimen/activity_horizontal_margin"
-              android:paddingRight="@dimen/activity_horizontal_margin"
-              android:paddingTop="@dimen/activity_vertical_margin"
-              tools:context="com.adafruit.bluefruit.le.connect.app.settings.ConnectedSettingsActivity">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/default_background"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.adafruit.bluefruit.le.connect.app.settings.ConnectedSettingsActivity">
 
 
     <ScrollView
@@ -32,7 +32,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
                     android:text="@string/connectedsettings_updatesheadertitle"
-                    android:textColor="@drawable/default_textcolor"/>
+                    android:textColor="@drawable/default_textcolor" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -51,14 +51,14 @@
                         style="@android:style/Widget.ProgressBar.Small"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginRight="4dp"/>
+                        android:layout_marginRight="4dp" />
 
                     <TextView
                         android:id="@+id/updatesWaitTextView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/connectedsettings_retrievinginfo"
-                        android:textColor="@drawable/default_textcolor"/>
+                        android:textColor="@drawable/default_textcolor" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -74,15 +74,14 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
                     android:text="@string/connectedsettings_firmwarereleasesheadertitle"
-                    android:textColor="@drawable/default_textcolor"/>
+                    android:textColor="@drawable/default_textcolor" />
 
                 <com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightListView
                     android:id="@+id/firmwareReleasesListView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@android:color/white">
-                </com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightListView>
+                    android:background="@android:color/white"/>
 
                 <Button
                     android:id="@+id/customFirmwareButton"
@@ -91,7 +90,7 @@
                     android:layout_marginTop="10dp"
                     android:layout_weight="0"
                     android:onClick="onClickCustomFirmware"
-                    android:text="@string/connectedsettings_usecustomfirmware"/>
+                    android:text="@string/connectedsettings_usecustomfirmware" />
             </LinearLayout>
 
 
@@ -107,7 +106,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
                     android:text="@string/connectedsettings_bootloaderreleasesheadertitle"
-                    android:textColor="@drawable/default_textcolor"/>
+                    android:textColor="@drawable/default_textcolor" />
 
 
                 <com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightListView
@@ -115,8 +114,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@android:color/white">
-                </com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightListView>
+                    android:background="@android:color/white"/>
 
                 <Button
                     android:id="@+id/customBootloaderButton"
@@ -125,7 +123,7 @@
                     android:layout_marginTop="10dp"
                     android:layout_weight="0"
                     android:onClick="onClickCustomBootloader"
-                    android:text="@string/connectedsettings_usecustombootloader"/>
+                    android:text="@string/connectedsettings_usecustombootloader" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

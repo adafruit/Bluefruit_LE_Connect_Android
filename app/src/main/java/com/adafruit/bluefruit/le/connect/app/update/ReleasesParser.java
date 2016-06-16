@@ -125,7 +125,6 @@ public class ReleasesParser {
                         Log.w(TAG, "Error parsing releases: bootloadernodes");
                     }
                 }
-
             }
         }
 

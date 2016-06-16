@@ -45,7 +45,7 @@ import com.google.android.gms.location.LocationServices;
 
 import java.nio.ByteBuffer;
 
-public class ControllerActivity extends UartInterfaceActivity implements BleManager.BleManagerListener, SensorEventListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class ControllerActivity extends UartInterfaceActivity implements SensorEventListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     // Config
     private final static boolean kKeepUpdatingParentValuesInChildActivities = true;
 
@@ -98,7 +98,7 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_controller);
 
-        Log.d(TAG, "onCreate");
+        //Log.d(TAG, "onCreate");
 
         mBleManager = BleManager.getInstance(this);
         restoreRetainedDataFragment();
@@ -377,7 +377,7 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
         SharedPreferences settings = getSharedPreferences(kPreferences, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.putBoolean(kPreferences_uartToolTip, false);
-        editor.commit();
+        editor.apply();
 
         mUartTooltipViewGroup.setVisibility(View.GONE);
 
@@ -465,6 +465,7 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
     }
 
     // region BleManagerListener
+    /*
     @Override
     public void onConnected() {
     }
@@ -473,14 +474,16 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
     public void onConnecting() {
 
     }
-
+*/
     @Override
     public void onDisconnected() {
+        super.onDisconnected();
         Log.d(TAG, "Disconnected. Back to previous activity");
         setResult(-1);      // Unexpected Disconnect
         finish();
     }
 
+    /*
     @Override
     public void onServicesDiscovered() {
         mUartService = mBleManager.getGattService(UUID_SERVICE);
@@ -500,6 +503,8 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
     public void onReadRemoteRssi(int rssi) {
 
     }
+    */
+
     // endregion
 
     // region Google API Callbacks
@@ -519,8 +524,6 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d(TAG, "Google Play Services connection failed");
-
-
     }
     // endregion
 
@@ -528,7 +531,6 @@ public class ControllerActivity extends UartInterfaceActivity implements BleMana
     @Override
     public void onLocationChanged(Location location) {
         setLastLocation(location);
-
     }
 
     // endregion

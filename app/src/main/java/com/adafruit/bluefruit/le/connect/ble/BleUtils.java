@@ -201,8 +201,8 @@ public class BleUtils {
 
     public static String bytesToHexWithSpaces(byte[] bytes) {
         StringBuilder newString = new StringBuilder();
-        for (int i=0; i<bytes.length; i++) {
-            String byteHex = String.format("%02X", (byte)bytes[i]);
+        for (byte aByte : bytes) {
+            String byteHex = String.format("%02X", (byte) aByte);
             newString.append(byteHex).append(" ");
 
         }
@@ -213,8 +213,8 @@ public class BleUtils {
 
     public static String getUuidStringFromByteArray(byte[] bytes) {
         StringBuilder buffer = new StringBuilder();
-        for (int i=0; i<bytes.length; i++) {
-            buffer.append(String.format("%02x", bytes[i]));
+        for (byte aByte : bytes) {
+            buffer.append(String.format("%02x", aByte));
         }
         return buffer.toString();
     }

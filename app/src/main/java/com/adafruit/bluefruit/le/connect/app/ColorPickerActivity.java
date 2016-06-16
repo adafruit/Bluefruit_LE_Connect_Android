@@ -1,7 +1,5 @@
 package com.adafruit.bluefruit.le.connect.app;
 
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,14 +12,13 @@ import android.widget.TextView;
 
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
-import com.adafruit.bluefruit.le.connect.ble.BleUtils;
 import com.larswerkman.holocolorpicker.ColorPicker;
 import com.larswerkman.holocolorpicker.SaturationBar;
 import com.larswerkman.holocolorpicker.ValueBar;
 
 import java.nio.ByteBuffer;
 
-public class ColorPickerActivity extends UartInterfaceActivity implements BleManager.BleManagerListener, ColorPicker.OnColorChangedListener {
+public class ColorPickerActivity extends UartInterfaceActivity implements ColorPicker.OnColorChangedListener {
     // Log
     private final static String TAG = ColorPickerActivity.class.getSimpleName();
 
@@ -30,12 +27,10 @@ public class ColorPickerActivity extends UartInterfaceActivity implements BleMan
     private final static String kPreferences = "ColorPickerActivity_prefs";
     private final static String kPreferences_color = "color";
 
-    private final int kFirstTimeColor = 0x0000ff;
+    private final static int kFirstTimeColor = 0x0000ff;
 
     // UI
     private ColorPicker mColorPicker;
-    private SaturationBar mSaturationBar;
-    private ValueBar mValueBar;
     private View mRgbColorView;
     private TextView mRgbTextView;
 
@@ -52,18 +47,19 @@ public class ColorPickerActivity extends UartInterfaceActivity implements BleMan
         mRgbColorView = findViewById(R.id.rgbColorView);
         mRgbTextView = (TextView) findViewById(R.id.rgbTextView);
 
-        mSaturationBar = (SaturationBar) findViewById(R.id.saturationbar);
-        mValueBar = (ValueBar) findViewById(R.id.valuebar);
+        SaturationBar mSaturationBar = (SaturationBar) findViewById(R.id.saturationbar);
+        ValueBar mValueBar = (ValueBar) findViewById(R.id.valuebar);
         mColorPicker = (ColorPicker) findViewById(R.id.colorPicker);
-        mColorPicker.addSaturationBar(mSaturationBar);
-        mColorPicker.addValueBar(mValueBar);
-        mColorPicker.setOnColorChangedListener(this);
+        if (mColorPicker != null) {
+            mColorPicker.addSaturationBar(mSaturationBar);
+            mColorPicker.addValueBar(mValueBar);
+            mColorPicker.setOnColorChangedListener(this);
+        }
 
         if (kPersistValues) {
             SharedPreferences preferences = getSharedPreferences(kPreferences, Context.MODE_PRIVATE);
             mSelectedColor = preferences.getInt(kPreferences_color, kFirstTimeColor);
-        }
-        else {
+        } else {
             mSelectedColor = kFirstTimeColor;
         }
 
@@ -82,7 +78,7 @@ public class ColorPickerActivity extends UartInterfaceActivity implements BleMan
             SharedPreferences settings = getSharedPreferences(kPreferences, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = settings.edit();
             editor.putInt(kPreferences_color, mSelectedColor);
-            editor.commit();
+            editor.apply();
         }
 
         super.onStop();
@@ -121,6 +117,7 @@ public class ColorPickerActivity extends UartInterfaceActivity implements BleMan
 
 
     // region BleManagerListener
+    /*
     @Override
     public void onConnected() {
 
@@ -130,17 +127,19 @@ public class ColorPickerActivity extends UartInterfaceActivity implements BleMan
     public void onConnecting() {
 
     }
-
+*/
     @Override
     public void onDisconnected() {
+        super.onDisconnected();
         Log.d(TAG, "Disconnected. Back to previous activity");
         setResult(-1);      // Unexpected Disconnect
         finish();
     }
+    /*
 
     @Override
     public void onServicesDiscovered() {
-        mUartService = mBleManager.getGattService(UUID_SERVICE);
+        super.onServicesDiscovered();
     }
 
     @Override
@@ -157,7 +156,7 @@ public class ColorPickerActivity extends UartInterfaceActivity implements BleMan
     public void onReadRemoteRssi(int rssi) {
 
     }
-
+*/
     // endregion
 
     @Override
@@ -182,11 +181,11 @@ public class ColorPickerActivity extends UartInterfaceActivity implements BleMan
         mColorPicker.setOldCenterColor(mSelectedColor);
 
         // Send selected color !Crgb
-        byte r = (byte)((mSelectedColor >> 16) & 0xFF);
-        byte g = (byte)((mSelectedColor >>  8) & 0xFF);
-        byte b = (byte)((mSelectedColor >>  0) & 0xFF);
+        byte r = (byte) ((mSelectedColor >> 16) & 0xFF);
+        byte g = (byte) ((mSelectedColor >> 8) & 0xFF);
+        byte b = (byte) ((mSelectedColor >> 0) & 0xFF);
 
-        ByteBuffer buffer = ByteBuffer.allocate(2+3*1).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer buffer = ByteBuffer.allocate(2 + 3 * 1).order(java.nio.ByteOrder.LITTLE_ENDIAN);
 
         // prefix
         String prefix = "!C";

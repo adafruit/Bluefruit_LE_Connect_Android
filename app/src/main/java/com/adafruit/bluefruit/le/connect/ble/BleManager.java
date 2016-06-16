@@ -125,8 +125,7 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
             return false;
         }
 
-        final boolean gattAutoconnect = sharedPreferences.getBoolean("pref_gattautoconnect", false);
-        mGatt = mDevice.connectGatt(mContext, gattAutoconnect, mExecutor);
+
 
 /*
         // Refresh device cache
@@ -142,6 +141,10 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
         if (mBleListener != null) {
             mBleListener.onConnecting();
         }
+
+        final boolean gattAutoconnect = sharedPreferences.getBoolean("pref_gattautoconnect", false);
+        mGatt = mDevice.connectGatt(mContext, gattAutoconnect, mExecutor);
+
         return true;
     }
 
@@ -252,7 +255,6 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
             mExecutor.execute(mGatt);
         }
     }
-
 
     public void enableNotification(BluetoothGattService service, String uuid, boolean enabled) {
         if (service != null) {

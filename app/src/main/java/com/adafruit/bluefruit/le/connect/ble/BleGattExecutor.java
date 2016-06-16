@@ -1,8 +1,6 @@
 // Original source code: https://github.com/StevenRudenko/BleSensorTag. MIT License (Steven Rudenko)
 
-
 package com.adafruit.bluefruit.le.connect.ble;
-
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -24,7 +22,7 @@ public class BleGattExecutor extends BluetoothGattCallback {
     private static String CHARACTERISTIC_CONFIG = "00002902-0000-1000-8000-00805f9b34fb";
 
     public interface ServiceAction {
-        public static final ServiceAction NULL = new ServiceAction() {
+        ServiceAction NULL = new ServiceAction() {
             @Override
             public boolean execute(BluetoothGatt bluetoothGatt) {
                 // it is null action. do nothing.
@@ -116,7 +114,7 @@ public class BleGattExecutor extends BluetoothGattCallback {
 
                     return false;
                 } else {
-                    Log.w(TAG, "Characteristic with UUID " + characteristicUuidString + " not found");
+                    Log.w(TAG, "Characteristic UUID is null");
                     return true;
                 }
             }
@@ -152,7 +150,7 @@ public class BleGattExecutor extends BluetoothGattCallback {
 
                     return false;
                 } else {
-                    Log.w(TAG, "Characteristic with UUID " + characteristicUuidString + " not found");
+                    Log.w(TAG, "Characteristic UUID is null");
                     return true;
                 }
             }

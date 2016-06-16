@@ -273,7 +273,7 @@ public class MqttManager implements IMqttActionListener, MqttCallback, MqttTrace
     public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
         String message = new String(mqttMessage.getPayload());
 
-        if (message != null && message.length() > 0) {      // filter cleared messages (to avoid duplicates)
+        if (message.length() > 0) {      // filter cleared messages (to avoid duplicates)
 
             Log.d(TAG, "Mqtt messageArrived from topic: " + topic + " message: " + message + " isDuplicate: " + (mqttMessage.isDuplicate() ? "yes" : "no"));
             if (mListener != null) {

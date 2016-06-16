@@ -34,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.adafruit.bluefruit.le.connect.R;
+import com.adafruit.bluefruit.le.connect.app.neopixel.NeopixelActivity;
 import com.adafruit.bluefruit.le.connect.app.settings.SettingsActivity;
 import com.adafruit.bluefruit.le.connect.app.update.FirmwareUpdater;
 import com.adafruit.bluefruit.le.connect.app.update.ReleasesParser;
@@ -43,6 +44,7 @@ import com.adafruit.bluefruit.le.connect.ble.BleUtils;
 import com.adafruit.bluefruit.le.connect.ui.utils.DialogUtils;
 import com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightExpandableListView;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -65,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             R.string.scan_connectservice_pinio,
             R.string.scan_connectservice_controller,
             R.string.scan_connectservice_beacon,
+            R.string.scan_connectservice_neopixel,
     };
 
     // Activity request codes (used for onActivityResult)
@@ -301,13 +304,13 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         }
     }
 
-    private void showChooseDeviceServiceDialog(final BluetoothDevice device) {
+    private void showChooseDeviceServiceDialog(final BluetoothDeviceData deviceData) {
         // Prepare dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        String deviceName = device.getName();
-        String title = String.format(getString(R.string.scan_connectto_dialog_title_format), deviceName != null ? deviceName : device.getAddress());
+        String title = String.format(getString(R.string.scan_connectto_dialog_title_format), deviceData.getNiceName());
         String[] items = new String[kComponentsNameIds.length];
-        for (int i = 0; i < kComponentsNameIds.length; i++) items[i] = getString(kComponentsNameIds[i]);
+        for (int i = 0; i < kComponentsNameIds.length; i++)
+            items[i] = getString(kComponentsNameIds[i]);
 
         builder.setTitle(title)
                 .setItems(items, new DialogInterface.OnClickListener() {
@@ -325,18 +328,22 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
                                 mComponentToStartWhenConnected = PinIOActivity.class;
                                 break;
                             }
-                            case R.string.scan_connectservice_controller: {     // Controller
+                            case R.string.scan_connectservice_controller: {    // Controller
                                 mComponentToStartWhenConnected = ControllerActivity.class;
                                 break;
                             }
-                            case R.string.scan_connectservice_beacon: {         // Beacon
+                            case R.string.scan_connectservice_beacon: {        // Beacon
                                 mComponentToStartWhenConnected = BeaconActivity.class;
+                                break;
+                            }
+                            case R.string.scan_connectservice_neopixel: {       // Neopixel
+                                mComponentToStartWhenConnected = NeopixelActivity.class;
                                 break;
                             }
                         }
 
                         if (mComponentToStartWhenConnected != null) {
-                            connect(device);            // First connect to the device, and when connected go to selected activity
+                            connect(deviceData.device);            // First connect to the device, and when connected go to selected activity
                         }
                     }
                 });
@@ -527,7 +534,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             mBleManager.setBleListener(MainActivity.this);           // Force set listener (could be still checking for updates...)
 
             if (mSelectedDeviceData.type == BluetoothDeviceData.kType_Uart) {      // if is uart, show all the available activities
-                showChooseDeviceServiceDialog(device);
+                showChooseDeviceServiceDialog(mSelectedDeviceData);
             } else {                          // if no uart, then go directly to info
                 Log.d(TAG, "No UART service found. Go to InfoActivity");
                 mComponentToStartWhenConnected = InfoActivity.class;
@@ -568,7 +575,8 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
 
                     BluetoothDeviceData previouslyScannedDeviceData = null;
                     if (deviceNameToScanFor == null || (deviceName != null && deviceName.equalsIgnoreCase(deviceNameToScanFor))) {       // Workaround for bug in service discovery. Discovery filtered by service uuid is not working on Android 4.3, 4.4
-                        if (mScannedDevices == null) mScannedDevices = new ArrayList<>();       // Safeguard
+                        if (mScannedDevices == null)
+                            mScannedDevices = new ArrayList<>();       // Safeguard
 
                         // Check that the device was not previously found
                         for (BluetoothDeviceData deviceData : mScannedDevices) {
@@ -679,8 +687,8 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
 //            Log.d(TAG, "record -> lenght: " + length + " type:" + type + " data" + data);
 
                 switch (type) {
-                    case 0x02: // Partial list of 16-bit UUIDs
-                    case 0x03: {// Complete list of 16-bit UUIDs
+                    case 0x02:          // Partial list of 16-bit UUIDs
+                    case 0x03: {        // Complete list of 16-bit UUIDs
                         while (len > 1) {
                             int uuid16 = advertisedData[offset++] & 0xFF;
                             uuid16 |= (advertisedData[offset++] << 8);
@@ -709,7 +717,23 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
                         break;
                     }
 
-                    case 0x0A: {   // TX Power
+                    case 0x09: {
+                        byte[] nameBytes = new byte[len - 1];
+                        for (int i=0; i<len-1; i++) {
+                            nameBytes[i] = advertisedData[offset++];
+                        }
+
+                        String name = null;
+                        try {
+                            name = new String(nameBytes, "utf-8");
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                        deviceData.advertisedName = name;
+                        break;
+                    }
+
+                    case 0x0A: {        // TX Power
                         final int txPower = advertisedData[offset++];
                         deviceData.txPower = txPower;
                         break;
@@ -782,6 +806,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         // Launch activity
         showConnectionStatus(false);
         if (mComponentToStartWhenConnected != null) {
+            Log.d(TAG, "Start component:"+mComponentToStartWhenConnected);
             Intent intent = new Intent(MainActivity.this, mComponentToStartWhenConnected);
             if (mComponentToStartWhenConnected == BeaconActivity.class && mSelectedDeviceData != null) {
                 intent.putExtra("rssi", mSelectedDeviceData.rssi);
@@ -802,6 +827,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
 
     @Override
     public void onDisconnected() {
+        Log.d(TAG, "MainActivity onDisconnected");
         showConnectionStatus(false);
     }
 
@@ -985,6 +1011,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         public BluetoothDevice device;
         public int rssi;
         public byte[] scanRecord;
+        public String advertisedName;           // Advertised name
 
         // Decoded scan record (update R.array.scan_devicetypes if this list is modified)
         public static final int kType_Unknown = 0;
@@ -995,6 +1022,18 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         public int type;
         public int txPower;
         public ArrayList<UUID> uuids;
+
+        public String getNiceName() {
+            String name = device.getName();
+            if (name == null) {
+                name = advertisedName;      // Try to get a name (but it seems that if device.getName() is null, this is also null)
+            }
+            if (name == null) {
+                name = device.getAddress();
+            }
+
+            return name;
+        }
     }
     //endregion
 
@@ -1230,8 +1269,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             holder.connectButton.setTag(groupPosition);
 
             BluetoothDeviceData deviceData = mBluetoothDevices.get(groupPosition);
-            String deviceName = deviceData.device.getName();
-            holder.nameTextView.setText(deviceName != null ? deviceName : deviceData.device.getAddress());
+            holder.nameTextView.setText(deviceData.getNiceName());
 
             holder.descriptionTextView.setVisibility(deviceData.type != BluetoothDeviceData.kType_Unknown ? View.VISIBLE : View.INVISIBLE);
             holder.descriptionTextView.setText(getResources().getStringArray(R.array.scan_devicetypes)[deviceData.type]);

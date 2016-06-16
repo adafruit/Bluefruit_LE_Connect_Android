@@ -46,6 +46,7 @@
     <string name="scan_connectservice_pinio">Pin I/O</string>
     <string name="scan_connectservice_controller">Controller</string>
     <string name="scan_connectservice_beacon">Beacon</string>
+    <string name="scan_connectservice_neopixel">Neopixel</string>
     <string name="scan_softwareupdate_title">Update available</string>
     <string name="scan_softwareupdate_messageformat">Software version %s is available</string>
     <string name="scan_bootloaderandfirmwareupdate_messageformat">Software version %1$s and Bootloader version %2$s are available. This is a two-step process: bootloader will be updated first and firmware the next time you connect to the device</string>
@@ -108,6 +109,7 @@
     <string name="uart_copy">Copy</string>
     <string name="uart_share">Share</string>
     <string name="uart_clear">Clear</string>
+    <string name="uart_send">SEND</string>
 
     <string name="uart_share_subject">UART</string>
     <string name="uart_share_empty">Nothing to share. UART text is empty</string>
@@ -131,7 +133,7 @@
     <string name="pinio_pintype_low">Low</string>
     <string name="pinio_pintype_high">High</string>
     <string name="pinio_pinname_digital_format">Pin %d</string>
-    <string name="pinio_pinname_analog_format" formatted = "false">Pin %d, Analog %d</string>
+    <string name="pinio_pinname_analog_format" formatted="false">Pin %d, Analog %d</string>
     <string name="pinio_tag_mode">Mode</string>
     <string name="pinio_help_title">Pin I/O Help</string>
 
@@ -237,6 +239,46 @@
     <string name="connectedsettings_bootloaderinstall_messageformat">Download and install bootloader version %s</string>
     <string name="connectedsettings_noexplorer_title">Unavailable</string>
     <string name="connectedsettings_noexplorer_message">File browser app not has not been found on your device. You should install an app like Dropbox, GoogleDrive…</string>
+
+    <!-- Neopixel -->
+    <string name="title_activity_neopixel">Neopixel</string>
+    <string name="neopixel_help_title">Neopixel Help</string>
+
+    <string name="neopixel_status">Status:</string>
+
+    <string name="neopixel_status_readytoconnect">Ready to Connect</string>
+    <string name="neopixel_status_notdetected">Not detected</string>
+    <string name="neopixel_status_waitingsetup">Waiting for Setup</string>
+    <string name="neopixel_status_readyforsetup">Ready for Setup</string>
+    <string name="neopixel_status_connected">Connected</string>
+
+    <string name="neopixel_connect">Connect</string>
+
+    <string name="neopixel_picker">Picker:</string>
+    <string name="neopixel_brightness">Brightness:</string>
+
+    <string name="neopixel_colorpicker_setcolor">Set</string>
+
+    <string name="neopixel_boardselector_boards_title">Standard Board Sizes</string>
+    <string name="neopixel_boardselector_custom_title">Custom Board Sizes</string>
+    <string name="neopixel_boardselector_custom_linestrip">Line Strip</string>
+
+    <string name="neopixel_boardselector_enterlinestrip_title">Select line strip length</string>
+    <string name="neopixel_boardselector_enterlinestrip_hint">Enter length</string>
+
+
+    <string name="neopixel_boardtype_types_title">Predefined Pixel Types</string>
+    <string name="neopixel_boardtype_custom_title">Pixel Config Register</string>
+    <string name="neopixel_boardtype_value_title">Decimal Value:</string>
+    <string name="neopixel_boardtype_value_set">Set</string>
+
+
+    <!-- Neopixel Help -->
+    <string name="neopixel_help_export">Export Sketch...</string>
+    <string name="neopixel_help_export_subject">Export Neopixel Sketch</string>
+    <string name="neopixel_help_export_text">Export Neopixel Sketch</string>
+    <string name="neopixel_help_export_chooser_title">Select app for Exporting Sketch</string>
+
 
     <!-- Settings -->
     <string name="title_activity_settings">Settings</string>
