@@ -1,27 +1,28 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion 24
+    buildToolsVersion "24.0.1"
 
     defaultConfig {
         applicationId "com.adafruit.bluefruit.le.connect"
         minSdkVersion 19
-        targetSdkVersion 22
-        versionCode 10
-        versionName "2.0.0"
-    }
-    buildTypes {
-        release {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
+        targetSdkVersion 23
+        versionCode 11
+        versionName "2.1.0"
     }
 
     useLibrary 'org.apache.http.legacy'     // TODO: remove Apache library and use HttpURLConnection (Apache is deprecated since Android 6.0)
 
     aaptOptions {
         noCompress "zip"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
     }
 }
 
@@ -37,11 +38,11 @@ dependencies {
     compile(group: 'org.eclipse.paho', name: 'org.eclipse.paho.android.service', version: '1.0.2') {
         exclude module: 'support-v4'
     }
-    compile 'com.android.support:appcompat-v7:23.4.0'
+    compile 'com.android.support:appcompat-v7:24.1.0'
     compile 'com.larswerkman:HoloColorPicker:1.4'
-    compile 'com.android.support:design:23.4.0'
+    compile 'com.android.support:design:24.1.0'
 
-    compile 'com.google.android.gms:play-services-analytics:9.0.2'
-    compile 'com.google.android.gms:play-services-location:9.0.2'
-    compile 'com.google.android.gms:play-services-vision:9.0.2'
+    compile 'com.google.android.gms:play-services-analytics:9.2.1'
+    compile 'com.google.android.gms:play-services-location:9.2.1'
+    compile 'com.google.android.gms:play-services-vision:9.2.1'
 }
