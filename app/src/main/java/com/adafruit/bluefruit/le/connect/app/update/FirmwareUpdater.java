@@ -592,16 +592,20 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         if (characteristic.getService().getUuid().toString().equalsIgnoreCase(kDeviceInformationService)) {
             final String charUuid = characteristic.getUuid().toString();
             if (charUuid.equalsIgnoreCase(kManufacturerNameCharacteristic)) {
-                mDeviceInfoData.manufacturer = readCharacteristicValueAsString(characteristic);
+                String manufacturer = readCharacteristicValueAsString(characteristic);
+                mDeviceInfoData.manufacturer = manufacturer != null ? manufacturer:"";
                 Log.d(TAG, "Updates: received manufacturer:" + mDeviceInfoData.manufacturer);
             } else if (charUuid.equalsIgnoreCase(kModelNumberCharacteristic)) {
-                mDeviceInfoData.modelNumber = readCharacteristicValueAsString(characteristic);
+                String modelNumber = readCharacteristicValueAsString(characteristic);
+                mDeviceInfoData.modelNumber = modelNumber != null ? modelNumber:"";
                 Log.d(TAG, "Updates: received modelNumber:" + mDeviceInfoData.modelNumber);
             } else if (charUuid.equalsIgnoreCase(kSoftwareRevisionCharacteristic)) {
-                mDeviceInfoData.softwareRevision = readCharacteristicValueAsString(characteristic);
+                String softwareRevision = readCharacteristicValueAsString(characteristic);
+                mDeviceInfoData.softwareRevision = softwareRevision != null ? softwareRevision:"";
                 Log.d(TAG, "Updates: received softwareRevision:" + mDeviceInfoData.softwareRevision);
             } else if (charUuid.equalsIgnoreCase(kFirmwareRevisionCharacteristic)) {
-                mDeviceInfoData.firmwareRevision = readCharacteristicValueAsString(characteristic);
+                String firmwareRevision = readCharacteristicValueAsString(characteristic);
+                mDeviceInfoData.firmwareRevision = firmwareRevision != null ? firmwareRevision:"";
                 Log.d(TAG, "Updates: received firmwareRevision:" + mDeviceInfoData.firmwareRevision);
             }
         }
