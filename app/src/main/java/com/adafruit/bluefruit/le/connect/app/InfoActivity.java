@@ -84,7 +84,8 @@ public class InfoActivity extends AppCompatActivity implements BleManager.BleMan
             nameTextView.setVisibility(isNameDefined ? View.VISIBLE : View.GONE);
 
             TextView addressTextView = (TextView) findViewById(R.id.addressTextView);
-            addressTextView.setText(getString(R.string.scan_device_address) + ": " + device.getAddress());
+            final String address = String.format("%s: %s", getString(R.string.scan_device_address), device.getAddress());
+            addressTextView.setText(address);
 
             onServicesDiscovered();
         } else {
@@ -178,7 +179,6 @@ public class InfoActivity extends AppCompatActivity implements BleManager.BleMan
         }
     }
 
-
     @Override
     public void onConnected() {
 
@@ -240,9 +240,9 @@ public class InfoActivity extends AppCompatActivity implements BleManager.BleMan
                     descriptorNamesList.add(new ElementPath(serviceUuid, instanceId, characteristicUuid, descriptorUuid, finalDescriptorName, descriptorUuid));
 
                     // Read descriptor
-                    if (mBleManager.isDescriptorReadable(service, characteristicUuid, descriptorUuid)) {
+//                    if (mBleManager.isDescriptorReadable(service, characteristicUuid, descriptorUuid)) {
                         mBleManager.readDescriptor(service, characteristicUuid, descriptorUuid);
-                    }
+//                    }
                 }
 
                 mDescriptorsMap.put(characteristicElementPath.getKey(), descriptorNamesList);
@@ -281,8 +281,9 @@ public class InfoActivity extends AppCompatActivity implements BleManager.BleMan
     public void onDataAvailable(BluetoothGattDescriptor descriptor) {
         BluetoothGattCharacteristic characteristic = descriptor.getCharacteristic();
         BluetoothGattService service = characteristic.getService();
-        String key = new ElementPath(service.getUuid().toString(), service.getInstanceId(), characteristic.getUuid().toString(), descriptor.toString(), null, null).getKey();
-        mValuesMap.put(key, descriptor.getValue());
+        final String key = new ElementPath(service.getUuid().toString(), service.getInstanceId(), characteristic.getUuid().toString(), descriptor.getUuid().toString(), null, null).getKey();
+        final byte[] value = descriptor.getValue();
+        mValuesMap.put(key, value);
 
         // Update UI
         runOnUiThread(new Runnable() {
@@ -451,7 +452,8 @@ public class InfoActivity extends AppCompatActivity implements BleManager.BleMan
             listView.setExpanded(true);
 
             // Descriptors
-            List<ElementPath> descriptorNamesList = mDescriptors.get(elementPath.getKey());
+            final String key = elementPath.getKey();
+            List<ElementPath> descriptorNamesList = mDescriptors.get(key);
             DescriptorAdapter adapter = new DescriptorAdapter(mActivity, R.layout.layout_info_item_descriptor, descriptorNamesList);
             listView.setAdapter(adapter);
 
