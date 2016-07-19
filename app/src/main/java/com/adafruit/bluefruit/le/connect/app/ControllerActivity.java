@@ -430,18 +430,15 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
     public final void onSensorChanged(SensorEvent event) {
         int sensorType = event.sensor.getType();
         if (sensorType == Sensor.TYPE_ACCELEROMETER) {
-            //       Log.d(TAG, "Received data for accelerometer / quaternion");
             mSensorData[kSensorType_Accelerometer].values = event.values;
 
             updateOrientation();            // orientation depends on Accelerometer and Magnetometer
             mControllerListAdapter.notifyDataSetChanged();
         } else if (sensorType == Sensor.TYPE_GYROSCOPE) {
-            //       Log.d(TAG, "Received data for gyroscope");
             mSensorData[kSensorType_Gyroscope].values = event.values;
 
             mControllerListAdapter.notifyDataSetChanged();
         } else if (sensorType == Sensor.TYPE_MAGNETIC_FIELD) {
-//            Log.d(TAG, "Received data for magnetometer / quaternion");
             mSensorData[kSensorType_Magnetometer].values = event.values;
 
             updateOrientation();            // orientation depends on Accelerometer and Magnetometer
@@ -521,7 +518,12 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
     public void onConnected(Bundle bundle) {
         Log.d(TAG, "Google Play Services connected");
 
-        setLastLocation(LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient));
+        // Location updates should have already been granted to scan for bluetooth peripherals, so we dont ask for them again
+        try {
+            setLastLocation(LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient));
+        } catch (SecurityException e) {
+            Log.e(TAG, "Security exception requesting location updates: "+e);
+        }
     }
 
     @Override

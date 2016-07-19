@@ -187,7 +187,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
             Log.d(TAG, "Updates: Internet connection not detected. Skipping version check...");
         }
 
-        mListener.onFirmwareUpdatesChecked(false, null, mDeviceInfoData, null);
+        mListener.onFirmwareUpdatesChecked(false, null, mDeviceInfoData, getReleases());
         return false;       // Returns false, meaning the checking has finished
     }
 

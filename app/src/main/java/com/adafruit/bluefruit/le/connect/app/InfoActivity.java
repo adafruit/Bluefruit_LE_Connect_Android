@@ -292,7 +292,6 @@ public class InfoActivity extends AppCompatActivity implements BleManager.BleMan
                 updateUI();
             }
         });
-
     }
 
     @Override
