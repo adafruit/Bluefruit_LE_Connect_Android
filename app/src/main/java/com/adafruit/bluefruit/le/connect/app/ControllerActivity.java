@@ -136,6 +136,8 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
         mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
+
+
         // Google Play Services (used for location updates)
         buildGoogleApiClient();
 
@@ -348,7 +350,15 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
 
         // Magnetometer
         if (register && (mSensorData[kSensorType_Magnetometer].enabled || mSensorData[kSensorType_Quaternion].enabled)) {
-            mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_NORMAL);
+            if (mMagnetometer == null) {
+                new AlertDialog.Builder(this)
+                        .setMessage(getString(R.string.controller_magnetometermissing))
+                        .setPositiveButton(android.R.string.ok, null)
+                        .show();
+            }
+            else {
+                mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_NORMAL);
+            }
         } else {
             mSensorManager.unregisterListener(this, mMagnetometer);
         }
@@ -361,7 +371,12 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
                 locationRequest.setFastestInterval(500);
                 locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-                LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest, this);
+                // Location updates should have already been granted to scan for bluetooth peripherals, so we dont ask for them again
+                try {
+                    LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest, this);
+                } catch (SecurityException e) {
+                    Log.e(TAG, "Security exception requesting location updates: "+e);
+                }
             } else {
                 LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
             }

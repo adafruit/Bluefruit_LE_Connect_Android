@@ -2,7 +2,6 @@ package com.adafruit.bluefruit.le.connect.app;
 
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -189,9 +188,8 @@ public class BeaconActivity extends UartInterfaceActivity implements IBeaconFrag
         } else if (id == R.id.action_connected_settings) {
             startConnectedSettings();
             return true;
-        }
-        else if (id == R.id.action_refreshcache)  {
-            if (mBleManager != null ) {
+        } else if (id == R.id.action_refreshcache) {
+            if (mBleManager != null) {
                 mBleManager.refreshDeviceCache();
             }
         }
@@ -344,12 +342,12 @@ public class BeaconActivity extends UartInterfaceActivity implements IBeaconFrag
         }
     }
 
-/*
-    @Override
-    public void onDataAvailable(BluetoothGattDescriptor descriptor) {
+    /*
+        @Override
+        public void onDataAvailable(BluetoothGattDescriptor descriptor) {
 
-    }
-*/
+        }
+    */
     @Override
     public void onReadRemoteRssi(final int rssi) {
         super.onReadRemoteRssi(rssi);

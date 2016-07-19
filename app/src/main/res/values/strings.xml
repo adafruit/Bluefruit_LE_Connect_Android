@@ -151,6 +151,7 @@
     <string name="controller_help_title">Controller Help</string>
     <string name="controller_location_unknown">Waiting for location data…</string>
     <string name="controller_location_disabled">Location is disabled. Go to settings and enable it to receive location data</string>
+    <string name="controller_magnetometermissing">Your device doesn\'t have magnetic sensor</string>
 
     <string-array name="controller_stream_items">
         <item>Quaternion</item>

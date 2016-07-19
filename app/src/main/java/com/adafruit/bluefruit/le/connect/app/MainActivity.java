@@ -1,5 +1,7 @@
 package com.adafruit.bluefruit.le.connect.app;
 
+import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -12,11 +14,13 @@ import android.bluetooth.BluetoothGattService;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -45,6 +49,7 @@ import com.adafruit.bluefruit.le.connect.ui.utils.DialogUtils;
 import com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightExpandableListView;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -59,6 +64,8 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
     private final static long kMinDelayToUpdateUI = 200;    // in milliseconds
     private static final String kGenericAttributeService = "00001801-0000-1000-8000-00805F9B34FB";
     private static final String kServiceChangedCharacteristic = "00002A05-0000-1000-8000-00805F9B34FB";
+
+    private static final int PERMISSION_REQUEST_FINE_LOCATION = 1;
 
     // Components
     private final static int kComponentsNameIds[] = {
@@ -175,6 +182,10 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
                 BleUtils.resetBluetoothAdapter(this, this);
             }
         }
+
+
+        // Request Bluetooth scanning persmissions
+        requestLocationPermissionIfNeeded();
     }
 
     @Override
@@ -217,6 +228,13 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         mBleManager.setBleListener(this);
 
         // Autostart scan
+        autostartScan();
+
+        // Update UI
+        updateUI();
+    }
+
+    private void autostartScan() {
         if (BleUtils.getBleStatus(this) == BleUtils.STATUS_BLE_ENABLED) {
             // If was connected, disconnect
             mBleManager.disconnect();
@@ -227,9 +245,6 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             }
             startScan(null, null);
         }
-
-        // Update UI
-        updateUI();
     }
 
     @Override
@@ -296,6 +311,60 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
 
         super.onDestroy();
     }
+
+    // region Permissions
+    @TargetApi(Build.VERSION_CODES.M)
+    private void requestLocationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // Android M Permission check 
+            if (this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("This app needs location access");
+                builder.setMessage("Please grant location access so this app can scan for Bluetooth peripherals");
+                builder.setPositiveButton(android.R.string.ok, null);
+                builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    public void onDismiss(DialogInterface dialog) {
+                        requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_FINE_LOCATION);
+                    }
+                });
+                builder.show();
+            }
+            }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUEST_FINE_LOCATION: {
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(TAG, "Location permission granted");
+                    // Autostart scan
+                    autostartScan();
+                    // Update UI
+                    updateUI();
+                } else {
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setTitle("Bluetooth Scanning not available");
+                    builder.setMessage("Since location access has not been granted, the app will not be able to scan for Bluetooth peripherals");
+                    builder.setPositiveButton(android.R.string.ok, null);
+                    builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+
+                        @Override
+                        public void onDismiss(DialogInterface dialog) {
+                        }
+
+                    });
+                    builder.show();
+                }
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    // endregion
+
 
     private void resumeScanning() {
         if (mIsScanPaused) {
