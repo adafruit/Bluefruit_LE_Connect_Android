@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -31,7 +30,7 @@ import com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightExpandableList
 
 import java.util.ArrayList;
 
-public class PinIOActivity extends UartInterfaceActivity  {
+public class PinIOActivity extends UartInterfaceActivity {
     // Log
     private final static String TAG = UartActivity.class.getSimpleName();
 
@@ -39,7 +38,7 @@ public class PinIOActivity extends UartInterfaceActivity  {
     private static final int kActivityRequestCode_ConnectedSettingsActivity = 0;
 
     // Config
-    private static final long CAPABILITY_QUERY_TIMEOUT = 5000;      // in milliseconds
+    private static final long CAPABILITY_QUERY_TIMEOUT = 15000;      // in milliseconds
 
     // Pin Constants
     private static final byte SYSEX_START = (byte) 0xF0;
@@ -207,7 +206,7 @@ public class PinIOActivity extends UartInterfaceActivity  {
     @Override
     public void onDataAvailable(BluetoothGattCharacteristic characteristic) {
         byte[] data = characteristic.getValue();
-        Log.d(TAG, "received: "+ BleUtils.bytesToHexWithSpaces(data));
+        Log.d(TAG, "received: " + BleUtils.bytesToHexWithSpaces(data));
 
         switch (mUartStatus) {
             case kUartStatus_QueryCapabilities:
@@ -344,9 +343,9 @@ public class PinIOActivity extends UartInterfaceActivity  {
                 }
                 mPinListAdapter.notifyDataSetChanged();
 
-                 if (isDefaultConfigurationAssumed) {
-                     defaultCapabilitiesAssumedDialog();
-                 }
+                if (isDefaultConfigurationAssumed) {
+                    defaultCapabilitiesAssumedDialog();
+                }
             }
         });
     }
@@ -428,7 +427,7 @@ public class PinIOActivity extends UartInterfaceActivity  {
             if (capabilitiesData.get(0) != SYSEX_START) {
                 Log.d(TAG, "SYSEX_START not present");
             }
-            if (endIndex<0) {
+            if (endIndex < 0) {
                 Log.d(TAG, "SYSEX_END not present");
             }
 
@@ -583,7 +582,7 @@ public class PinIOActivity extends UartInterfaceActivity  {
         // Limit the amount of messages sent over Uart
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastSentAnalogValueTime >= 100) {
-            Log.d(TAG, "pwm elapsed: "+(currentTime - lastSentAnalogValueTime));
+            Log.d(TAG, "pwm elapsed: " + (currentTime - lastSentAnalogValueTime));
             lastSentAnalogValueTime = currentTime;
 
             // Store
@@ -605,6 +604,7 @@ public class PinIOActivity extends UartInterfaceActivity  {
     }
 
     private ArrayList<Byte> receivedPinStateDataBuffer2 = new ArrayList<>();
+
     private int getUnsignedReceivedPinState(int index) {
         return receivedPinStateDataBuffer2.get(index) & 0xff;
     }
@@ -669,8 +669,8 @@ public class PinIOActivity extends UartInterfaceActivity  {
             boolean isAnalogReportingMessage = data0 >= 0xe0 && data0 <= 0xef;
 //            Log.d(TAG, "data0: "+data0);
 
-            Log.d(TAG, "receivedPinStateDataBuffer size: "+receivedPinStateDataBuffer2.size());
-  //          Log.d(TAG, "data[0]="+BleUtils.byteToHex(receivedPinStateDataBuffer.get(0))+ "data[1]="+BleUtils.byteToHex(receivedPinStateDataBuffer.get(1)));
+            Log.d(TAG, "receivedPinStateDataBuffer size: " + receivedPinStateDataBuffer2.size());
+            //          Log.d(TAG, "data[0]="+BleUtils.byteToHex(receivedPinStateDataBuffer.get(0))+ "data[1]="+BleUtils.byteToHex(receivedPinStateDataBuffer.get(1)));
 
             while (receivedPinStateDataBuffer2.size() >= 3 && (isDigitalReportingMessage || isAnalogReportingMessage)) {     // Check that current message length is at least 3 bytes
                 if (isDigitalReportingMessage) {            // Digital Reporting (per port)
@@ -698,7 +698,7 @@ public class PinIOActivity extends UartInterfaceActivity  {
                     if (index >= 0) {
                         PinData pin = mPins.get(index);
                         pin.analogValue = value;
-                        Log.d(TAG, "received analog value: "+value+" pin analog id: "+analogPinId+" digital Id: "+index);
+                        Log.d(TAG, "received analog value: " + value + " pin analog id: " + analogPinId + " digital Id: " + index);
                     } else {
                         Log.d(TAG, "Warning: received pinstate for unknown analog pin id: " + index);
                     }
@@ -1102,7 +1102,7 @@ public class PinIOActivity extends UartInterfaceActivity  {
                         long parentPacketPosition = ExpandableListView.getPackedPositionForGroup(groupPosition);
                         long parentFlatPosition = mPinListView.getFlatListPosition(parentPacketPosition);
                         if (parentFlatPosition >= mPinListView.getFirstVisiblePosition() && parentFlatPosition <= mPinListView.getLastVisiblePosition()) {
-                            View view = mPinListView.getChildAt((int)parentFlatPosition);
+                            View view = mPinListView.getChildAt((int) parentFlatPosition);
                             TextView valueTextView = (TextView) view.findViewById(R.id.stateTextView);
                             valueTextView.setText(String.valueOf(progress));
                         }
