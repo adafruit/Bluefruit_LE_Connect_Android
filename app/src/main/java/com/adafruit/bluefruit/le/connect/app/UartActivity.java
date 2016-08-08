@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -47,7 +46,6 @@ import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 public class UartActivity extends UartInterfaceActivity implements MqttManager.MqttManagerListener {
     // Log
@@ -328,6 +326,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
         }
     }
 
+    /*
     public void onClickFormatAscii(View view) {
         mShowDataInHexFormat = false;
         recreateDataView();
@@ -347,6 +346,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
         setDisplayFormatToTimestamp(true);
         recreateDataView();
     }
+    */
 
     private void setDisplayFormatToTimestamp(boolean enabled) {
         mIsTimestampDisplayMode = enabled;
@@ -372,8 +372,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
         if (mIsTimestampDisplayMode) {
             MenuItem displayModeTimestampMenuItem = displayModeSubMenu.findItem(R.id.action_displaymode_timestamp);
             displayModeTimestampMenuItem.setChecked(true);
-        }
-        else {
+        } else {
             MenuItem displayModeTextMenuItem = displayModeSubMenu.findItem(R.id.action_displaymode_text);
             displayModeTextMenuItem.setChecked(true);
         }
@@ -385,8 +384,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
         if (mShowDataInHexFormat) {
             MenuItem dataModeHexMenuItem = dataModeSubMenu.findItem(R.id.action_datamode_hex);
             dataModeHexMenuItem.setChecked(true);
-        }
-        else {
+        } else {
             MenuItem dataModeAsciiMenuItem = dataModeSubMenu.findItem(R.id.action_datamode_ascii);
             dataModeAsciiMenuItem.setChecked(true);
         }
@@ -414,9 +412,10 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
     private int mMqttMenuItemAnimationFrame = 0;
 
     private void updateMqttStatus() {
-        if (mMqttMenuItem == null) return;      // Hack: Sometimes this could have not been initialized so we don't update icons
+        if (mMqttMenuItem == null)
+            return;      // Hack: Sometimes this could have not been initialized so we don't update icons
 
-        MqttManager mqttManager = mMqttManager.getInstance(this);
+        MqttManager mqttManager = MqttManager.getInstance(this);
         MqttManager.MqqtConnectionStatus status = mqttManager.getClientStatus();
 
         if (status == MqttManager.MqqtConnectionStatus.CONNECTING) {
@@ -559,13 +558,13 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
 
                 final UartDataChunk dataChunk = new UartDataChunk(System.currentTimeMillis(), UartDataChunk.TRANSFERMODE_RX, data);
                 mDataBuffer.add(dataChunk);
-                final String formattedData = mShowDataInHexFormat ? asciiToHex(data) : data;
 
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         if (mIsTimestampDisplayMode) {
                             final String currentDateTimeString = DateFormat.getTimeInstance().format(new Date(dataChunk.getTimestamp()));
+                            final String formattedData = mShowDataInHexFormat ? asciiToHex(data) : convertLineSeparators(data);
 
                             mBufferListAdapter.add(new TimestampData("[" + currentDateTimeString + "] TX: " + formattedData, mRxColor));
                             //mBufferListAdapter.add("[" + currentDateTimeString + "] RX: " + formattedData);
@@ -585,6 +584,11 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
                 }
             }
         }
+    }
+
+    private String convertLineSeparators(String text) {
+        String formattedText = text.replaceAll("(\\r\\n|\\r)", "\n");
+        return formattedText;
     }
 /*
     @Override
@@ -635,7 +639,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
                     final UartDataChunk dataChunk = mDataBuffer.get(i);
                     final boolean isRX = dataChunk.getMode() == UartDataChunk.TRANSFERMODE_RX;
                     final String data = dataChunk.getData();
-                    final String formattedData = mShowDataInHexFormat ? asciiToHex(data) : data;
+                    final String formattedData = mShowDataInHexFormat ? asciiToHex(data) : convertLineSeparators(data);
                     addTextToSpanBuffer(mTextSpanBuffer, formattedData, isRX ? mRxColor : mTxColor);
                 }
 
@@ -660,7 +664,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
                 final String formattedData = mShowDataInHexFormat ? asciiToHex(data) : data;
 
                 final String currentDateTimeString = DateFormat.getTimeInstance().format(new Date(dataChunk.getTimestamp()));
-                mBufferListAdapter.add(new TimestampData("[" + currentDateTimeString + "] " + (isRX ? "RX" : "TX") + ": " + formattedData, isRX?mRxColor:mTxColor));
+                mBufferListAdapter.add(new TimestampData("[" + currentDateTimeString + "] " + (isRX ? "RX" : "TX") + ": " + formattedData, isRX ? mRxColor : mTxColor));
 //                mBufferListAdapter.add("[" + currentDateTimeString + "] " + (isRX ? "RX" : "TX") + ": " + formattedData);
             }
             mBufferListView.setSelection(mBufferListAdapter.getCount());
