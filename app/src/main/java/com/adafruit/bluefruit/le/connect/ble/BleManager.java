@@ -64,11 +64,13 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
         mBleListener = listener;
 
     }
+
+    /*
     public BleManagerListener getBleListener()  {return mBleListener; }
 
     public BluetoothAdapter getAdapter() {
         return mAdapter;
-    }
+    }*/
 
     public BleManager(Context context) {
         // Init Adapter
@@ -162,9 +164,9 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
     public boolean refreshDeviceCache(){
         try {
             BluetoothGatt localBluetoothGatt = mGatt;
-            Method localMethod = localBluetoothGatt.getClass().getMethod("refresh", new Class[0]);
+            Method localMethod = localBluetoothGatt.getClass().getMethod("refresh");
             if (localMethod != null) {
-                boolean result = ((Boolean) localMethod.invoke(localBluetoothGatt, new Object[0])).booleanValue();
+                boolean result = (Boolean) localMethod.invoke(localBluetoothGatt);
                 if (result) {
                     Log.d(TAG, "Bluetooth refresh cache");
                 }
@@ -383,6 +385,9 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
 
     @Override
     public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+
+        // Log.d(TAG, "onConnectionStateChange status: "+status+ " newState: "+newState);
+
         if (newState == BluetoothProfile.STATE_CONNECTED) {
             mConnectionState = STATE_CONNECTED;
 

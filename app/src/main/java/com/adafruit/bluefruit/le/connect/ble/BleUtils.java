@@ -115,7 +115,7 @@ public class BleUtils {
 
             // Reset
             BluetoothAdapter bleAdapter = BleUtils.getBluetoothAdapter(mContext);
-            if (bleAdapter.isEnabled()) {
+            if (bleAdapter != null && bleAdapter.isEnabled()) {
                 boolean isDisablingBle = bleAdapter.disable();
                 if (isDisablingBle) {
                     Log.w(TAG, "Reset ble adapter started. Waiting to turn off");
@@ -133,7 +133,9 @@ public class BleUtils {
                     // Turn off has finished. Turn it on again
                     Log.d(TAG, "Ble adapter turned off. Turning on");
                     BluetoothAdapter bleAdapter = BleUtils.getBluetoothAdapter(mContext);
-                    bleAdapter.enable();
+                    if (bleAdapter != null) {
+                        bleAdapter.enable();
+                    }
                     break;
                 }
                 case BluetoothAdapter.STATE_TURNING_OFF:
