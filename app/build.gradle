@@ -8,8 +8,8 @@ android {
         applicationId "com.adafruit.bluefruit.le.connect"
         minSdkVersion 19
         targetSdkVersion 23
-        versionCode 13
-        versionName "2.1.2"
+        versionCode 14
+        versionName "2.1.3"
     }
 
     useLibrary 'org.apache.http.legacy'     // TODO: remove Apache library and use HttpURLConnection (Apache is deprecated since Android 6.0)
@@ -38,9 +38,9 @@ dependencies {
     compile(group: 'org.eclipse.paho', name: 'org.eclipse.paho.android.service', version: '1.0.2') {
         exclude module: 'support-v4'
     }
-    compile 'com.android.support:appcompat-v7:24.1.1'
+    compile 'com.android.support:appcompat-v7:24.2.0'
     compile 'com.larswerkman:HoloColorPicker:1.4'
-    compile 'com.android.support:design:24.1.1'
+    compile 'com.android.support:design:24.2.0'
 
     compile 'com.google.android.gms:play-services-analytics:9.4.0'
     compile 'com.google.android.gms:play-services-location:9.4.0'

@@ -152,39 +152,41 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
 
         // Only makes sense to check for a newer version if the user can download it (even if we could check the version number because is stored locally)
         mDeviceInfoData = new DeviceInfoData();     // Clear device info data
-        if (isNetworkAvailable()) {
-            // Check if the device is an adafruit updateable device
-            if (mListener == null) Log.w(TAG, "Trying to verify software version without a listener!!");
 
-            boolean hasDFUService = hasCurrentConnectedDeviceDFUService();
-            if (hasDFUService) {
-                BleManager bleManager = BleManager.getInstance(mContext);
-                BluetoothGattService deviceInformationService = bleManager.getGattService(kDeviceInformationService);
-                boolean hasDISService = deviceInformationService != null;
-                if (hasDISService) {
-                    bleManager.setBleListener(this);
+        // Check if the device is an adafruit updateable device
+        if (mListener == null) Log.w(TAG, "Trying to verify software version without a listener!!");
 
+        // Note: don't skip version check if internet is not available (because some charateristic can still be used to to display cached firmware updates)
+
+        boolean hasDFUService = hasCurrentConnectedDeviceDFUService();
+        if (hasDFUService) {
+            BleManager bleManager = BleManager.getInstance(mContext);
+            BluetoothGattService deviceInformationService = bleManager.getGattService(kDeviceInformationService);
+            boolean hasDISService = deviceInformationService != null;
+            if (hasDISService) {
+                bleManager.setBleListener(this);
+
+                    /*
                     final boolean isDISReadable = bleManager.isCharacteristicReadable(deviceInformationService, kManufacturerNameCharacteristic)
                             && bleManager.isCharacteristicReadable(deviceInformationService, kModelNumberCharacteristic)
                             && bleManager.isCharacteristicReadable(deviceInformationService, kSoftwareRevisionCharacteristic)
                             && bleManager.isCharacteristicReadable(deviceInformationService, kFirmwareRevisionCharacteristic);
+*/
 
-                    if (isDISReadable) {
 
-                        bleManager.readCharacteristic(deviceInformationService, kManufacturerNameCharacteristic);
-                        bleManager.readCharacteristic(deviceInformationService, kModelNumberCharacteristic);
-                        bleManager.readCharacteristic(deviceInformationService, kSoftwareRevisionCharacteristic);
-                        bleManager.readCharacteristic(deviceInformationService, kFirmwareRevisionCharacteristic);
+                //  if (isDISReadable) {
 
-                        // Data will be received asynchronously (onDataAvailable)
-                        return true;        // returns true that means that the process is still working
-                    }
-                } else {
-                    Log.d(TAG, "Updates: No DIS service found");
-                }
+                bleManager.readCharacteristic(deviceInformationService, kManufacturerNameCharacteristic);
+                bleManager.readCharacteristic(deviceInformationService, kModelNumberCharacteristic);
+                bleManager.readCharacteristic(deviceInformationService, kSoftwareRevisionCharacteristic);
+                bleManager.readCharacteristic(deviceInformationService, kFirmwareRevisionCharacteristic);
+
+                // Data will be received asynchronously (onDataAvailable)
+                return true;        // returns true that means that the process is still working
+                // }
+            } else {
+                Log.d(TAG, "Updates: No DIS service found");
             }
-        } else {
-            Log.d(TAG, "Updates: Internet connection not detected. Skipping version check...");
         }
 
         mListener.onFirmwareUpdatesChecked(false, null, mDeviceInfoData, getReleases());
@@ -360,13 +362,15 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         // release wakelock
         try {
             mWakeLock.release();
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
 
         if (mProgressDialog != null) {
             try {
                 mProgressDialog.dismiss();
-            }catch(Exception e) {};
+            } catch (Exception ignored) {
+            }
+            ;
             mProgressDialog = null;
         }
 
@@ -406,7 +410,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
         int type = sharedPreferences.getInt(kFailedTypePrefKey, -1);
         String hexFile = sharedPreferences.getString(kFailedHexPrefKey, null);
 
-        return storedDeviceAddress != null && storedDeviceAddress.equalsIgnoreCase(deviceAddress) && type >=0 && hexFile != null;
+        return storedDeviceAddress != null && storedDeviceAddress.equalsIgnoreCase(deviceAddress) && type >= 0 && hexFile != null;
     }
 
     public boolean startFailedInstallationRecovery(Activity activity) {
@@ -496,7 +500,7 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
             String contentString = null;
             try {
                 contentString = result.toString("UTF-8");
-            } catch (UnsupportedEncodingException e) {
+            } catch (UnsupportedEncodingException ignored) {
             }
 
             if (contentString != null) {
@@ -593,33 +597,39 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
             final String charUuid = characteristic.getUuid().toString();
             if (charUuid.equalsIgnoreCase(kManufacturerNameCharacteristic)) {
                 String manufacturer = readCharacteristicValueAsString(characteristic);
-                mDeviceInfoData.manufacturer = manufacturer != null ? manufacturer:"";
+                mDeviceInfoData.manufacturer = manufacturer != null ? manufacturer : "";
                 Log.d(TAG, "Updates: received manufacturer:" + mDeviceInfoData.manufacturer);
             } else if (charUuid.equalsIgnoreCase(kModelNumberCharacteristic)) {
                 String modelNumber = readCharacteristicValueAsString(characteristic);
-                mDeviceInfoData.modelNumber = modelNumber != null ? modelNumber:"";
+                mDeviceInfoData.modelNumber = modelNumber != null ? modelNumber : "";
                 Log.d(TAG, "Updates: received modelNumber:" + mDeviceInfoData.modelNumber);
             } else if (charUuid.equalsIgnoreCase(kSoftwareRevisionCharacteristic)) {
                 String softwareRevision = readCharacteristicValueAsString(characteristic);
-                mDeviceInfoData.softwareRevision = softwareRevision != null ? softwareRevision:"";
+                mDeviceInfoData.softwareRevision = softwareRevision != null ? softwareRevision : "";
                 Log.d(TAG, "Updates: received softwareRevision:" + mDeviceInfoData.softwareRevision);
             } else if (charUuid.equalsIgnoreCase(kFirmwareRevisionCharacteristic)) {
                 String firmwareRevision = readCharacteristicValueAsString(characteristic);
-                mDeviceInfoData.firmwareRevision = firmwareRevision != null ? firmwareRevision:"";
+                mDeviceInfoData.firmwareRevision = firmwareRevision != null ? firmwareRevision : "";
                 Log.d(TAG, "Updates: received firmwareRevision:" + mDeviceInfoData.firmwareRevision);
             }
         }
 
+        BleManager bleManager = BleManager.getInstance(mContext);
+        BluetoothGattService deviceInformationService = bleManager.getGattService(kDeviceInformationService);
+
         // Check if we have all data required to check if a software update is needed
-        if (mDeviceInfoData.manufacturer != null && mDeviceInfoData.modelNumber != null && mDeviceInfoData.firmwareRevision != null && mDeviceInfoData.softwareRevision != null) {
+        if ((mDeviceInfoData.manufacturer != null || !bleManager.isCharacteristicReadable(deviceInformationService, kManufacturerNameCharacteristic))
+                && (mDeviceInfoData.modelNumber != null || !bleManager.isCharacteristicReadable(deviceInformationService, kModelNumberCharacteristic))
+                && (mDeviceInfoData.firmwareRevision != null || !bleManager.isCharacteristicReadable(deviceInformationService, kFirmwareRevisionCharacteristic))
+                && (mDeviceInfoData.softwareRevision != null) || !bleManager.isCharacteristicReadable(deviceInformationService, kSoftwareRevisionCharacteristic)) {
             if (mListener != null) {
                 boolean isFirmwareUpdateAvailable = false;
 
                 Map<String, ReleasesParser.BoardInfo> allReleases = getReleases();
                 ReleasesParser.FirmwareInfo latestRelease = null;
 
-                boolean isManufacturerCorrect = mDeviceInfoData.manufacturer.equalsIgnoreCase(kManufacturer);
-                if (isManufacturerCorrect) {
+                boolean isManufacturerCorrect = mDeviceInfoData.manufacturer != null && mDeviceInfoData.manufacturer.equalsIgnoreCase(kManufacturer);
+                if (isManufacturerCorrect && mDeviceInfoData.modelNumber != null) {
                     ReleasesParser.BoardInfo boardInfo = allReleases.get(mDeviceInfoData.modelNumber);
                     if (boardInfo != null) {
                         List<ReleasesParser.FirmwareInfo> modelReleases = boardInfo.firmwareReleases;
@@ -629,7 +639,8 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                             do {
                                 latestRelease = modelReleases.get(selectedRelease);
                                 selectedRelease++;
-                            }while(latestRelease.isBeta && selectedRelease<modelReleases.size());
+                            }
+                            while (latestRelease.isBeta && selectedRelease < modelReleases.size());
 
                             if (!latestRelease.isBeta) {
                                 // Check if the bootloader is compatible with this version
@@ -640,21 +651,25 @@ public class FirmwareUpdater implements DownloadTask.DownloadTaskListener, BleMa
                                     String versionToIgnore = sharedPreferences.getString("pref_ignoredversion", "");
                                     if (ReleasesParser.versionCompare(latestRelease.version, versionToIgnore) != 0) {
 
-                                        final boolean isNewerVersion = ReleasesParser.versionCompare(latestRelease.version, mDeviceInfoData.softwareRevision) > 0;
-                                        final boolean showUpdateOnlyForNewerVersions = sharedPreferences.getBoolean("pref_updatesversioncheck", true);
+                                        if (mDeviceInfoData.softwareRevision != null) {
+                                            final boolean isNewerVersion = ReleasesParser.versionCompare(latestRelease.version, mDeviceInfoData.softwareRevision) > 0;
+                                            final boolean showUpdateOnlyForNewerVersions = sharedPreferences.getBoolean("pref_updatesversioncheck", true);
 
-                                        isFirmwareUpdateAvailable = isNewerVersion || !showUpdateOnlyForNewerVersions;
+                                            isFirmwareUpdateAvailable = isNewerVersion || !showUpdateOnlyForNewerVersions;
 
-                                        if (BuildConfig.DEBUG) {
-                                            if (isNewerVersion) {
-                                                Log.d(TAG, "Updates: New version found. Ask the user to install: " + latestRelease.version);
-                                            } else {
-                                                Log.d(TAG, "Updates: Device has already latest version: " + mDeviceInfoData.softwareRevision);
+                                            if (BuildConfig.DEBUG) {
+                                                if (isNewerVersion) {
+                                                    Log.d(TAG, "Updates: New version found. Ask the user to install: " + latestRelease.version);
+                                                } else {
+                                                    Log.d(TAG, "Updates: Device has already latest version: " + mDeviceInfoData.softwareRevision);
 
-                                                if (isFirmwareUpdateAvailable) {
-                                                    Log.d(TAG, "Updates: user asked to show old versions too");
+                                                    if (isFirmwareUpdateAvailable) {
+                                                        Log.d(TAG, "Updates: user asked to show old versions too");
+                                                    }
                                                 }
                                             }
+                                        } else {
+                                            Log.d(TAG, "Updates: softwareRevision is null. Skipping...");
                                         }
                                     } else {
                                         Log.d(TAG, "Updates: User ignored version: " + versionToIgnore + ". Skipping...");
