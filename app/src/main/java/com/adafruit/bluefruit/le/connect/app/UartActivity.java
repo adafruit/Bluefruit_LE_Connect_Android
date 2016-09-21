@@ -42,6 +42,7 @@ import com.adafruit.bluefruit.le.connect.mqtt.MqttSettings;
 
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -273,10 +274,16 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
         }
 
         // Add to current buffer
-        UartDataChunk dataChunk = new UartDataChunk(System.currentTimeMillis(), UartDataChunk.TRANSFERMODE_TX, data);
+        byte[] bytes = new byte[0];
+        try {
+            bytes = data.getBytes("UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        UartDataChunk dataChunk = new UartDataChunk(System.currentTimeMillis(), UartDataChunk.TRANSFERMODE_TX, bytes);
         mDataBuffer.add(dataChunk);
 
-        final String formattedData = mShowDataInHexFormat ? asciiToHex(data) : data;
+        final String formattedData = mShowDataInHexFormat ? bytesToHex(bytes) : bytesToText(bytes, true);
         if (mIsTimestampDisplayMode) {
             final String currentDateTimeString = DateFormat.getTimeInstance().format(new Date(dataChunk.getTimestamp()));
             mBufferListAdapter.add(new TimestampData("[" + currentDateTimeString + "] TX: " + formattedData, mTxColor));
@@ -552,11 +559,9 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
         if (characteristic.getService().getUuid().toString().equalsIgnoreCase(UUID_SERVICE)) {
             if (characteristic.getUuid().toString().equalsIgnoreCase(UUID_RX)) {
                 final byte[] bytes = characteristic.getValue();
-                final String data = new String(bytes, Charset.forName("UTF-8"));
-
                 mReceivedBytes += bytes.length;
 
-                final UartDataChunk dataChunk = new UartDataChunk(System.currentTimeMillis(), UartDataChunk.TRANSFERMODE_RX, data);
+                final UartDataChunk dataChunk = new UartDataChunk(System.currentTimeMillis(), UartDataChunk.TRANSFERMODE_RX, bytes);
                 mDataBuffer.add(dataChunk);
 
                 runOnUiThread(new Runnable() {
@@ -564,7 +569,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
                     public void run() {
                         if (mIsTimestampDisplayMode) {
                             final String currentDateTimeString = DateFormat.getTimeInstance().format(new Date(dataChunk.getTimestamp()));
-                            final String formattedData = mShowDataInHexFormat ? asciiToHex(data) : convertLineSeparators(data);
+                            final String formattedData = mShowDataInHexFormat ? bytesToHex(bytes) : bytesToText(bytes, true);
 
                             mBufferListAdapter.add(new TimestampData("[" + currentDateTimeString + "] TX: " + formattedData, mRxColor));
                             //mBufferListAdapter.add("[" + currentDateTimeString + "] RX: " + formattedData);
@@ -580,15 +585,19 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
                 if (settings.isPublishEnabled()) {
                     String topic = settings.getPublishTopic(MqttUartSettingsActivity.kPublishFeed_RX);
                     final int qos = settings.getPublishQos(MqttUartSettingsActivity.kPublishFeed_RX);
-                    mMqttManager.publish(topic, data, qos);
+                    final String text = bytesToText(bytes, false);
+                    mMqttManager.publish(topic, text, qos);
                 }
             }
         }
     }
 
-    private String convertLineSeparators(String text) {
-        String formattedText = text.replaceAll("(\\r\\n|\\r)", "\n");
-        return formattedText;
+    private String bytesToText(byte[] bytes, boolean simplifyNewLine) {
+        String text = new String(bytes, Charset.forName("UTF-8"));
+        if (simplifyNewLine) {
+            text = text.replaceAll("(\\r\\n|\\r)", "\n");
+        }
+        return text;
     }
 /*
     @Override
@@ -638,8 +647,8 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
                 for (int i = mDataBufferLastSize; i < bufferSize; i++) {
                     final UartDataChunk dataChunk = mDataBuffer.get(i);
                     final boolean isRX = dataChunk.getMode() == UartDataChunk.TRANSFERMODE_RX;
-                    final String data = dataChunk.getData();
-                    final String formattedData = mShowDataInHexFormat ? asciiToHex(data) : convertLineSeparators(data);
+                    final byte[] bytes = dataChunk.getData();
+                    final String formattedData = mShowDataInHexFormat ? bytesToHex(bytes) : bytesToText(bytes, true);
                     addTextToSpanBuffer(mTextSpanBuffer, formattedData, isRX ? mRxColor : mTxColor);
                 }
 
@@ -660,8 +669,8 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
 
                 final UartDataChunk dataChunk = mDataBuffer.get(i);
                 final boolean isRX = dataChunk.getMode() == UartDataChunk.TRANSFERMODE_RX;
-                final String data = dataChunk.getData();
-                final String formattedData = mShowDataInHexFormat ? asciiToHex(data) : data;
+                final byte[] bytes = dataChunk.getData();
+                final String formattedData = mShowDataInHexFormat ? bytesToHex(bytes) : bytesToText(bytes, true);
 
                 final String currentDateTimeString = DateFormat.getTimeInstance().format(new Date(dataChunk.getTimestamp()));
                 mBufferListAdapter.add(new TimestampData("[" + currentDateTimeString + "] " + (isRX ? "RX" : "TX") + ": " + formattedData, isRX ? mRxColor : mTxColor));
@@ -675,12 +684,12 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
         }
     }
 
-    private String asciiToHex(String text) {
-        StringBuffer stringBuffer = new StringBuffer();
-        for (int i = 0; i < text.length(); i++) {
-            String charString = String.format("0x%02X", (byte) text.charAt(i));
+    private String bytesToHex(byte[] bytes) {
+        StringBuilder stringBuffer = new StringBuilder();
+        for (byte aByte : bytes) {
+            String charString = String.format("%02X", (byte) aByte);
 
-            stringBuffer.append(charString + " ");
+            stringBuffer.append(charString).append(" ");
         }
         return stringBuffer.toString();
     }
@@ -767,7 +776,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
         String text;
         int textColor;
 
-        public TimestampData(String text, int textColor) {
+        TimestampData(String text, int textColor) {
             this.text = text;
             this.textColor = textColor;
         }
@@ -775,7 +784,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
 
     private class TimestampListAdapter extends ArrayAdapter<TimestampData> {
 
-        public TimestampListAdapter(Context context, int textViewResourceId) {
+        TimestampListAdapter(Context context, int textViewResourceId) {
             super(context, textViewResourceId);
         }
 

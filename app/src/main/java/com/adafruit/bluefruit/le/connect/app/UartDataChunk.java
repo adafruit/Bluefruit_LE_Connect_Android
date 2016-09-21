@@ -1,20 +1,20 @@
 package com.adafruit.bluefruit.le.connect.app;
 
-public class UartDataChunk {
+class UartDataChunk {
     static final int TRANSFERMODE_TX = 0;
     static final int TRANSFERMODE_RX = 1;
 
     private long mTimestamp;        // in millis
     private int mMode;
-    private String mData;
+    private byte[] mData;
 
-    public UartDataChunk(long timestamp, int mode, String data) {
+    UartDataChunk(long timestamp, int mode, byte[] bytes) {
         mTimestamp = timestamp;
         mMode = mode;
-        mData = data;
+        mData = bytes;
     }
 
-    public long getTimestamp() {
+    long getTimestamp() {
         return mTimestamp;
     }
 
@@ -22,7 +22,7 @@ public class UartDataChunk {
         return mMode;
     }
 
-    public String getData() {
+    public byte[] getData() {
         return mData;
     }
 }
