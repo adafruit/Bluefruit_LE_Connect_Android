@@ -32,6 +32,11 @@
     <string name="scan_device_uuid">UUID</string>
     <string name="scan_device_services">Service UUIDs</string>
     <string name="scan_device_txpower">TX Power Level</string>
+    <string name="scan_device_viewadvraw">View raw data</string>
+
+    <string name="scan_device_advertising_title">Advertising Raw Data</string>
+
+
     <string name="scan_device_beacon_manufacturer">Manufacturer</string>
     <string name="scan_device_beacon_major">Major</string>
     <string name="scan_device_beacon_minor">Minor</string>

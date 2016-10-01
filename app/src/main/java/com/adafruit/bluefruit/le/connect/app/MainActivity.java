@@ -13,6 +13,8 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -27,6 +29,8 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.text.Editable;
+import android.text.Html;
+import android.text.Spanned;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -35,8 +39,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.Transformation;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -472,8 +474,8 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
 
         mFiltersExpandImageView.setImageResource(isOpen ? R.drawable.ic_expand_less_black_24dp : R.drawable.ic_expand_more_black_24dp);
 
-        float paddingTop = MetricsUtils.convertDpToPixel(this, (float)(isOpen ? 200:44));
-        mScannedDevicesListView.setPadding(0, (int)paddingTop, 0, 0);
+        float paddingTop = MetricsUtils.convertDpToPixel(this, (float) (isOpen ? 200 : 44));
+        mScannedDevicesListView.setPadding(0, (int) paddingTop, 0, 0);
 
         /*
         mFiltersPanelView.setVisibility(View.VISIBLE);
@@ -485,13 +487,13 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         mFiltersPanelView.setVisibility(isOpen ? View.VISIBLE : View.GONE);
 
         mFiltersPanelView.animate()
-                .alpha(isOpen ? 1.0f:0)
+                .alpha(isOpen ? 1.0f : 0)
                 .setDuration(300)
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        mFiltersPanelView.setVisibility(isOpen ? View.VISIBLE:View.GONE);
+                        mFiltersPanelView.setVisibility(isOpen ? View.VISIBLE : View.GONE);
                     }
                 });
 
@@ -567,9 +569,9 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         Menu menu = popup.getMenu();
         inflater.inflate(R.menu.menu_scan_filters_name, menu);
         final boolean isFilterNameExact = mPeripheralList.isFilterNameExact();
-        menu.findItem(isFilterNameExact ? R.id.scanfilter_name_exact:R.id.scanfilter_name_contains).setChecked(true);
+        menu.findItem(isFilterNameExact ? R.id.scanfilter_name_exact : R.id.scanfilter_name_contains).setChecked(true);
         final boolean isFilterNameCaseInsensitive = mPeripheralList.isFilterNameCaseInsensitive();
-        menu.findItem(isFilterNameCaseInsensitive ? R.id.scanfilter_name_insensitive:R.id.scanfilter_name_sensitive).setChecked(true);
+        menu.findItem(isFilterNameCaseInsensitive ? R.id.scanfilter_name_insensitive : R.id.scanfilter_name_sensitive).setChecked(true);
         popup.show();
     }
 
@@ -1516,8 +1518,8 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             if (mFilterName != null && !mFilterName.isEmpty()) {
                 for (Iterator<BluetoothDeviceData> it = peripherals.iterator(); it.hasNext(); ) {
                     String name = it.next().getName();
+                    boolean testPassed = false;
                     if (name != null) {
-                        boolean testPassed;
                         if (mIsFilterNameExact) {
                             if (mIsFilterNameCaseInsensitive) {
                                 testPassed = name.compareToIgnoreCase(mFilterName) == 0;
@@ -1531,10 +1533,9 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
                                 testPassed = name.contains(mFilterName);
                             }
                         }
-
-                        if (!testPassed) {
-                            it.remove();
-                        }
+                    }
+                    if (!testPassed) {
+                        it.remove();
                     }
                 }
             }
@@ -1591,29 +1592,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
 
     // region adapters
     private class ExpandableListAdapter extends BaseExpandableListAdapter {
-        // Constants for common child
-        private static final int kChildCommon_Name = 0;
-        private static final int kChildCommon_Address = 1;
-        private static final int kChildCommon_Services = 2;
-        private static final int kChildCommon_TXPower = 3;
-
-        // Constants for beacon child
-        private static final int kChildBeacon_Name = 0;
-        private static final int kChildBeacon_Address = 1;
-        private static final int kChildBeacon_Manufacturer = 2;
-        private static final int kChildBeacon_UUID = 3;
-        private static final int kChildBeacon_Major = 4;
-        private static final int kChildBeacon_Minor = 5;
-        private static final int kChildBeacon_TXPower = 6;
-
-        // Constants for uribeacon child
-        private static final int kChildUriBeacon_Name = 0;
-        private static final int kChildUriBeacon_Address = 1;
-        private static final int kChildUriBeacon_Uri = 2;
-        private static final int kChildUriBeacon_TXPower = 3;
-
         // Data
-        //private ArrayList<BluetoothDeviceData> mBluetoothDevices;
         private ArrayList<BluetoothDeviceData> mFilteredPeripherals;
 
         private class GroupViewHolder {
@@ -1624,38 +1603,15 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             Button connectButton;
         }
 
-        /*
-        ExpandableListAdapter(ArrayList<BluetoothDeviceData> bluetoothDevices) {
-            mBluetoothDevices = bluetoothDevices;
-        }*/
-
         @Override
         public int getGroupCount() {
-            int count = 0;
-
-            /*
-            if (mBluetoothDevices != null) {
-                count = mBluetoothDevices.size();
-            }
-            */
-
             mFilteredPeripherals = mPeripheralList.filteredPeripherals(true);
             return mFilteredPeripherals.size();
         }
 
         @Override
         public int getChildrenCount(int groupPosition) {
-            BluetoothDeviceData deviceData = mFilteredPeripherals.get(groupPosition);
-            switch (deviceData.type) {
-                case BluetoothDeviceData.kType_Beacon:
-                    return 7;       // Local name, Address, Manufacturer,  UUID, Major, Minor and TX Power Level
-
-                case BluetoothDeviceData.kType_UriBeacon:
-                    return 4;       // Local name, Address, Uri and TX Power Level
-
-                default:
-                    return 4;   // Local name, Address, Service UUIDs and TX Power Level
-            }
+            return 1;
         }
 
         @Override
@@ -1664,126 +1620,122 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         }
 
         @Override
-        public Object getChild(int groupPosition, int childPosition) {
+        public Spanned getChild(int groupPosition, int childPosition) {
             BluetoothDeviceData deviceData = mFilteredPeripherals.get(groupPosition);
 
+            String text;
             switch (deviceData.type) {
                 case BluetoothDeviceData.kType_Beacon:
-                    return getChildBeacon(deviceData, childPosition);
+                    text = getChildBeacon(deviceData);
+                    break;
 
                 case BluetoothDeviceData.kType_UriBeacon:
-                    return getChildUriBeacon(deviceData, childPosition);
+                    text = getChildUriBeacon(deviceData);
+                    break;
 
                 default:
-                    return getChildCommon(deviceData, childPosition);
+                    text = getChildCommon(deviceData);
+                    break;
             }
+
+            Spanned result;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                result = Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY);
+            } else {
+                result = Html.fromHtml(text);
+            }
+            return result;
         }
 
 
-        private Object getChildUriBeacon(BluetoothDeviceData deviceData, int childPosition) {
-            switch (childPosition) {
-                case kChildUriBeacon_Name: {
-                    String name = deviceData.getName();
-                    return getString(R.string.scan_device_localname) + ": " + (name == null ? "" : name);
-                }
-                case kChildUriBeacon_Address: {
-                    String address = deviceData.device.getAddress();
-                    return getString(R.string.scan_device_address) + ": " + (address == null ? "" : address);
-                }
-                case kChildUriBeacon_Uri: {
-                    String uri = UriBeaconUtils.getUriFromAdvertisingPacket(deviceData.scanRecord);
-                    return getString(R.string.scan_device_uribeacon_uri) + ": " + uri;
-                }
-                case kChildUriBeacon_TXPower: {
-                    return getString(R.string.scan_device_txpower) + ": " + deviceData.txPower;
-                }
-                default:
-                    return null;
+        private String getChildUriBeacon(BluetoothDeviceData deviceData) {
+            StringBuilder result = new StringBuilder();
+
+            String name = deviceData.getName();
+            if (name != null) {
+                result.append(getString(R.string.scan_device_localname)).append(": <b>").append(name).append("</b><br>");
             }
+
+            String address = deviceData.device.getAddress();
+            result.append(getString(R.string.scan_device_address) + ": <b>" + (address == null ? "" : address) + "</b><br>");
+
+            String uri = UriBeaconUtils.getUriFromAdvertisingPacket(deviceData.scanRecord) + "</b><br>";
+            result.append(getString(R.string.scan_device_uribeacon_uri)).append(": <b>").append(uri);
+
+            result.append(getString(R.string.scan_device_txpower)).append(": <b>").append(deviceData.txPower).append("</b>");
+
+            return result.toString();
         }
 
-        private Object getChildCommon(BluetoothDeviceData deviceData, int childPosition) {
-            switch (childPosition) {
-                case kChildCommon_Name: {
-                    String name = deviceData.getName();
-                    return getString(R.string.scan_device_localname) + ": " + (name == null ? "" : name);
-                }
-                case kChildCommon_Address: {
-                    String address = deviceData.device.getAddress();
-                    return getString(R.string.scan_device_address) + ": " + (address == null ? "" : address);
-                }
-                case kChildCommon_Services: {
-                    StringBuilder text = new StringBuilder();
-                    if (deviceData.uuids != null) {
-                        int i = 0;
-                        for (UUID uuid : deviceData.uuids) {
-                            if (i > 0) text.append(", ");
-                            text.append(uuid.toString().toUpperCase());
-                            i++;
-                        }
-                    }
-                    return getString(R.string.scan_device_services) + ": " + text;
-                }
-                case kChildCommon_TXPower: {
-                    return getString(R.string.scan_device_txpower) + ": " + deviceData.txPower;
-                }
-                default:
-                    return null;
+
+        private String getChildCommon(BluetoothDeviceData deviceData) {
+            StringBuilder result = new StringBuilder();
+
+            String name = deviceData.getName();
+            if (name != null) {
+                result.append(getString(R.string.scan_device_localname)).append(": <b>").append(name).append("</b><br>");
             }
+            String address = deviceData.device.getAddress();
+            result.append(getString(R.string.scan_device_address)).append(": <b>").append(address == null ? "" : address).append("</b><br>");
+
+            StringBuilder serviceText = new StringBuilder();
+            if (deviceData.uuids != null) {
+                int i = 0;
+                for (UUID uuid : deviceData.uuids) {
+                    if (i > 0) serviceText.append(", ");
+                    serviceText.append(uuid.toString().toUpperCase());
+                    i++;
+                }
+            }
+            if (!serviceText.toString().isEmpty()) {
+                result.append(getString(R.string.scan_device_services)).append(": <b>").append(serviceText).append("</b><br>");
+            }
+            result.append(getString(R.string.scan_device_txpower)).append(": <b>").append(deviceData.txPower).append("</b>");
+
+            return result.toString();
         }
 
-        private Object getChildBeacon(BluetoothDeviceData deviceData, int childPosition) {
-            switch (childPosition) {
-                case kChildBeacon_Name: {
-                    String name = deviceData.getName();
-                    return getString(R.string.scan_device_localname) + ": " + (name == null ? "" : name);
-                }
-                case kChildBeacon_Address: {
-                    String address = deviceData.device.getAddress();
-                    return getString(R.string.scan_device_address) + ": " + (address == null ? "" : address);
-                }
-                case kChildBeacon_Manufacturer: {
-                    final byte[] manufacturerBytes = {deviceData.scanRecord[6], deviceData.scanRecord[5]};      // Little endan
-                    String manufacturer = BleUtils.bytesToHex(manufacturerBytes);
+        private String getChildBeacon(BluetoothDeviceData deviceData) {
+            StringBuilder result = new StringBuilder();
 
-                    // Check if the manufacturer is known, and replace the id for a name
-                    String kKnownManufacturers[] = getResources().getStringArray(R.array.beacon_manufacturers_ids);
-                    int knownIndex = Arrays.asList(kKnownManufacturers).indexOf(manufacturer);
-                    if (knownIndex >= 0) {
-                        String kManufacturerNames[] = getResources().getStringArray(R.array.beacon_manufacturers_names);
-                        manufacturer = kManufacturerNames[knownIndex];
-                    }
-
-                    return getString(R.string.scan_device_beacon_manufacturer) + ": " + (manufacturer == null ? "" : manufacturer);
-                }
-
-                case kChildBeacon_UUID: {
-                    StringBuilder text = new StringBuilder();
-                    if (deviceData.uuids != null && deviceData.uuids.size() == 1) {
-                        UUID uuid = deviceData.uuids.get(0);
-                        text.append(uuid.toString().toUpperCase());
-                    }
-                    return getString(R.string.scan_device_uuid) + ": " + text;
-                }
-
-                case kChildBeacon_Major: {
-                    final byte[] majorBytes = {deviceData.scanRecord[25], deviceData.scanRecord[26]};           // Big endian
-                    String major = BleUtils.bytesToHex(majorBytes);
-                    return getString(R.string.scan_device_beacon_major) + ": " + major;
-                }
-
-                case kChildBeacon_Minor: {
-                    final byte[] minorBytes = {deviceData.scanRecord[27], deviceData.scanRecord[28]};           // Big endian
-                    String minor = BleUtils.bytesToHex(minorBytes);
-                    return getString(R.string.scan_device_beacon_minor) + ": " + minor;
-                }
-
-                case kChildBeacon_TXPower: {
-                    return getString(R.string.scan_device_txpower) + ": " + deviceData.txPower;
-                }
-                default:
-                    return null;
+            String name = deviceData.getName();
+            if (name != null) {
+                result.append(getString(R.string.scan_device_localname)).append(": <b>").append(name).append("</b><br>");
             }
+            String address = deviceData.device.getAddress();
+            result.append(getString(R.string.scan_device_address)).append(": <b>").append(address == null ? "" : address).append("</b><br>");
+
+            final byte[] manufacturerBytes = {deviceData.scanRecord[6], deviceData.scanRecord[5]};      // Little endan
+            String manufacturer = BleUtils.bytesToHex(manufacturerBytes);
+
+            // Check if the manufacturer is known, and replace the id for a name
+            String kKnownManufacturers[] = getResources().getStringArray(R.array.beacon_manufacturers_ids);
+            int knownIndex = Arrays.asList(kKnownManufacturers).indexOf(manufacturer);
+            if (knownIndex >= 0) {
+                String kManufacturerNames[] = getResources().getStringArray(R.array.beacon_manufacturers_names);
+                manufacturer = kManufacturerNames[knownIndex];
+            }
+
+            result.append(getString(R.string.scan_device_beacon_manufacturer)).append(": <b>").append(manufacturer == null ? "" : manufacturer).append("</b><br>");
+
+            StringBuilder text = new StringBuilder();
+            if (deviceData.uuids != null && deviceData.uuids.size() == 1) {
+                UUID uuid = deviceData.uuids.get(0);
+                text.append(uuid.toString().toUpperCase());
+            }
+            result.append(getString(R.string.scan_device_uuid)).append(": <b>").append(text).append("</b><br>");
+
+            final byte[] majorBytes = {deviceData.scanRecord[25], deviceData.scanRecord[26]};           // Big endian
+            String major = BleUtils.bytesToHex(majorBytes);
+            result.append(getString(R.string.scan_device_beacon_major)).append(": <b>").append(major).append("</b><br>");
+
+            final byte[] minorBytes = {deviceData.scanRecord[27], deviceData.scanRecord[28]};           // Big endian
+            String minor = BleUtils.bytesToHex(minorBytes);
+            result.append(getString(R.string.scan_device_beacon_minor)).append(": <b>").append(minor).append("</b><br>");
+
+            result.append(getString(R.string.scan_device_txpower)).append(": <b>").append(deviceData.txPower).append("</b>");
+
+            return result.toString();
         }
 
 
@@ -1863,15 +1815,44 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         }
 
         @Override
-        public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+        public View getChildView(final int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
             if (convertView == null) {
                 convertView = getLayoutInflater().inflate(R.layout.layout_scan_item_child, parent, false);
             }
 
             // We don't expect many items so for clarity just find the views each time instead of using a ViewHolder
-            TextView textView = (TextView) convertView.findViewById(R.id.textView);
-            String text = (String) getChild(groupPosition, childPosition);
+            TextView textView = (TextView) convertView.findViewById(R.id.dataTextView);
+            Spanned text = getChild(groupPosition, childPosition);
             textView.setText(text);
+
+            Button rawDataButton = (Button) convertView.findViewById(R.id.rawDataButton);
+            rawDataButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    ArrayList<BluetoothDeviceData> filteredPeripherals = mPeripheralList.filteredPeripherals(false);
+                    if (groupPosition < filteredPeripherals.size()) {
+                        final BluetoothDeviceData deviceData = filteredPeripherals.get(groupPosition);
+                        final byte[] scanRecord = deviceData.scanRecord;
+                        final String packetText = BleUtils.bytesToHexWithSpaces(scanRecord);
+                        final String clipboardLabel = getString(R.string.scan_device_advertising_title);
+
+                        new AlertDialog.Builder(MainActivity.this)
+                                .setTitle(R.string.scan_device_advertising_title)
+                                .setMessage(packetText)
+                                .setPositiveButton(android.R.string.ok, null)
+                                .setNeutralButton(android.R.string.copy, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                                        ClipData clip = ClipData.newPlainText(clipboardLabel, packetText);
+                                        clipboard.setPrimaryClip(clip);
+                                    }
+                                })
+                                .show();
+                    }
+
+                }
+            });
 
             return convertView;
         }
@@ -1881,7 +1862,8 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             return false;
         }
     }
-    //endregion
+
+//endregion
 
     // region DataFragment
     public static class DataFragment extends Fragment {
@@ -1898,6 +1880,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             super.onCreate(savedInstanceState);
             setRetainInstance(true);
         }
+
     }
 
     private void restoreRetainedDataFragment() {
