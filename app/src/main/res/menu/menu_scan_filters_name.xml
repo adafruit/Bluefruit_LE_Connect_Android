@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group
+        android:id="@+id/grp1"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/scanfilter_name_contains"
+            android:title="@string/scan_filters_name_settings_contains" />
+
+        <item
+            android:id="@+id/scanfilter_name_exact"
+            android:title="@string/scan_filters_name_settings_exact" />
+
+    </group>
+
+    <group
+        android:id="@+id/grp2"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/scanfilter_name_sensitive"
+            android:title="@string/scan_filters_name_settings_casesensitive" />
+
+        <item
+            android:id="@+id/scanfilter_name_insensitive"
+            android:title="@string/scan_filters_name_settings_caseinsensitive" />
+    </group>
+</menu>

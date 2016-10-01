@@ -13,7 +13,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 
-public class DownloadTask extends AsyncTask<String, Integer, ByteArrayOutputStream> {
+class DownloadTask extends AsyncTask<String, Integer, ByteArrayOutputStream> {
     // Constants
     private final static String TAG = DownloadTask.class.getSimpleName();
 
@@ -25,7 +25,7 @@ public class DownloadTask extends AsyncTask<String, Integer, ByteArrayOutputStre
     private String mUrlAddress;
     private Object mTag;
 
-    public DownloadTask(Context context, DownloadTaskListener listener, int operationId) {
+    DownloadTask(Context context, DownloadTaskListener listener, int operationId) {
         mContext = context;
         mListener = listener;
         mOperationId = operationId;

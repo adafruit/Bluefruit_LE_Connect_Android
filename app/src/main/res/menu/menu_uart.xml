@@ -1,20 +1,20 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-      xmlns:app="http://schemas.android.com/apk/res-auto"
-      xmlns:tools="http://schemas.android.com/tools"
-      tools:context="com.adafruit.bluefruit.le.connect.app.UartActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.adafruit.bluefruit.le.connect.app.UartActivity">
 
     <item
         android:id="@+id/action_mqttsettings"
         android:icon="@drawable/mqtt_disconnected"
         android:title="@string/action_mqttsettings"
-        app:showAsAction="always"/>
+        app:showAsAction="always" />
 
 
     <item
         android:id="@+id/action_help"
         android:icon="@drawable/ic_info_outline_menu"
         android:title="@string/action_info"
-        app:showAsAction="always"/>
+        app:showAsAction="always" />
 
 
     <group android:id="@+id/uartControls">
@@ -31,12 +31,12 @@
                     <item
                         android:id="@+id/action_displaymode_timestamp"
                         android:title="@string/uart_displaymode_timestamp"
-                        app:showAsAction="never"/>
+                        app:showAsAction="never" />
 
                     <item
                         android:id="@+id/action_displaymode_text"
                         android:title="@string/uart_displaymode_text"
-                        app:showAsAction="never"/>
+                        app:showAsAction="never" />
                 </group>
             </menu>
         </item>
@@ -52,12 +52,12 @@
                     <item
                         android:id="@+id/action_datamode_ascii"
                         android:title="@string/uart_format_ascii"
-                        app:showAsAction="never"/>
+                        app:showAsAction="never" />
 
                     <item
                         android:id="@+id/action_datamode_hex"
                         android:title="@string/uart_format_hexadecimal"
-                        app:showAsAction="never"/>
+                        app:showAsAction="never" />
                 </group>
             </menu>
         </item>
@@ -68,27 +68,26 @@
             <item
                 android:id="@+id/action_echo"
                 android:title="@string/uart_action_echo"
-                app:showAsAction="never"/>
+                app:showAsAction="never" />
             <item
                 android:id="@+id/action_eol"
                 android:title="@string/uart_action_eol"
-                app:showAsAction="never"/>
+                app:showAsAction="never" />
         </group>
     </group>
 
 
-    <group
-        android:id="@+id/extra">
+    <group android:id="@+id/extra">
         <item
             android:id="@+id/action_connected_settings"
             android:icon="@drawable/ic_settings_white_24dp"
             android:title="@string/action_firmwareupdates"
-            app:showAsAction="never"/>
+            app:showAsAction="never" />
 
         <item
             android:id="@+id/action_refreshcache"
             android:title="@string/action_refreshcache"
-            app:showAsAction="never"/>
+            app:showAsAction="never" />
 
     </group>
 </menu>

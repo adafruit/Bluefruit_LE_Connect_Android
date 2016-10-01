@@ -76,7 +76,7 @@ public class PreferencesFragment extends PreferenceFragment implements SharedPre
 //                PreferenceManager.setDefaultValues(getActivity(), R.xml.preferences, true);
                 SharedPreferences.Editor editor = preferences.edit();
                 editor.clear();
-                editor.commit();
+                editor.apply();
 
                 // Refresh view
                 setPreferenceScreen(null);
@@ -155,7 +155,7 @@ public class PreferencesFragment extends PreferenceFragment implements SharedPre
         int uartTextMaxPackets = UartActivity.kDefaultMaxPacketsToPaintAsText;
         try {
             uartTextMaxPackets = Integer.parseInt(uartTextMaxPacketsString);
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException ignored) {
         }
         if (uartTextMaxPackets<1) uartTextMaxPackets = 1;       // Mininum value is 1
 

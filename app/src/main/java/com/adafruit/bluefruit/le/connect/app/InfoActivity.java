@@ -9,6 +9,7 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -316,10 +317,10 @@ public class InfoActivity extends AppCompatActivity implements BleManager.BleMan
         public String name;
         public String uuid;
 
-        public boolean isShowingName = true;
-        public int dataFormat = kDataFormat_Auto;       // will try to display as string, if is not visible then display it as hex
+        boolean isShowingName = true;
+        int dataFormat = kDataFormat_Auto;       // will try to display as string, if is not visible then display it as hex
 
-        public ElementPath(String serviceUUID, int serviceInstance, String characteristicUUID, String descriptorUUID, String name, String uuid) {
+        ElementPath(String serviceUUID, int serviceInstance, String characteristicUUID, String descriptorUUID, String name, String uuid) {
             this.serviceUUID = serviceUUID;
             this.serviceInstance = serviceInstance;
             this.characteristicUUID = characteristicUUID;
@@ -328,7 +329,7 @@ public class InfoActivity extends AppCompatActivity implements BleManager.BleMan
             this.uuid = uuid;
         }
 
-        public String getKey() {
+        String getKey() {
             return serviceUUID + serviceInstance + characteristicUUID + descriptorUUID;
         }
 
@@ -345,7 +346,7 @@ public class InfoActivity extends AppCompatActivity implements BleManager.BleMan
         private Map<String, List<ElementPath>> mDescriptors;
         private Map<String, byte[]> mValuesMap;
 
-        public ExpandableListAdapter(Activity activity, List<ElementPath> services, Map<String, List<ElementPath>> characteristics, Map<String, List<ElementPath>> descriptors, Map<String, byte[]> valuesMap) {
+        ExpandableListAdapter(Activity activity, List<ElementPath> services, Map<String, List<ElementPath>> characteristics, Map<String, List<ElementPath>> descriptors, Map<String, byte[]> valuesMap) {
             mActivity = activity;
             mServices = services;
             mCharacteristics = characteristics;
@@ -355,7 +356,7 @@ public class InfoActivity extends AppCompatActivity implements BleManager.BleMan
 
         @Override
         public int getGroupCount() {
-            return mServices.size();
+            return mServices != null ? mServices.size():0;
         }
 
         @Override
@@ -468,13 +469,14 @@ public class InfoActivity extends AppCompatActivity implements BleManager.BleMan
     private class DescriptorAdapter extends ArrayAdapter<ElementPath> {
         Activity mActivity;
 
-        public DescriptorAdapter(Activity activity, int resource, List<ElementPath> items) {
+        DescriptorAdapter(Activity activity, int resource, List<ElementPath> items) {
             super(activity, resource, items);
 
             mActivity = activity;
         }
 
-        public View getView(int position, View convertView, ViewGroup parent) {
+        @NonNull
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             ElementPath elementPath = getItem(position);
 
             if (convertView == null) {

@@ -69,6 +69,25 @@
     <string name="scan_secondphaseupdatedetected_ok">Continue</string>
 
 
+    <string name="scan_filters_title_filter_format">Filter: %s</string>
+    <string name="scan_filters_title_nofilter">No filter selected</string>
+    <string name="scan_filters_name_rssi_format">Rssi >= %d</string>
+    <string name="scan_filters_name_named">with name</string>
+    <string name="scan_filters_name_uart">with UART</string>
+    <string name="scan_filters_name_title">Name:</string>
+    <string name="scan_filters_name_tip">Find by name</string>
+    <string name="scan_filters_name_settings_contains">Name contains</string>
+    <string name="scan_filters_name_settings_exact">Name equals</string>
+    <string name="scan_filters_name_settings_casesensitive">Matching case</string>
+    <string name="scan_filters_name_settings_caseinsensitive">Ignoring case</string>
+
+    <string name="scan_filters_rssi_title">RSSI >=</string>
+    <string name="scan_filters_rssi_value_format">%d dBM</string>
+    <string name="scan_filters_unnamed">Show unnamed devices</string>
+    <string name="scan_filters_onlyuart">Must have UART Service</string>
+
+
+
     <string-array name="scan_devicetypes">
         <item>Uknown</item>
         <item>UART capable</item>

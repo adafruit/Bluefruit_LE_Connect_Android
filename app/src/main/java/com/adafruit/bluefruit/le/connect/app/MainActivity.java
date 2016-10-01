@@ -1,6 +1,8 @@
 package com.adafruit.bluefruit.le.connect.app;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -23,17 +25,28 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.PopupMenu;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.Transformation;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ExpandableListView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ScrollView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,11 +60,15 @@ import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ble.BleUtils;
 import com.adafruit.bluefruit.le.connect.ui.utils.DialogUtils;
 import com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightExpandableListView;
+import com.adafruit.bluefruit.le.connect.ui.utils.MetricsUtils;
 
 import java.io.UnsupportedEncodingException;
-import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -66,6 +83,9 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
     private static final String kServiceChangedCharacteristic = "00002A05-0000-1000-8000-00805F9B34FB";
 
     private static final int PERMISSION_REQUEST_FINE_LOCATION = 1;
+
+    private final static String kPreferences = "MainActivity_prefs";
+    private final static String kPreferences_filtersPanelOpen = "filtersPanelOpen";
 
     // Components
     private final static int kComponentsNameIds[] = {
@@ -92,12 +112,22 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
     private SwipeRefreshLayout mSwipeRefreshLayout;
 
     private AlertDialog mConnectingDialog;
+    private View mFiltersPanelView;
+    private ImageView mFiltersExpandImageView;
+    private ImageButton mFiltersClearButton;
+    private TextView mFiltersTitleTextView;
+    private EditText mFiltersNameEditText;
+    private SeekBar mFiltersRssiSeekBar;
+    private TextView mFiltersRssiValueTextView;
+    private CheckBox mFiltersUnnamedCheckBox;
+    private CheckBox mFiltersUartCheckBox;
 
     // Data
     private BleManager mBleManager;
     private boolean mIsScanPaused = true;
     private BleDevicesScanner mScanner;
     private FirmwareUpdater mFirmwareUpdater;
+    private PeripheralList mPeripheralList;
 
     private ArrayList<BluetoothDeviceData> mScannedDevices;
     private BluetoothDeviceData mSelectedDeviceData;
@@ -115,10 +145,11 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         // Init variables
         mBleManager = BleManager.getInstance(this);
         restoreRetainedDataFragment();
+        mPeripheralList = new PeripheralList();
 
         // UI
         mScannedDevicesListView = (ExpandableHeightExpandableListView) findViewById(R.id.scannedDevicesListView);
-        mScannedDevicesAdapter = new ExpandableListAdapter(mScannedDevices);
+        mScannedDevicesAdapter = new ExpandableListAdapter();
         mScannedDevicesListView.setAdapter(mScannedDevicesAdapter);
         mScannedDevicesListView.setExpanded(true);
 
@@ -139,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             @Override
             public void onRefresh() {
                 mScannedDevices.clear();
-                startScan(null, null);
+                startScan(null);
 
                 mSwipeRefreshLayout.postDelayed(new Runnable() {
                     @Override
@@ -149,6 +180,74 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
                 }, 500);
             }
         });
+
+
+        mFiltersPanelView = findViewById(R.id.filtersExpansionView);
+        mFiltersExpandImageView = (ImageView) findViewById(R.id.filtersExpandImageView);
+        mFiltersClearButton = (ImageButton) findViewById(R.id.filtersClearButton);
+        mFiltersTitleTextView = (TextView) findViewById(R.id.filtersTitleTextView);
+        mFiltersNameEditText = (EditText) findViewById(R.id.filtersNameEditText);
+        mFiltersNameEditText.addTextChangedListener(new TextWatcher() {
+
+            public void afterTextChanged(Editable s) {
+                String text = s.toString();
+                mPeripheralList.setFilterName(text);
+                updateFilters();
+            }
+
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+        });
+        mFiltersRssiSeekBar = (SeekBar) findViewById(R.id.filtersRssiSeekBar);
+        mFiltersRssiSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                int rssiValue = -seekBar.getProgress();
+                mPeripheralList.setFilterRssiValue(rssiValue);
+                updateRssiValue();
+                updateFilters();
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+        mFiltersRssiValueTextView = (TextView) findViewById(R.id.filtersRssiValueTextView);
+        mFiltersUnnamedCheckBox = (CheckBox) findViewById(R.id.filtersUnnamedCheckBox);
+        mFiltersUnnamedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                mPeripheralList.setFilterUnnamedEnabled(isChecked);
+                updateFilters();
+            }
+        });
+        mFiltersUartCheckBox = (CheckBox) findViewById(R.id.filtersUartCheckBox);
+        mFiltersUartCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                mPeripheralList.setFilterOnlyUartEnabled(isChecked);
+                updateFilters();
+            }
+        });
+
+        // Filters
+        SharedPreferences preferences = getSharedPreferences(kPreferences, MODE_PRIVATE);
+        boolean filtersIsPanelOpen = preferences.getBoolean(kPreferences_filtersPanelOpen, false);
+        openFiltersPanel(filtersIsPanelOpen, false);
+        updateFiltersTitle();
+        mFiltersNameEditText.setText(mPeripheralList.getFilterName());
+        setRssiSliderValue(mPeripheralList.getFilterRssiValue());
+        mFiltersUnnamedCheckBox.setChecked(mPeripheralList.isFilterUnnamedEnabled());
+        mFiltersUartCheckBox.setChecked(mPeripheralList.isFilterOnlyUartEnabled());
 
         // Setup when activity is created for the first time
         if (savedInstanceState == null) {
@@ -182,7 +281,6 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
                 BleUtils.resetBluetoothAdapter(this, this);
             }
         }
-
 
         // Request Bluetooth scanning persmissions
         requestLocationPermissionIfNeeded();
@@ -243,7 +341,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             if (mScannedDevices != null) {      // Fixed a weird bug when resuming the app (this was null on very rare occasions even if it should not be)
                 mScannedDevices.clear();
             }
-            startScan(null, null);
+            startScan(null);
         }
     }
 
@@ -329,7 +427,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
                 });
                 builder.show();
             }
-            }
+        }
     }
 
     @Override
@@ -366,9 +464,142 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
     // endregion
 
 
+    // region Filters
+    private void openFiltersPanel(final boolean isOpen, boolean animated) {
+        SharedPreferences.Editor preferencesEditor = getSharedPreferences(kPreferences, MODE_PRIVATE).edit();
+        preferencesEditor.putBoolean(kPreferences_filtersPanelOpen, isOpen);
+        preferencesEditor.apply();
+
+        mFiltersExpandImageView.setImageResource(isOpen ? R.drawable.ic_expand_less_black_24dp : R.drawable.ic_expand_more_black_24dp);
+
+        float paddingTop = MetricsUtils.convertDpToPixel(this, (float)(isOpen ? 200:44));
+        mScannedDevicesListView.setPadding(0, (int)paddingTop, 0, 0);
+
+        /*
+        mFiltersPanelView.setVisibility(View.VISIBLE);
+        HeightAnimation heightAnim = new HeightAnimation(mFiltersPanelView, isOpen?0:200, isOpen?200:0);
+        heightAnim.setDuration(300);
+        mFiltersPanelView.startAnimation(heightAnim);
+*/
+
+        mFiltersPanelView.setVisibility(isOpen ? View.VISIBLE : View.GONE);
+
+        mFiltersPanelView.animate()
+                .alpha(isOpen ? 1.0f:0)
+                .setDuration(300)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        mFiltersPanelView.setVisibility(isOpen ? View.VISIBLE:View.GONE);
+                    }
+                });
+
+    }
+/*
+    public class HeightAnimation extends Animation {
+        protected final int originalHeight;
+        protected final View view;
+        protected float perValue;
+
+        public HeightAnimation(View view, int fromHeight, int toHeight) {
+            this.view = view;
+            this.originalHeight = fromHeight;
+            this.perValue = (toHeight - fromHeight);
+        }
+
+        @Override
+        protected void applyTransformation(float interpolatedTime, Transformation t) {
+            view.getLayoutParams().height = (int) (originalHeight + perValue * interpolatedTime);
+            view.requestLayout();
+        }
+
+        @Override
+        public boolean willChangeBounds() {
+            return true;
+        }
+    }*/
+
+    public void onClickExpandFilters(View view) {
+        SharedPreferences preferences = getSharedPreferences(kPreferences, MODE_PRIVATE);
+        boolean filtersIsPanelOpen = preferences.getBoolean(kPreferences_filtersPanelOpen, false);
+
+        openFiltersPanel(!filtersIsPanelOpen, true);
+    }
+
+    public void onClickRemoveFilters(View view) {
+        mPeripheralList.setDefaultFilters();
+        mFiltersNameEditText.setText(mPeripheralList.getFilterName());
+        setRssiSliderValue(mPeripheralList.getFilterRssiValue());
+        mFiltersUnnamedCheckBox.setChecked(mPeripheralList.isFilterUnnamedEnabled());
+        mFiltersUartCheckBox.setChecked(mPeripheralList.isFilterOnlyUartEnabled());
+        updateFilters();
+    }
+
+    public void onClickFilterNameSettings(View view) {
+        PopupMenu popup = new PopupMenu(this, view);
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                boolean processed = true;
+                switch (item.getItemId()) {
+                    case R.id.scanfilter_name_contains:
+                        mPeripheralList.setFilterNameExact(false);
+                        break;
+                    case R.id.scanfilter_name_exact:
+                        mPeripheralList.setFilterNameExact(true);
+                        break;
+                    case R.id.scanfilter_name_sensitive:
+                        mPeripheralList.setFilterNameCaseInsensitive(false);
+                        break;
+                    case R.id.scanfilter_name_insensitive:
+                        mPeripheralList.setFilterNameCaseInsensitive(true);
+                        break;
+                    default:
+                        processed = false;
+                        break;
+                }
+                updateFilters();
+                return processed;
+            }
+        });
+        MenuInflater inflater = popup.getMenuInflater();
+        Menu menu = popup.getMenu();
+        inflater.inflate(R.menu.menu_scan_filters_name, menu);
+        final boolean isFilterNameExact = mPeripheralList.isFilterNameExact();
+        menu.findItem(isFilterNameExact ? R.id.scanfilter_name_exact:R.id.scanfilter_name_contains).setChecked(true);
+        final boolean isFilterNameCaseInsensitive = mPeripheralList.isFilterNameCaseInsensitive();
+        menu.findItem(isFilterNameCaseInsensitive ? R.id.scanfilter_name_insensitive:R.id.scanfilter_name_sensitive).setChecked(true);
+        popup.show();
+    }
+
+
+    private void updateFiltersTitle() {
+        final String filtersTitle = mPeripheralList.filtersDescription();
+        mFiltersTitleTextView.setText(filtersTitle != null ? String.format(Locale.ENGLISH, getString(R.string.scan_filters_title_filter_format), filtersTitle) : getString(R.string.scan_filters_title_nofilter));
+        mFiltersClearButton.setVisibility(mPeripheralList.isAnyFilterEnabled() ? View.VISIBLE : View.GONE);
+    }
+
+    private void updateFilters() {
+        updateFiltersTitle();
+        mScannedDevicesAdapter.notifyDataSetChanged();
+    }
+
+    private void setRssiSliderValue(int value) {
+        mFiltersRssiSeekBar.setProgress(-value);
+        updateRssiValue();
+    }
+
+    private void updateRssiValue() {
+        final int value = -mFiltersRssiSeekBar.getProgress();
+        mFiltersRssiValueTextView.setText(String.format(Locale.ENGLISH, getString(R.string.scan_filters_rssi_value_format), value));
+    }
+
+    // endregion
+
     private void resumeScanning() {
         if (mIsScanPaused) {
-            startScan(null, null);
+            startScan(null);
             mIsScanPaused = mScanner == null;
         }
     }
@@ -596,8 +827,9 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         stopScanning();
 
         final int scannedDeviceIndex = (Integer) view.getTag();
-        if (scannedDeviceIndex < mScannedDevices.size()) {
-            mSelectedDeviceData = mScannedDevices.get(scannedDeviceIndex);
+        ArrayList<BluetoothDeviceData> filteredPeripherals = mPeripheralList.filteredPeripherals(false);
+        if (scannedDeviceIndex < filteredPeripherals.size()) {
+            mSelectedDeviceData = filteredPeripherals.get(scannedDeviceIndex);
             BluetoothDevice device = mSelectedDeviceData.device;
 
             mBleManager.setBleListener(MainActivity.this);           // Force set listener (could be still checking for updates...)
@@ -619,13 +851,13 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         if (isScanning) {
             stopScanning();
         } else {
-            startScan(null, null);
+            startScan(null);
         }
     }
     // endregion
 
     // region Scan
-    private void startScan(final UUID[] servicesToScan, final String deviceNameToScanFor) {
+    private void startScan(final UUID[] servicesToScan) {
         Log.d(TAG, "startScan");
 
         // Stop current scanning (if needed)
@@ -639,49 +871,48 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             mScanner = new BleDevicesScanner(bluetoothAdapter, servicesToScan, new BluetoothAdapter.LeScanCallback() {
                 @Override
                 public void onLeScan(final BluetoothDevice device, final int rssi, byte[] scanRecord) {
-                    final String deviceName = device.getName();
+                    //final String deviceName = device.getName();
                     //Log.d(TAG, "Discovered device: " + (deviceName != null ? deviceName : "<unknown>"));
 
                     BluetoothDeviceData previouslyScannedDeviceData = null;
-                    if (deviceNameToScanFor == null || (deviceName != null && deviceName.equalsIgnoreCase(deviceNameToScanFor))) {       // Workaround for bug in service discovery. Discovery filtered by service uuid is not working on Android 4.3, 4.4
-                        if (mScannedDevices == null)
-                            mScannedDevices = new ArrayList<>();       // Safeguard
+                    if (mScannedDevices == null)
+                        mScannedDevices = new ArrayList<>();       // Safeguard
 
-                        // Check that the device was not previously found
-                        for (BluetoothDeviceData deviceData : mScannedDevices) {
-                            if (deviceData.device.getAddress().equals(device.getAddress())) {
-                                previouslyScannedDeviceData = deviceData;
-                                break;
-                            }
-                        }
-
-                        BluetoothDeviceData deviceData;
-                        if (previouslyScannedDeviceData == null) {
-                            // Add it to the mScannedDevice list
-                            deviceData = new BluetoothDeviceData();
-                            mScannedDevices.add(deviceData);
-                        } else {
-                            deviceData = previouslyScannedDeviceData;
-                        }
-
-                        deviceData.device = device;
-                        deviceData.rssi = rssi;
-                        deviceData.scanRecord = scanRecord;
-                        decodeScanRecords(deviceData);
-
-                        // Update device data
-                        long currentMillis = SystemClock.uptimeMillis();
-                        if (previouslyScannedDeviceData == null || currentMillis - mLastUpdateMillis > kMinDelayToUpdateUI) {          // Avoid updating when not a new device has been found and the time from the last update is really short to avoid updating UI so fast that it will become unresponsive
-                            mLastUpdateMillis = currentMillis;
-
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    updateUI();
-                                }
-                            });
+                    // Check that the device was not previously found
+                    for (BluetoothDeviceData deviceData : mScannedDevices) {
+                        if (deviceData.device.getAddress().equals(device.getAddress())) {
+                            previouslyScannedDeviceData = deviceData;
+                            break;
                         }
                     }
+
+                    BluetoothDeviceData deviceData;
+                    if (previouslyScannedDeviceData == null) {
+                        // Add it to the mScannedDevice list
+                        deviceData = new BluetoothDeviceData();
+                        mScannedDevices.add(deviceData);
+                    } else {
+                        deviceData = previouslyScannedDeviceData;
+                    }
+
+                    deviceData.device = device;
+                    deviceData.rssi = rssi;
+                    deviceData.scanRecord = scanRecord;
+                    decodeScanRecords(deviceData);
+
+                    // Update device data
+                    long currentMillis = SystemClock.uptimeMillis();
+                    if (previouslyScannedDeviceData == null || currentMillis - mLastUpdateMillis > kMinDelayToUpdateUI) {          // Avoid updating when not a new device has been found and the time from the last update is really short to avoid updating UI so fast that it will become unresponsive
+                        mLastUpdateMillis = currentMillis;
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                updateUI();
+                            }
+                        });
+                    }
+
                 }
             });
 
@@ -788,7 +1019,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
 
                     case 0x09: {
                         byte[] nameBytes = new byte[len - 1];
-                        for (int i=0; i<len-1; i++) {
+                        for (int i = 0; i < len - 1; i++) {
                             nameBytes[i] = advertisedData[offset++];
                         }
 
@@ -875,7 +1106,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         // Launch activity
         showConnectionStatus(false);
         if (mComponentToStartWhenConnected != null) {
-            Log.d(TAG, "Start component:"+mComponentToStartWhenConnected);
+            Log.d(TAG, "Start component:" + mComponentToStartWhenConnected);
             Intent intent = new Intent(MainActivity.this, mComponentToStartWhenConnected);
             if (mComponentToStartWhenConnected == BeaconActivity.class && mSelectedDeviceData != null) {
                 intent.putExtra("rssi", mSelectedDeviceData.rssi);
@@ -883,7 +1114,6 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             startActivityForResult(intent, kActivityRequestCode_ConnectedActivity);
         }
     }
-
 
     // region BleManagerListener
     @Override
@@ -1031,7 +1261,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         mLatestCheckedDeviceAddress = null;
 
         mScannedDevices.clear();
-        startScan(null, null);
+        startScan(null);
     }
 
     @Override
@@ -1041,7 +1271,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         Toast.makeText(this, R.string.scan_softwareupdate_completed, Toast.LENGTH_LONG).show();
 
         mScannedDevices.clear();
-        startScan(null, null);
+        startScan(null);
     }
 
     @Override
@@ -1052,7 +1282,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         mLatestCheckedDeviceAddress = null;
 
         mScannedDevices.clear();
-        startScan(null, null);
+        startScan(null);
     }
 
     @Override
@@ -1067,44 +1297,297 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
                 mLatestCheckedDeviceAddress = null;
 
                 mScannedDevices.clear();
-                startScan(null, null);
+                startScan(null);
 
             }
         });
 
     }
+
+
     // endregion
 
     // region Helpers
     private class BluetoothDeviceData {
-        public BluetoothDevice device;
+        BluetoothDevice device;
         public int rssi;
-        public byte[] scanRecord;
-        public String advertisedName;           // Advertised name
+        byte[] scanRecord;
+        private String advertisedName;           // Advertised name
+        private String cachedNiceName;
+        private String cachedName;
 
         // Decoded scan record (update R.array.scan_devicetypes if this list is modified)
-        public static final int kType_Unknown = 0;
-        public static final int kType_Uart = 1;
-        public static final int kType_Beacon = 2;
-        public static final int kType_UriBeacon = 3;
+        static final int kType_Unknown = 0;
+        static final int kType_Uart = 1;
+        static final int kType_Beacon = 2;
+        static final int kType_UriBeacon = 3;
 
         public int type;
-        public int txPower;
-        public ArrayList<UUID> uuids;
+        int txPower;
+        ArrayList<UUID> uuids;
 
-        public String getNiceName() {
-            String name = device.getName();
-            if (name == null) {
-                name = advertisedName;      // Try to get a name (but it seems that if device.getName() is null, this is also null)
-            }
-            if (name == null) {
-                name = device.getAddress();
+        String getName() {
+            if (cachedName == null) {
+                cachedName = device.getName();
+                if (cachedName == null) {
+                    cachedName = advertisedName;      // Try to get a name (but it seems that if device.getName() is null, this is also null)
+                }
             }
 
-            return name;
+            return cachedName;
+        }
+
+        String getNiceName() {
+            if (cachedNiceName == null) {
+                cachedNiceName = getName();
+                if (cachedNiceName == null) {
+                    cachedNiceName = device.getAddress();
+                }
+            }
+
+            return cachedNiceName;
         }
     }
     //endregion
+
+    // region Peripheral List
+    private class PeripheralList {
+        // Constants
+        private final static int kMaxRssiValue = -100;
+
+        private final static String kPreferences = "PeripheralList_prefs";
+        private final static String kPreferences_filtersName = "filtersName";
+        private final static String kPreferences_filtersIsNameExact = "filtersIsNameExact";
+        private final static String kPreferences_filtersIsNameCaseInsensitive = "filtersIsNameCaseInsensitive";
+        private final static String kPreferences_filtersRssi = "filtersRssi";
+        private final static String kPreferences_filtersUnnamedEnabled = "filtersUnnamedEnabled";
+        private final static String kPreferences_filtersUartEnabled = "filtersUartEnabled";
+
+        // Data
+        private String mFilterName;
+        private boolean mIsFilterNameExact;
+        private boolean mIsFilterNameCaseInsensitive;
+        private int mRssiFilterValue;
+        private boolean mIsUnnamedEnabled;
+        private boolean mIsOnlyUartEnabled;
+        private ArrayList<BluetoothDeviceData> mCachedFilteredPeripheralList;
+        private boolean mIsFilterDirty;
+
+        private SharedPreferences.Editor preferencesEditor = getSharedPreferences(kPreferences, MODE_PRIVATE).edit();
+
+        PeripheralList() {
+            mIsFilterDirty = true;
+            mCachedFilteredPeripheralList = new ArrayList<>();
+
+            SharedPreferences preferences = getSharedPreferences(kPreferences, MODE_PRIVATE);
+            mFilterName = preferences.getString(kPreferences_filtersName, null);
+            mIsFilterNameExact = preferences.getBoolean(kPreferences_filtersIsNameExact, false);
+            mIsFilterNameCaseInsensitive = preferences.getBoolean(kPreferences_filtersIsNameCaseInsensitive, false);
+            mRssiFilterValue = preferences.getInt(kPreferences_filtersRssi, kMaxRssiValue);
+            mIsUnnamedEnabled = preferences.getBoolean(kPreferences_filtersUnnamedEnabled, true);
+            mIsOnlyUartEnabled = preferences.getBoolean(kPreferences_filtersUartEnabled, false);
+        }
+
+        String getFilterName() {
+            return mFilterName;
+        }
+
+        void setFilterName(String name) {
+            mFilterName = name;
+            mIsFilterDirty = true;
+
+            preferencesEditor.putString(kPreferences_filtersName, name);
+            preferencesEditor.apply();
+        }
+
+        boolean isFilterNameExact() {
+            return mIsFilterNameExact;
+        }
+
+        void setFilterNameExact(boolean exact) {
+            mIsFilterNameExact = exact;
+            mIsFilterDirty = true;
+
+            preferencesEditor.putBoolean(kPreferences_filtersIsNameExact, exact);
+            preferencesEditor.apply();
+        }
+
+        boolean isFilterNameCaseInsensitive() {
+            return mIsFilterNameCaseInsensitive;
+        }
+
+        void setFilterNameCaseInsensitive(boolean caseInsensitive) {
+            mIsFilterNameCaseInsensitive = caseInsensitive;
+            mIsFilterDirty = true;
+
+            preferencesEditor.putBoolean(kPreferences_filtersIsNameCaseInsensitive, caseInsensitive);
+            preferencesEditor.apply();
+        }
+
+        int getFilterRssiValue() {
+            return mRssiFilterValue;
+        }
+
+        void setFilterRssiValue(int value) {
+            mRssiFilterValue = value;
+            mIsFilterDirty = true;
+
+            preferencesEditor.putInt(kPreferences_filtersRssi, value);
+            preferencesEditor.apply();
+        }
+
+        boolean isFilterUnnamedEnabled() {
+            return mIsUnnamedEnabled;
+        }
+
+        void setFilterUnnamedEnabled(boolean enabled) {
+            mIsUnnamedEnabled = enabled;
+            mIsFilterDirty = true;
+
+            preferencesEditor.putBoolean(kPreferences_filtersUnnamedEnabled, enabled);
+            preferencesEditor.apply();
+        }
+
+
+        boolean isFilterOnlyUartEnabled() {
+            return mIsOnlyUartEnabled;
+        }
+
+        void setFilterOnlyUartEnabled(boolean enabled) {
+            mIsOnlyUartEnabled = enabled;
+            mIsFilterDirty = true;
+
+            preferencesEditor.putBoolean(kPreferences_filtersUartEnabled, enabled);
+            preferencesEditor.apply();
+        }
+
+
+        void setDefaultFilters() {
+            mFilterName = null;
+            mIsFilterNameExact = false;
+            mIsFilterNameCaseInsensitive = true;
+            mRssiFilterValue = kMaxRssiValue;
+            mIsUnnamedEnabled = true;
+            mIsOnlyUartEnabled = false;
+        }
+
+        boolean isAnyFilterEnabled() {
+            return (mFilterName != null && !mFilterName.isEmpty()) || mRssiFilterValue > kMaxRssiValue || mIsOnlyUartEnabled || !mIsUnnamedEnabled;
+        }
+
+        ArrayList<BluetoothDeviceData> filteredPeripherals(boolean forceUpdate) {
+            if (mIsFilterDirty || forceUpdate) {
+                mCachedFilteredPeripheralList = calculateFilteredPeripherals();
+                mIsFilterDirty = false;
+            }
+
+            return mCachedFilteredPeripheralList;
+        }
+
+        private ArrayList<BluetoothDeviceData> calculateFilteredPeripherals() {
+
+            ArrayList<BluetoothDeviceData> peripherals = (ArrayList<BluetoothDeviceData>) mScannedDevices.clone();
+
+            // Sort devices alphabetically
+            Collections.sort(peripherals, new Comparator<BluetoothDeviceData>() {
+                @Override
+                public int compare(BluetoothDeviceData o1, BluetoothDeviceData o2) {
+                    return o1.getNiceName().compareToIgnoreCase(o2.getNiceName());
+                }
+            });
+
+            // Apply filters
+            if (mIsOnlyUartEnabled) {
+                for (Iterator<BluetoothDeviceData> it = peripherals.iterator(); it.hasNext(); ) {
+                    if (it.next().type != BluetoothDeviceData.kType_Uart) {
+                        it.remove();
+                    }
+                }
+            }
+
+            if (!mIsUnnamedEnabled) {
+                for (Iterator<BluetoothDeviceData> it = peripherals.iterator(); it.hasNext(); ) {
+                    if (it.next().getName() == null) {
+                        it.remove();
+                    }
+                }
+            }
+
+            if (mFilterName != null && !mFilterName.isEmpty()) {
+                for (Iterator<BluetoothDeviceData> it = peripherals.iterator(); it.hasNext(); ) {
+                    String name = it.next().getName();
+                    if (name != null) {
+                        boolean testPassed;
+                        if (mIsFilterNameExact) {
+                            if (mIsFilterNameCaseInsensitive) {
+                                testPassed = name.compareToIgnoreCase(mFilterName) == 0;
+                            } else {
+                                testPassed = name.compareTo(mFilterName) == 0;
+                            }
+                        } else {
+                            if (mIsFilterNameCaseInsensitive) {
+                                testPassed = name.toLowerCase().contains(mFilterName.toLowerCase());
+                            } else {
+                                testPassed = name.contains(mFilterName);
+                            }
+                        }
+
+                        if (!testPassed) {
+                            it.remove();
+                        }
+                    }
+                }
+            }
+
+            for (Iterator<BluetoothDeviceData> it = peripherals.iterator(); it.hasNext(); ) {
+                if (it.next().rssi < mRssiFilterValue) {
+                    it.remove();
+                }
+            }
+
+            return peripherals;
+        }
+
+        String filtersDescription() {
+            String filtersTitle = null;
+
+            if (mFilterName != null && !mFilterName.isEmpty()) {
+                filtersTitle = mFilterName;
+            }
+
+            if (mRssiFilterValue > kMaxRssiValue) {
+                String rssiString = String.format(Locale.ENGLISH, getString(R.string.scan_filters_name_rssi_format), mRssiFilterValue);
+                if (filtersTitle != null && !filtersTitle.isEmpty()) {
+                    filtersTitle = filtersTitle + ", " + rssiString;
+                } else {
+                    filtersTitle = rssiString;
+                }
+            }
+
+            if (!mIsUnnamedEnabled) {
+                String namedString = getString(R.string.scan_filters_name_named);
+                if (filtersTitle != null && !filtersTitle.isEmpty()) {
+                    filtersTitle = filtersTitle + ", " + namedString;
+                } else {
+                    filtersTitle = namedString;
+                }
+            }
+
+            if (mIsOnlyUartEnabled) {
+                String uartString = getString(R.string.scan_filters_name_uart);
+                if (filtersTitle != null && !filtersTitle.isEmpty()) {
+                    filtersTitle = filtersTitle + ", " + uartString;
+                } else {
+                    filtersTitle = uartString;
+                }
+            }
+
+            return filtersTitle;
+        }
+    }
+
+    // endregion
+
 
     // region adapters
     private class ExpandableListAdapter extends BaseExpandableListAdapter {
@@ -1130,7 +1613,8 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         private static final int kChildUriBeacon_TXPower = 3;
 
         // Data
-        private ArrayList<BluetoothDeviceData> mBluetoothDevices;
+        //private ArrayList<BluetoothDeviceData> mBluetoothDevices;
+        private ArrayList<BluetoothDeviceData> mFilteredPeripherals;
 
         private class GroupViewHolder {
             TextView nameTextView;
@@ -1138,25 +1622,30 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             ImageView rssiImageView;
             TextView rssiTextView;
             Button connectButton;
-
         }
 
-        public ExpandableListAdapter(ArrayList<BluetoothDeviceData> bluetoothDevices) {
+        /*
+        ExpandableListAdapter(ArrayList<BluetoothDeviceData> bluetoothDevices) {
             mBluetoothDevices = bluetoothDevices;
-        }
+        }*/
 
         @Override
         public int getGroupCount() {
             int count = 0;
+
+            /*
             if (mBluetoothDevices != null) {
                 count = mBluetoothDevices.size();
             }
-            return count;
+            */
+
+            mFilteredPeripherals = mPeripheralList.filteredPeripherals(true);
+            return mFilteredPeripherals.size();
         }
 
         @Override
         public int getChildrenCount(int groupPosition) {
-            BluetoothDeviceData deviceData = mBluetoothDevices.get(groupPosition);
+            BluetoothDeviceData deviceData = mFilteredPeripherals.get(groupPosition);
             switch (deviceData.type) {
                 case BluetoothDeviceData.kType_Beacon:
                     return 7;       // Local name, Address, Manufacturer,  UUID, Major, Minor and TX Power Level
@@ -1171,12 +1660,12 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
 
         @Override
         public Object getGroup(int groupPosition) {
-            return mBluetoothDevices.get(groupPosition);
+            return mFilteredPeripherals.get(groupPosition);
         }
 
         @Override
         public Object getChild(int groupPosition, int childPosition) {
-            BluetoothDeviceData deviceData = mBluetoothDevices.get(groupPosition);
+            BluetoothDeviceData deviceData = mFilteredPeripherals.get(groupPosition);
 
             switch (deviceData.type) {
                 case BluetoothDeviceData.kType_Beacon:
@@ -1194,7 +1683,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         private Object getChildUriBeacon(BluetoothDeviceData deviceData, int childPosition) {
             switch (childPosition) {
                 case kChildUriBeacon_Name: {
-                    String name = deviceData.device.getName();
+                    String name = deviceData.getName();
                     return getString(R.string.scan_device_localname) + ": " + (name == null ? "" : name);
                 }
                 case kChildUriBeacon_Address: {
@@ -1216,7 +1705,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         private Object getChildCommon(BluetoothDeviceData deviceData, int childPosition) {
             switch (childPosition) {
                 case kChildCommon_Name: {
-                    String name = deviceData.device.getName();
+                    String name = deviceData.getName();
                     return getString(R.string.scan_device_localname) + ": " + (name == null ? "" : name);
                 }
                 case kChildCommon_Address: {
@@ -1246,7 +1735,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         private Object getChildBeacon(BluetoothDeviceData deviceData, int childPosition) {
             switch (childPosition) {
                 case kChildBeacon_Name: {
-                    String name = deviceData.device.getName();
+                    String name = deviceData.getName();
                     return getString(R.string.scan_device_localname) + ": " + (name == null ? "" : name);
                 }
                 case kChildBeacon_Address: {
@@ -1337,7 +1826,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             convertView.setTag(groupPosition);
             holder.connectButton.setTag(groupPosition);
 
-            BluetoothDeviceData deviceData = mBluetoothDevices.get(groupPosition);
+            BluetoothDeviceData deviceData = mFilteredPeripherals.get(groupPosition);
             holder.nameTextView.setText(deviceData.getNiceName());
 
             holder.descriptionTextView.setVisibility(deviceData.type != BluetoothDeviceData.kType_Unknown ? View.VISIBLE : View.INVISIBLE);
@@ -1402,6 +1891,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         private FirmwareUpdater mFirmwareUpdater;
         private String mLatestCheckedDeviceAddress;
         private BluetoothDeviceData mSelectedDeviceData;
+        //private PeripheralList mPeripheralList;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -1421,6 +1911,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             fm.beginTransaction().add(mRetainedDataFragment, TAG).commitAllowingStateLoss();        // http://stackoverflow.com/questions/7575921/illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate-h
 
             mScannedDevices = new ArrayList<>();
+            // mPeripheralList = new PeripheralList();
 
         } else {
             // Restore status
@@ -1430,6 +1921,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             mFirmwareUpdater = mRetainedDataFragment.mFirmwareUpdater;
             mLatestCheckedDeviceAddress = mRetainedDataFragment.mLatestCheckedDeviceAddress;
             mSelectedDeviceData = mRetainedDataFragment.mSelectedDeviceData;
+            //mPeripheralList = mRetainedDataFragment.mPeripheralList;
 
             if (mFirmwareUpdater != null) {
                 mFirmwareUpdater.changedParentActivity(this);       // set the new activity
@@ -1444,6 +1936,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         mRetainedDataFragment.mFirmwareUpdater = mFirmwareUpdater;
         mRetainedDataFragment.mLatestCheckedDeviceAddress = mLatestCheckedDeviceAddress;
         mRetainedDataFragment.mSelectedDeviceData = mSelectedDeviceData;
+        //mRetainedDataFragment.mPeripheralList = mPeripheralList;
     }
     // endregion
 }
