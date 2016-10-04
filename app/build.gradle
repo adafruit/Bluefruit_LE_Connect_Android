@@ -2,14 +2,14 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.2"
+    buildToolsVersion "24.0.3"
 
     defaultConfig {
         applicationId "com.adafruit.bluefruit.le.connect"
         minSdkVersion 19
-        targetSdkVersion 23
-        versionCode 15
-        versionName "2.1.4"
+        targetSdkVersion 24
+        versionCode 16
+        versionName "2.2.0"
     }
 
     useLibrary 'org.apache.http.legacy'     // TODO: remove Apache library and use HttpURLConnection (Apache is deprecated since Android 6.0)
@@ -34,7 +34,7 @@ repositories {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'no.nordicsemi.android:dfu:0.6.2'
+    compile 'no.nordicsemi.android:dfu:1.0.4'
     compile(group: 'org.eclipse.paho', name: 'org.eclipse.paho.android.service', version: '1.0.2') {
         exclude module: 'support-v4'
     }
@@ -42,7 +42,7 @@ dependencies {
     compile 'com.larswerkman:HoloColorPicker:1.4'
     compile 'com.android.support:design:24.2.1'
 
-    compile 'com.google.android.gms:play-services-analytics:9.4.0'
-    compile 'com.google.android.gms:play-services-location:9.4.0'
-    compile 'com.google.android.gms:play-services-vision:9.4.0'
+    compile 'com.google.android.gms:play-services-analytics:9.6.1'
+    compile 'com.google.android.gms:play-services-location:9.6.1'
+    compile 'com.google.android.gms:play-services-vision:9.6.1'
 }

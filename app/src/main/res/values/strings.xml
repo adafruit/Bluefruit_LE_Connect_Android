@@ -89,7 +89,7 @@
     <string name="scan_filters_rssi_title">RSSI >=</string>
     <string name="scan_filters_rssi_value_format">%d dBM</string>
     <string name="scan_filters_unnamed">Show unnamed devices</string>
-    <string name="scan_filters_onlyuart">Must have UART Service</string>
+    <string name="scan_filters_onlyuart">Must have UART service</string>
 
 
 
