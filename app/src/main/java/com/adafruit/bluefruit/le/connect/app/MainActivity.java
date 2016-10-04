@@ -475,10 +475,10 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
 
         mFiltersExpandImageView.setImageResource(isOpen ? R.drawable.ic_expand_less_black_24dp : R.drawable.ic_expand_more_black_24dp);
 
+        /*
         float paddingTop = MetricsUtils.convertDpToPixel(this, (float) (isOpen ? 200 : 44));
         mScannedDevicesListView.setPadding(0, (int) paddingTop, 0, 0);
 
-        /*
         mFiltersPanelView.setVisibility(View.VISIBLE);
         HeightAnimation heightAnim = new HeightAnimation(mFiltersPanelView, isOpen?0:200, isOpen?200:0);
         heightAnim.setDuration(300);

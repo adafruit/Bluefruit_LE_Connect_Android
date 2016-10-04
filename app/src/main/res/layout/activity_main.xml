@@ -39,186 +39,185 @@
         android:text="@string/scan_nodevicesfound"
         android:textColor="@drawable/default_textcolor" />
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/swipeRefreshLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/scanButton"
-        android:layout_marginBottom="10dp">
-
-    </android.support.v4.widget.SwipeRefreshLayout>
-
-    <ScrollView
-        android:id="@+id/devicesScrollView"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true">
+        android:orientation="vertical">
 
-        <LinearLayout
+        <FrameLayout
+            android:id="@+id/filtersView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightExpandableListView
-                android:id="@+id/scannedDevicesListView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="#ffffff"
-                android:childDivider="#00000000"
-                android:clipToPadding="false"
-                android:groupIndicator="@null"
-                android:paddingTop="44dp" />
-        </LinearLayout>
-    </ScrollView>
-
-    <FrameLayout
-        android:id="@+id/filtersView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:background="#eeeeee">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:orientation="vertical">
+            android:background="#eeeeee">
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="28dp"
-                android:gravity="center_vertical"
-                android:onClick="onClickExpandFilters"
-                android:orientation="horizontal">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/filtersTitleTextView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:singleLine="true"
-                        android:text="@string/scan_filters_title_nofilter"
-                        android:textStyle="bold" />
-
-
-                </LinearLayout>
-
-                <ImageButton
-                    android:id="@+id/filtersClearButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@android:color/transparent"
-                    android:onClick="onClickRemoveFilters"
-                    android:padding="5dp"
-                    android:src="@drawable/ic_cancel_black_18dp"
-                    tools:ignore="ContentDescription" />
-
-                <ImageView
-                    android:id="@+id/filtersExpandImageView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@android:color/transparent"
-                    android:paddingLeft="4dp"
-                    android:paddingRight="4dp"
-                    android:src="@drawable/ic_expand_more_black_24dp"
-                    tools:ignore="ContentDescription" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/filtersExpansionView"
-                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_margin="8dp"
                 android:orientation="vertical">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:layout_marginStart="8dp"
+                    android:layout_height="28dp"
                     android:gravity="center_vertical"
+                    android:onClick="onClickExpandFilters"
                     android:orientation="horizontal">
 
-                    <TextView
-                        android:layout_width="55dp"
-                        android:layout_height="wrap_content"
-                        android:text="@string/scan_filters_name_title" />
-
-                    <EditText
-                        android:id="@+id/filtersNameEditText"
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:hint="@string/scan_filters_name_tip"
-                        android:singleLine="true"
-                        android:textAppearance="@android:style/TextAppearance.DeviceDefault" />
-                    <!--
-                    android:drawableStart="@drawable/ic_search_black_18dp"
-                    -->
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/filtersTitleTextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:singleLine="true"
+                            android:text="@string/scan_filters_title_nofilter"
+                            android:textStyle="bold" />
+
+
+                    </LinearLayout>
 
                     <ImageButton
+                        android:id="@+id/filtersClearButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="@android:color/transparent"
-                        android:onClick="onClickFilterNameSettings"
+                        android:onClick="onClickRemoveFilters"
+                        android:padding="5dp"
+                        android:src="@drawable/ic_cancel_black_18dp"
+                        tools:ignore="ContentDescription" />
+
+                    <ImageView
+                        android:id="@+id/filtersExpandImageView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@android:color/transparent"
                         android:paddingLeft="4dp"
                         android:paddingRight="4dp"
-                        android:src="@drawable/ic_more_vert_black_24dp"
+                        android:src="@drawable/ic_expand_more_black_24dp"
                         tools:ignore="ContentDescription" />
                 </LinearLayout>
 
+                <LinearLayout
+                    android:id="@+id/filtersExpansionView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="55dp"
+                            android:layout_height="wrap_content"
+                            android:text="@string/scan_filters_name_title" />
+
+                        <EditText
+                            android:id="@+id/filtersNameEditText"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="@string/scan_filters_name_tip"
+                            android:singleLine="true"
+                            android:textAppearance="@android:style/TextAppearance.DeviceDefault" />
+                        <!--
+                        android:drawableStart="@drawable/ic_search_black_18dp"
+                        -->
+
+                        <ImageButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@android:color/transparent"
+                            android:onClick="onClickFilterNameSettings"
+                            android:paddingLeft="4dp"
+                            android:paddingRight="4dp"
+                            android:src="@drawable/ic_more_vert_black_24dp"
+                            tools:ignore="ContentDescription" />
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="55dp"
+                            android:layout_height="wrap_content"
+                            android:text="@string/scan_filters_rssi_title" />
+
+                        <SeekBar
+                            android:id="@+id/filtersRssiSeekBar"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="-12dp"
+                            android:layout_weight="1"
+                            android:max="100" />
+
+                        <TextView
+                            android:id="@+id/filtersRssiValueTextView"
+                            android:layout_width="70dp"
+                            android:layout_height="wrap_content"
+                            android:text="@string/scan_filters_rssi_value_format" />
+
+                    </LinearLayout>
+
+                    <CheckBox
+                        android:id="@+id/filtersUnnamedCheckBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:text="@string/scan_filters_unnamed" />
+
+                    <CheckBox
+                        android:id="@+id/filtersUartCheckBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:text="@string/scan_filters_onlyuart" />
+                </LinearLayout>
+
+
+            </LinearLayout>
+        </FrameLayout>
+
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/swipeRefreshLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp">
+
+            <ScrollView
+                android:id="@+id/devicesScrollView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:layout_marginStart="8dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
-                    <TextView
-                        android:layout_width="55dp"
+                    <com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightExpandableListView
+                        android:id="@+id/scannedDevicesListView"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/scan_filters_rssi_title" />
-
-                    <SeekBar
-                        android:id="@+id/filtersRssiSeekBar"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="-12dp"
-                        android:layout_weight="1"
-                        android:max="100" />
-
-                    <TextView
-                        android:id="@+id/filtersRssiValueTextView"
-                        android:layout_width="70dp"
-                        android:layout_height="wrap_content"
-                        android:text="@string/scan_filters_rssi_value_format" />
-
+                        android:background="#ffffff"
+                        android:childDivider="#00000000"
+                        android:groupIndicator="@null" />
                 </LinearLayout>
+            </ScrollView>
 
-                <CheckBox
-                    android:id="@+id/filtersUnnamedCheckBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:text="@string/scan_filters_unnamed" />
-
-                <CheckBox
-                    android:id="@+id/filtersUartCheckBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:text="@string/scan_filters_onlyuart" />
-            </LinearLayout>
-
-
-        </LinearLayout>
-    </FrameLayout>
-
-
+        </android.support.v4.widget.SwipeRefreshLayout>
+    </LinearLayout>
 </RelativeLayout>
