@@ -37,6 +37,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
@@ -825,10 +826,9 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         }
     }
 
-    public void onClickDeviceConnect(View view) {
+    public void onClickDeviceConnect(int scannedDeviceIndex) {
         stopScanning();
 
-        final int scannedDeviceIndex = (Integer) view.getTag();
         ArrayList<BluetoothDeviceData> filteredPeripherals = mPeripheralList.filteredPeripherals(false);
         if (scannedDeviceIndex < filteredPeripherals.size()) {
             mSelectedDeviceData = filteredPeripherals.get(scannedDeviceIndex);
@@ -1384,7 +1384,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             SharedPreferences preferences = getSharedPreferences(kPreferences, MODE_PRIVATE);
             mFilterName = preferences.getString(kPreferences_filtersName, null);
             mIsFilterNameExact = preferences.getBoolean(kPreferences_filtersIsNameExact, false);
-            mIsFilterNameCaseInsensitive = preferences.getBoolean(kPreferences_filtersIsNameCaseInsensitive, false);
+            mIsFilterNameCaseInsensitive = preferences.getBoolean(kPreferences_filtersIsNameCaseInsensitive, true);
             mRssiFilterValue = preferences.getInt(kPreferences_filtersRssi, kMaxRssiValue);
             mIsUnnamedEnabled = preferences.getBoolean(kPreferences_filtersUnnamedEnabled, true);
             mIsOnlyUartEnabled = preferences.getBoolean(kPreferences_filtersUartEnabled, false);
@@ -1755,7 +1755,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         }
 
         @Override
-        public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
+        public View getGroupView(final int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
             GroupViewHolder holder;
 
             if (convertView == null) {
@@ -1777,6 +1777,45 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
 
             convertView.setTag(groupPosition);
             holder.connectButton.setTag(groupPosition);
+
+            /*
+            convertView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onClickScannedDevice(v);
+                }
+            });
+
+            holder.connectButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onClickDeviceConnect(groupPosition);
+                }
+            });
+            */
+
+            convertView.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    if (event.getAction() == MotionEvent.ACTION_DOWN ) {
+                        onClickScannedDevice(v);
+                        return true;
+                    }
+                    return false;
+                }
+            });
+
+            holder.connectButton.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    if (event.getAction() == MotionEvent.ACTION_DOWN ) {
+                        onClickDeviceConnect(groupPosition);
+                        return true;
+                    }
+                    return false;
+                }
+            });
+
 
             BluetoothDeviceData deviceData = mFilteredPeripherals.get(groupPosition);
             holder.nameTextView.setText(deviceData.getNiceName());
