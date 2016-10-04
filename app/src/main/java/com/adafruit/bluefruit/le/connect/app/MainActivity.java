@@ -1778,7 +1778,6 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             convertView.setTag(groupPosition);
             holder.connectButton.setTag(groupPosition);
 
-            /*
             convertView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -1786,13 +1785,13 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
                 }
             });
 
+            /*
             holder.connectButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     onClickDeviceConnect(groupPosition);
                 }
             });
-            */
 
             convertView.setOnTouchListener(new View.OnTouchListener() {
                 @Override
@@ -1804,6 +1803,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
                     return false;
                 }
             });
+            */
 
             holder.connectButton.setOnTouchListener(new View.OnTouchListener() {
                 @Override
