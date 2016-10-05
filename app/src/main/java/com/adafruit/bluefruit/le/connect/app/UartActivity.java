@@ -571,7 +571,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
                             final String currentDateTimeString = DateFormat.getTimeInstance().format(new Date(dataChunk.getTimestamp()));
                             final String formattedData = mShowDataInHexFormat ? bytesToHex(bytes) : bytesToText(bytes, true);
 
-                            mBufferListAdapter.add(new TimestampData("[" + currentDateTimeString + "] TX: " + formattedData, mRxColor));
+                            mBufferListAdapter.add(new TimestampData("[" + currentDateTimeString + "] RX: " + formattedData, mRxColor));
                             //mBufferListAdapter.add("[" + currentDateTimeString + "] RX: " + formattedData);
                             //mBufferListView.smoothScrollToPosition(mBufferListAdapter.getCount() - 1);
                             mBufferListView.setSelection(mBufferListAdapter.getCount());
