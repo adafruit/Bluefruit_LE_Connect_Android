@@ -18,6 +18,7 @@ public class KnownUUIDs extends StandardUUIDs {
         aMap.put(UartInterfaceActivity.UUID_SERVICE.toUpperCase(), "Nordic UART");
         aMap.put("00001530-1212-efde-1523-785feabcd123".toUpperCase(), "Nordic Device Firmware Update Service");
         aMap.put("ee0c2080-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone-URL Config Service");
+        aMap.put("8D53DC1D-1DB7-4CD3-868B-8A527460AA84".toUpperCase(), "Newtmgr Service");
 
         sServiceUUIDs = Collections.unmodifiableMap(aMap);
     }
@@ -55,6 +56,9 @@ public class KnownUUIDs extends StandardUUIDs {
         aMap.put("ee0c2088-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone Beacon Period");
         aMap.put("ee0c2089-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone Reset");
         aMap.put("ee0c2090-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone (Reserved)");
+
+        // Newtmgr
+        aMap.put("DA2E7828-FBCE-4E01-AE9E-261174997C48".toUpperCase(), "Newtmgr Characteristic");
 
         sCharacteristicUUIDs = Collections.unmodifiableMap(aMap);
     }
