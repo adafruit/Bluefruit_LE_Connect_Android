@@ -242,7 +242,7 @@ public class InfoActivity extends AppCompatActivity implements BleManager.BleMan
 
                     // Read descriptor
 //                    if (mBleManager.isDescriptorReadable(service, characteristicUuid, descriptorUuid)) {
-                        mBleManager.readDescriptor(service, characteristicUuid, descriptorUuid);
+                    mBleManager.readDescriptor(service, characteristicUuid, descriptorUuid);
 //                    }
                 }
 
@@ -356,7 +356,7 @@ public class InfoActivity extends AppCompatActivity implements BleManager.BleMan
 
         @Override
         public int getGroupCount() {
-            return mServices != null ? mServices.size():0;
+            return mServices != null ? mServices.size() : 0;
         }
 
         @Override

@@ -23,9 +23,9 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
     private final static String TAG = BleManager.class.getSimpleName();
 
     // Enumerations
-    public static final int STATE_DISCONNECTED = 0;
-    public static final int STATE_CONNECTING = 1;
-    public static final int STATE_CONNECTED = 2;
+    private static final int STATE_DISCONNECTED = 0;
+    private static final int STATE_CONNECTING = 1;
+    private static final int STATE_CONNECTED = 2;
 
     // Singleton
     private static BleManager mInstance = null;
@@ -34,7 +34,7 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
     private final BleGattExecutor mExecutor = BleGattExecutor.createExecutor(this);
     private BluetoothAdapter mAdapter;
     private BluetoothGatt mGatt;
-    private Context mContext;
+//    private Context mContext;
 
     private BluetoothDevice mDevice;
     private String mDeviceAddress;
@@ -62,21 +62,13 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
 
     public void setBleListener(BleManagerListener listener) {
         mBleListener = listener;
-
     }
-
-    /*
-    public BleManagerListener getBleListener()  {return mBleListener; }
-
-    public BluetoothAdapter getAdapter() {
-        return mAdapter;
-    }*/
 
     public BleManager(Context context) {
         // Init Adapter
-        mContext = context.getApplicationContext();
+        //mContext = context.getApplicationContext();
         if (mAdapter == null) {
-            mAdapter = BleUtils.getBluetoothAdapter(mContext);
+            mAdapter = BleUtils.getBluetoothAdapter(context);
         }
 
         if (mAdapter == null || !mAdapter.isEnabled()) {
@@ -145,7 +137,7 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
         }
 
         final boolean gattAutoconnect = sharedPreferences.getBoolean("pref_gattautoconnect", false);
-        mGatt = mDevice.connectGatt(mContext, gattAutoconnect, mExecutor);
+        mGatt = mDevice.connectGatt(context, gattAutoconnect, mExecutor);
 
         return true;
     }
@@ -206,7 +198,7 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
     /**
      * After using a given BLE device, the app must call this method to ensure resources are  released properly.
      */
-    public void close() {
+    private void close() {
         if (mGatt != null) {
             mGatt.close();
             mGatt = null;
@@ -286,7 +278,7 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
 
 
     // Properties
-    public int getCharacteristicProperties(BluetoothGattService service, String characteristicUUIDString) {
+    private int getCharacteristicProperties(BluetoothGattService service, String characteristicUUIDString) {
         final UUID characteristicUuid = UUID.fromString(characteristicUUIDString);
         BluetoothGattCharacteristic characteristic = service.getCharacteristic(characteristicUuid);
         int properties = 0;
@@ -310,7 +302,7 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
     }
 
     // Permissions
-    public int getDescriptorPermissions(BluetoothGattService service, String characteristicUUIDString, String descriptorUUIDString) {
+    private int getDescriptorPermissions(BluetoothGattService service, String characteristicUUIDString, String descriptorUUIDString) {
         final UUID characteristicUuid = UUID.fromString(characteristicUUIDString);
         BluetoothGattCharacteristic characteristic = service.getCharacteristic(characteristicUuid);
 

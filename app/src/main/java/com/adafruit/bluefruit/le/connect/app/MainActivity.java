@@ -63,7 +63,6 @@ import com.adafruit.bluefruit.le.connect.ble.BleManager;
 import com.adafruit.bluefruit.le.connect.ble.BleUtils;
 import com.adafruit.bluefruit.le.connect.ui.utils.DialogUtils;
 import com.adafruit.bluefruit.le.connect.ui.utils.ExpandableHeightExpandableListView;
-import com.adafruit.bluefruit.le.connect.ui.utils.MetricsUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -400,7 +399,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
     @Override
     protected void onDestroy() {
         // Stop ble adapter reset if in progress
-        BleUtils.cancelBluetoothAdapterReset();
+        BleUtils.cancelBluetoothAdapterReset(this);
 
         // Retain data
         saveRetainedDataFragment();
@@ -1808,7 +1807,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             holder.connectButton.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
-                    if (event.getAction() == MotionEvent.ACTION_DOWN ) {
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         onClickDeviceConnect(groupPosition);
                         return true;
                     }

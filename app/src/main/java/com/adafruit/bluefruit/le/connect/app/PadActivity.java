@@ -1,7 +1,5 @@
 package com.adafruit.bluefruit.le.connect.app;
 
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -16,7 +14,7 @@ import com.adafruit.bluefruit.le.connect.ble.BleManager;
 
 import java.nio.ByteBuffer;
 
-public class PadActivity extends UartInterfaceActivity  {
+public class PadActivity extends UartInterfaceActivity {
     // Log
     private final static String TAG = PadActivity.class.getSimpleName();
 

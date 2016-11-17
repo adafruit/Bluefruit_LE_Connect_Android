@@ -247,7 +247,10 @@ public class BeaconActivity extends UartInterfaceActivity implements IBeaconFrag
             InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 
             if (imm != null && imm.isAcceptingText()) { // verify if the soft keyboard is open
-                imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+                try {
+                    imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+                } catch (NullPointerException ignored) {
+                }
             }
         } catch (Exception ignored) {
         }
@@ -385,14 +388,14 @@ public class BeaconActivity extends UartInterfaceActivity implements IBeaconFrag
         private int mRssi;
         private Fragment mCurrentFragment;
 
-        public BeaconPagerAdapter(FragmentManager fragmentManager, Context context, int rssi) {
+        BeaconPagerAdapter(FragmentManager fragmentManager, Context context, int rssi) {
             super(fragmentManager);
 
             mContext = context;
             mRssi = rssi;
         }
 
-        public Fragment getCurrentFragment() {
+        Fragment getCurrentFragment() {
             return mCurrentFragment;
         }
 

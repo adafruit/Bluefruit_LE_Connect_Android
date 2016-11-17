@@ -33,7 +33,6 @@ public class IBeaconFragment extends Fragment {
     private final static String kPreferences_major = "major";
     private final static String kPreferences_minor = "minor";
 
-
     // UI
     private EditText mVendorEditText;
     private EditText mUuidEditText;
@@ -161,8 +160,7 @@ public class IBeaconFragment extends Fragment {
         String uuid = preferences.getString(kPreferences_uuid, null);
         if (uuid == null) {
             onClickRandomUuid(null);
-        }
-        else {
+        } else {
             mUuidEditText.setText(uuid);
         }
         mMajorEditText.setText(preferences.getString(kPreferences_major, "0000"));
@@ -195,7 +193,7 @@ public class IBeaconFragment extends Fragment {
             editor.putString(kPreferences_uuid, mUuidEditText.getText().toString());
             editor.putString(kPreferences_major, mMajorEditText.getText().toString());
             editor.putString(kPreferences_minor, mMinorEditText.getText().toString());
-            editor.commit();
+            editor.apply();
         }
     }
 
@@ -257,18 +255,17 @@ public class IBeaconFragment extends Fragment {
     }
 
     public String getMinor() {
-        String minor =  mMinorEditText.getText().toString();
+        String minor = mMinorEditText.getText().toString();
         return bigEndianString4Chars(minor);
     }
 
-    private String bigEndianString4Chars(String value)
-    {
+    private String bigEndianString4Chars(String value) {
         // Ensure that we have 4 characters
         while (value.length() < 4) {
             value = "0" + value;
         }
         // Change order to big endian
-        return "0x"+value.charAt(2)+value.charAt(3)+value.charAt(0)+value.charAt(1);
+        return "0x" + value.charAt(2) + value.charAt(3) + value.charAt(0) + value.charAt(1);
     }
 
     public String getRssi() {
@@ -284,5 +281,4 @@ public class IBeaconFragment extends Fragment {
 
         void onDisable();
     }
-
 }

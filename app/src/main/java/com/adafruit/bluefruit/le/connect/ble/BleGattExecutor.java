@@ -14,14 +14,14 @@ import java.util.LinkedList;
 import java.util.UUID;
 
 // Encapsulate a list of actions to execute. Actions should be queued and executed sequentially to avoid problems
-public class BleGattExecutor extends BluetoothGattCallback {
+class BleGattExecutor extends BluetoothGattCallback {
     // Log
     private final static String TAG = BleGattExecutor.class.getSimpleName();
 
     // Constants
     private static String CHARACTERISTIC_CONFIG = "00002902-0000-1000-8000-00805f9b34fb";
 
-    public interface ServiceAction {
+    interface ServiceAction {
         ServiceAction NULL = new ServiceAction() {
             @Override
             public boolean execute(BluetoothGatt bluetoothGatt) {
@@ -36,7 +36,7 @@ public class BleGattExecutor extends BluetoothGattCallback {
          * @param bluetoothGatt
          * @return true - if action was executed instantly. false if action is waiting for feedback.
          */
-        public boolean execute(BluetoothGatt bluetoothGatt);
+        boolean execute(BluetoothGatt bluetoothGatt);
     }
 
     private final LinkedList<BleGattExecutor.ServiceAction> mQueue = new LinkedList<ServiceAction>();        // list of actions to execute
@@ -83,7 +83,7 @@ public class BleGattExecutor extends BluetoothGattCallback {
         };
     }
 
-    protected void enableNotification(BluetoothGattService gattService, String characteristicUUID, boolean enable) {
+    void enableNotification(BluetoothGattService gattService, String characteristicUUID, boolean enable) {
         ServiceAction action = serviceNotifyAction(gattService, characteristicUUID, enable);
         mQueue.add(action);
     }
@@ -121,7 +121,7 @@ public class BleGattExecutor extends BluetoothGattCallback {
         };
     }
 
-    protected void enableIndication(BluetoothGattService gattService, String characteristicUUID, boolean enable) {
+    void enableIndication(BluetoothGattService gattService, String characteristicUUID, boolean enable) {
         ServiceAction action = serviceIndicateAction(gattService, characteristicUUID, enable);
         mQueue.add(action);
     }
@@ -158,7 +158,7 @@ public class BleGattExecutor extends BluetoothGattCallback {
     }
 
 
-    protected void write(BluetoothGattService gattService, String uuid, byte[] value) {
+    void write(BluetoothGattService gattService, String uuid, byte[] value) {
         ServiceAction action = serviceWriteAction(gattService, uuid, value);
         mQueue.add(action);
     }
@@ -187,7 +187,7 @@ public class BleGattExecutor extends BluetoothGattCallback {
         mQueue.clear();
     }
 
-    protected void execute(BluetoothGatt gatt) {
+    void execute(BluetoothGatt gatt) {
         if (mCurrentAction == null) {
             while (!mQueue.isEmpty()) {
                 final BleGattExecutor.ServiceAction action = mQueue.pop();
@@ -244,9 +244,8 @@ public class BleGattExecutor extends BluetoothGattCallback {
     }
 
 
-
     // Helper function to create a Gatt Executor with a custom listener
-    protected static BleGattExecutor createExecutor(final BleExecutorListener listener) {
+    static BleGattExecutor createExecutor(final BleExecutorListener listener) {
         return new BleGattExecutor() {
             @Override
             public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
@@ -283,11 +282,10 @@ public class BleGattExecutor extends BluetoothGattCallback {
                 super.onReadRemoteRssi(gatt, rssi, status);
                 listener.onReadRemoteRssi(gatt, rssi, status);
             }
-
         };
     }
 
-    public interface BleExecutorListener {
+    interface BleExecutorListener {
 
         void onConnectionStateChange(BluetoothGatt gatt, int status, int newState);
 

@@ -72,14 +72,14 @@ public class BleUtils {
         }
     }
 
-    public static void cancelBluetoothAdapterReset() {
+    public static void cancelBluetoothAdapterReset(Context context) {
         if (isBluetoothAdapterResetInProgress()) {
-            sResetHelper.cancel();
+            sResetHelper.cancel(context);
             sResetHelper = null;
         }
     }
 
-    public static boolean isBluetoothAdapterResetInProgress() {
+    private static boolean isBluetoothAdapterResetInProgress() {
         return sResetHelper != null;
     }
 
@@ -88,7 +88,7 @@ public class BleUtils {
     }
 
     private static class ResetBluetoothAdapter {
-        private Context mContext;
+        //        private Context mContext;
         private ResetBluetoothAdapterListener mListener;
 
         private final BroadcastReceiver mBleAdapterStateReceiver = new BroadcastReceiver() {
@@ -99,14 +99,14 @@ public class BleUtils {
                 if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
                     final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
 
-                    onBleAdapterStatusChanged(state);
+                    onBleAdapterStatusChanged(state, context);
                 }
             }
         };
 
 
         ResetBluetoothAdapter(Context context, ResetBluetoothAdapterListener listener) {
-            mContext = context;
+            // mContext = context;
             mListener = listener;
 
             // Set receiver
@@ -114,7 +114,7 @@ public class BleUtils {
             context.registerReceiver(mBleAdapterStateReceiver, filter);
 
             // Reset
-            BluetoothAdapter bleAdapter = BleUtils.getBluetoothAdapter(mContext);
+            BluetoothAdapter bleAdapter = BleUtils.getBluetoothAdapter(context);
             if (bleAdapter != null && bleAdapter.isEnabled()) {
                 boolean isDisablingBle = bleAdapter.disable();
                 if (isDisablingBle) {
@@ -122,17 +122,17 @@ public class BleUtils {
                     // Now wait for BluetoothAdapter.ACTION_STATE_CHANGED notification
                 } else {
                     Log.w(TAG, "Can't disable bluetooth adapter");
-                    resetCompleted();
+                    resetCompleted(context);
                 }
             }
         }
 
-        private void onBleAdapterStatusChanged(int state) {
+        private void onBleAdapterStatusChanged(int state, Context context) {
             switch (state) {
                 case BluetoothAdapter.STATE_OFF: {
                     // Turn off has finished. Turn it on again
                     Log.d(TAG, "Ble adapter turned off. Turning on");
-                    BluetoothAdapter bleAdapter = BleUtils.getBluetoothAdapter(mContext);
+                    BluetoothAdapter bleAdapter = BleUtils.getBluetoothAdapter(context);
                     if (bleAdapter != null) {
                         bleAdapter.enable();
                     }
@@ -143,7 +143,7 @@ public class BleUtils {
                 case BluetoothAdapter.STATE_ON: {
                     Log.d(TAG, "Ble adapter turned on. Reset completed");
                     // Turn on has finished.
-                    resetCompleted();
+                    resetCompleted(context);
                     break;
                 }
                 case BluetoothAdapter.STATE_TURNING_ON:
@@ -151,17 +151,17 @@ public class BleUtils {
             }
         }
 
-        private void resetCompleted() {
-            mContext.unregisterReceiver(mBleAdapterStateReceiver);
+        private void resetCompleted(Context context) {
+            context.unregisterReceiver(mBleAdapterStateReceiver);
             if (mListener != null) {
                 mListener.resetBluetoothCompleted();
             }
             sResetHelper = null;
         }
 
-        public void cancel() {
+        public void cancel(Context context) {
             try {
-                mContext.unregisterReceiver(mBleAdapterStateReceiver);
+                context.unregisterReceiver(mBleAdapterStateReceiver);
             } catch (IllegalArgumentException ignored) {
 
             }
@@ -171,7 +171,8 @@ public class BleUtils {
     //endregion
 
 
-    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
+
     public static String bytesToHex(byte[] bytes) {
         if (bytes != null) {
             char[] hexChars = new char[bytes.length * 2];
@@ -181,19 +182,17 @@ public class BleUtils {
                 hexChars[j * 2 + 1] = hexArray[v & 0x0F];
             }
             return new String(hexChars);
-        }
-        else return null;
+        } else return null;
     }
 
     public static String byteToHex(byte value) {
-        if (value>0x0f) {
+        if (value > 0x0f) {
             char[] hexChars = new char[2];
             hexChars[0] = hexArray[value >>> 4];
             hexChars[1] = hexArray[value & 0x0F];
             return new String(hexChars);
-        }
-        else {
-            return ""+hexArray[value & 0x0F];
+        } else {
+            return "" + hexArray[value & 0x0F];
         }
     }
 
@@ -209,9 +208,7 @@ public class BleUtils {
 
         }
         return newString.toString().trim();
-
     }
-
 
     public static String getUuidStringFromByteArray(byte[] bytes) {
         StringBuilder buffer = new StringBuilder();
@@ -236,5 +233,4 @@ public class BleUtils {
         UUID uuid = new UUID(low, high);
         return uuid;
     }
-
 }

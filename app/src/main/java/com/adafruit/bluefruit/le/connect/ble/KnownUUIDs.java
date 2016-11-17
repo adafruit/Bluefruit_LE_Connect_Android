@@ -11,6 +11,7 @@ public class KnownUUIDs extends StandardUUIDs {
 
     // Service UUIDs
     private static final Map<String, String> sServiceUUIDs;
+
     static {
         Map<String, String> aMap = new HashMap<>();
 
@@ -25,6 +26,7 @@ public class KnownUUIDs extends StandardUUIDs {
 
     // Characteristic UUIDs
     private static final Map<String, String> sCharacteristicUUIDs;
+
     static {
         Map<String, String> aMap = new HashMap<>();
 
@@ -65,6 +67,7 @@ public class KnownUUIDs extends StandardUUIDs {
 
     // Descriptors UUIDs
     private static final Map<String, String> sDescriptorUUIDs;
+
     static {
         Map<String, String> aMap = new HashMap<>();
 

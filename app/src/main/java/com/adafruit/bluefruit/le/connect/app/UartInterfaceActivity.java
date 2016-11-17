@@ -139,8 +139,6 @@ public class UartInterfaceActivity extends AppCompatActivity implements BleManag
     @Override
     public void onServicesDiscovered() {
         mUartService = mBleManager.getGattService(UUID_SERVICE);
-
-
     }
 
     protected void enableRxNotifications() {
@@ -183,10 +181,5 @@ public class UartInterfaceActivity extends AppCompatActivity implements BleManag
 
     }
 
-
     // endregion
-
-
-
-
 }

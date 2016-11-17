@@ -167,14 +167,12 @@ public class ColorPickerActivity extends UartInterfaceActivity implements ColorP
         // Update UI
         mRgbColorView.setBackgroundColor(color);
 
-        int r = (color >> 16) & 0xFF;
-        int g = (color >> 8) & 0xFF;
-        int b = (color >> 0) & 0xFF;
-        String text = String.format(getString(R.string.colorpicker_rgbformat), r, g, b);
+        final int r = (color >> 16) & 0xFF;
+        final int g = (color >> 8) & 0xFF;
+        final int b = (color >> 0) & 0xFF;
+        final String text = String.format(getString(R.string.colorpicker_rgbformat), r, g, b);
         mRgbTextView.setText(text);
-
     }
-
 
     public void onClickSend(View view) {
         // Set the old color

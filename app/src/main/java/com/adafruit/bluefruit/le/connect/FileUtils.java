@@ -1,19 +1,13 @@
 package com.adafruit.bluefruit.le.connect;
 
-import android.content.Context;
-import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.os.Environment;
 
 import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.channels.FileChannel;
-
 
 public class FileUtils {
 
@@ -36,7 +30,6 @@ public class FileUtils {
 
         return result;
     }
-
 
     public static String copyAssetFile(AssetManager assetManager, String inputFilename, String outputFilename) {
 

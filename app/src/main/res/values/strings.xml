@@ -199,7 +199,7 @@
     <string name="colorpicker_help_title">Color Picker Help</string>
     <string name="colorpicker_about_title">Color Picker About</string>
     <string name="colorpicker_send">Send</string>
-    <string name="colorpicker_rgbformat">R:%1$s G:%2$s B:%3$s</string>
+    <string name="colorpicker_rgbformat">R:%1$d G:%2$d B:%3$d</string>
 
 
     <!-- Beacon -->

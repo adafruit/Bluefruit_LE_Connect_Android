@@ -137,7 +137,6 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
         mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
 
-
         // Google Play Services (used for location updates)
         buildGoogleApiClient();
 
@@ -355,8 +354,7 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
                         .setMessage(getString(R.string.controller_magnetometermissing))
                         .setPositiveButton(android.R.string.ok, null)
                         .show();
-            }
-            else {
+            } else {
                 mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_NORMAL);
             }
         } else {
@@ -375,7 +373,7 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
                 try {
                     LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest, this);
                 } catch (SecurityException e) {
-                    Log.e(TAG, "Security exception requesting location updates: "+e);
+                    Log.e(TAG, "Security exception requesting location updates: " + e);
                 }
             } else {
                 LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
@@ -522,7 +520,7 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
         try {
             setLastLocation(LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient));
         } catch (SecurityException e) {
-            Log.e(TAG, "Security exception requesting location updates: "+e);
+            Log.e(TAG, "Security exception requesting location updates: " + e);
         }
     }
 
@@ -571,7 +569,7 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
         private Activity mActivity;
         private SensorData[] mSensorData;
 
-        public ExpandableListAdapter(Activity activity, SensorData[] sensorData) {
+        ExpandableListAdapter(Activity activity, SensorData[] sensorData) {
             mActivity = activity;
             mSensorData = sensorData;
         }
