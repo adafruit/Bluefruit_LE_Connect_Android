@@ -96,8 +96,8 @@ public class ConnectedSettingsActivity extends AppCompatActivity implements Firm
         mCustomFirmwareButton = (Button) findViewById(R.id.customFirmwareButton);
         mFirmwareReleasesListView = (ExpandableHeightListView) findViewById(R.id.firmwareReleasesListView);
         mFirmwareReleasesListView.setExpanded(true);
- //       mFirmwareReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, mBoardRelease == null ? null : mBoardRelease.firmwareReleases, mShowBetaVersions);           // mBoardRelease is still null here (except if we are restoring the activity because onConfigChanges)
- //       mFirmwareReleasesListView.setAdapter(mFirmwareReleasesListAdapter);
+        //       mFirmwareReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, mBoardRelease == null ? null : mBoardRelease.firmwareReleases, mShowBetaVersions);           // mBoardRelease is still null here (except if we are restoring the activity because onConfigChanges)
+        //       mFirmwareReleasesListView.setAdapter(mFirmwareReleasesListAdapter);
 
         mBootloaderReleasesView = findViewById(R.id.bootloaderReleasesView);
         mCustomBootloaderButton = (Button) findViewById(R.id.customBootloaderButton);
@@ -226,8 +226,7 @@ public class ConnectedSettingsActivity extends AppCompatActivity implements Firm
         if (mBoardRelease != null) {        // Show specific releases
             mFirmwareReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, mBoardRelease.firmwareReleases, mShowBetaVersions);
             mBootloaderReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, mBoardRelease.bootloaderReleases, mShowBetaVersions);
-        }
-        else if (mAllReleases != null) {      // Show all releases
+        } else if (mAllReleases != null) {      // Show all releases
 
             List<ReleasesParser.FirmwareInfo> firmwareReleases = new ArrayList<>();
             for (String boardKey : mAllReleases.keySet()) {
@@ -244,8 +243,7 @@ public class ConnectedSettingsActivity extends AppCompatActivity implements Firm
             mFirmwareReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, firmwareReleases, mShowBetaVersions);
             mBootloaderReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, bootloaderReleases, mShowBetaVersions);
 
-        }
-        else {      // No releases
+        } else {      // No releases
             mFirmwareReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, null, mShowBetaVersions);
             mBootloaderReleasesListAdapter = new ReleasesListAdapter(ConnectedSettingsActivity.this, null, mShowBetaVersions);
 
@@ -306,7 +304,7 @@ public class ConnectedSettingsActivity extends AppCompatActivity implements Firm
         private Context mContext;
         private List<ReleasesParser.BasicVersionInfo> mReleases = new ArrayList<>();
 
-        public ReleasesListAdapter(Context context, List<? extends ReleasesParser.BasicVersionInfo> releases, boolean showBetaVersions) {
+        ReleasesListAdapter(Context context, List<? extends ReleasesParser.BasicVersionInfo> releases, boolean showBetaVersions) {
             mContext = context;
 
             if (releases != null) {
@@ -542,7 +540,7 @@ public class ConnectedSettingsActivity extends AppCompatActivity implements Firm
             mBoardRelease = mRetainedDataFragment.mBoardRelease;
             mDeviceInfoData = mRetainedDataFragment.mDeviceInfoData;
             mApplicationFilesDialog = mRetainedDataFragment.mApplicationFilesDialog;
-            mAllReleases =  mRetainedDataFragment.mAllReleases;
+            mAllReleases = mRetainedDataFragment.mAllReleases;
 
             if (mFirmwareUpdater != null) {
                 mFirmwareUpdater.changedParentActivity(this);       // set the new activity

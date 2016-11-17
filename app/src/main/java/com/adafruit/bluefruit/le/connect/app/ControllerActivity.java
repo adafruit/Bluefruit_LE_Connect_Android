@@ -52,6 +52,8 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
 
     // Activity request codes (used for onActivityResult)
     private static final int kActivityRequestCode_ConnectedSettingsActivity = 0;
+    private static final int kActivityRequestCode_PadActivity = 1;
+    private static final int kActivityRequestCode_ColorPickerActivity = 2;
 
     // Constants
     private final static String kPreferences = "ControllerActivity_prefs";
@@ -117,10 +119,10 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (position == 0) {
                     Intent intent = new Intent(ControllerActivity.this, ColorPickerActivity.class);
-                    startActivityForResult(intent, 0);
+                    startActivityForResult(intent, kActivityRequestCode_ColorPickerActivity);
                 } else {
                     Intent intent = new Intent(ControllerActivity.this, PadActivity.class);
-                    startActivityForResult(intent, 0);
+                    startActivityForResult(intent, kActivityRequestCode_PadActivity);
                 }
             }
         });
@@ -484,6 +486,8 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
         super.onDisconnected();
         Log.d(TAG, "Disconnected. Back to previous activity");
         setResult(-1);      // Unexpected Disconnect
+        finishActivity(kActivityRequestCode_PadActivity);
+        finishActivity(kActivityRequestCode_ColorPickerActivity);
         finish();
     }
 

@@ -75,7 +75,7 @@ public class PadActivity extends UartInterfaceActivity {
     View.OnTouchListener mPadButtonTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent event) {
-            final int tag = new Integer((String) view.getTag());
+            final int tag = Integer.valueOf((String) view.getTag());
             if (event.getAction() == MotionEvent.ACTION_DOWN) {
                 view.setPressed(true);
                 sendTouchEvent(tag, true);
