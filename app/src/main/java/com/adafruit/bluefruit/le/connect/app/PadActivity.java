@@ -51,7 +51,6 @@ public class PadActivity extends UartInterfaceActivity {
         onServicesDiscovered();
     }
 
-
     private void adjustAspectRatio() {
         ViewGroup rootLayout = (ViewGroup) findViewById(R.id.rootLayout);
         int mainWidth = rootLayout.getWidth();

@@ -284,7 +284,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             }
         }
 
-        // Request Bluetooth scanning persmissions
+        // Request Bluetooth scanning permissions
         requestLocationPermissionIfNeeded();
     }
 
@@ -680,7 +680,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
                 break;
             }
         }
-        if (errorMessageId > 0) {
+        if (errorMessageId != 0) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             AlertDialog dialog = builder.setMessage(errorMessageId)
                     .setPositiveButton(android.R.string.ok, null)
@@ -1299,10 +1299,8 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
 
                 mScannedDevices.clear();
                 startScan(null);
-
             }
         });
-
     }
 
 
@@ -1901,7 +1899,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         }
     }
 
-//endregion
+    //endregion
 
     // region DataFragment
     public static class DataFragment extends Fragment {
