@@ -11,14 +11,14 @@
 
     tools:context=".app.MainActivity">
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="40dp"
-        android:src="@drawable/adaflower"
-        tools:ignore="ContentDescription" />
+    <!--<ImageView-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_alignParentBottom="true"-->
+        <!--android:layout_centerHorizontal="true"-->
+        <!--android:layout_marginBottom="40dp"-->
+        <!--android:src="@drawable/adaflower"-->
+        <!--tools:ignore="ContentDescription" />-->
 
     <Button
         android:id="@+id/scanButton"
