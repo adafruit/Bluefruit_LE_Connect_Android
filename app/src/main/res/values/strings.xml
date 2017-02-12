@@ -2,8 +2,8 @@
 <resources>
 
     <!-- General -->
-    <string name="app_name">Bluefruit LE</string>
-    <string name="app_full_name">Bluefruit LE Connect</string>
+    <string name="app_name">Becky\'s Car</string>
+    <string name="app_full_name">Becky\'s Car</string>
     <string name="action_info">Info</string>
     <string name="action_mqttsettings">MQTT</string>
     <string name="action_settings">Settings</string>
@@ -47,11 +47,7 @@
     <string name="scan_unexpecteddisconnect">Peripheral disconnected</string>
     <string name="scan_tag_id">Id</string>
     <string name="scan_connectservice_info">Info</string>
-    <string name="scan_connectservice_uart">UART</string>
-    <string name="scan_connectservice_pinio">Pin I/O</string>
     <string name="scan_connectservice_controller">Controller</string>
-    <string name="scan_connectservice_beacon">Beacon</string>
-    <string name="scan_connectservice_neopixel">Neopixel</string>
     <string name="scan_softwareupdate_title">Update available</string>
     <string name="scan_softwareupdate_messageformat">Software version %s is available</string>
     <string name="scan_bootloaderandfirmwareupdate_messageformat">Software version %1$s and Bootloader version %2$s are available. This is a two-step process: bootloader will be updated first and firmware the next time you connect to the device</string>
@@ -111,62 +107,6 @@
     <string name="info_item_service">Service</string>
     <string name="info_help_title">Info List Help</string>
 
-    <!-- Uart Activity -->
-    <string name="title_activity_uart">UART</string>
-    <string name="uart_echo">Echo:</string>
-    <string name="uart_eol">EOL:</string>
-    <string name="uart_format_ascii">Ascii</string>
-    <string name="uart_format_hex">Hex</string>
-    <string name="uart_format_hexadecimal">Hexadecimal</string>
-    <string name="uart_displaymode_text">Text</string>
-    <string name="uart_displaymode_timestamp">Timestamp</string>
-    <string name="uart_help_title">UART Help</string>
-
-    <string name="uart_action_displaymode_format">Display Mode: %s</string>
-    <string name="uart_action_datamode_format">Data Mode: %s</string>
-
-    <string name="uart_action_echo">Show Echo</string>
-    <string name="uart_action_eol">Add Eol</string>
-    <string name="uart_action_enabled">On</string>
-    <string name="uart_action_disabled">Off</string>
-
-    <string name="uart_copy">Copy</string>
-    <string name="uart_share">Share</string>
-    <string name="uart_clear">Clear</string>
-    <string name="uart_send">SEND</string>
-
-    <string name="uart_share_subject">UART</string>
-    <string name="uart_share_empty">Nothing to share. UART text is empty</string>
-
-    <string name="uart_sharechooser_title">Send UART text to…</string>
-
-    <string name="uart_sentbytes_format">Sent: %d bytes </string>
-    <string name="uart_receivedbytes_format">Received: %d bytes</string>
-
-    <string name="uart_text_dataomitted">(Previous data omitted to improve performance…)</string>
-
-    <!-- PinIO Activity -->
-    <string name="title_activity_pin_io">PinIO</string>
-    <string name="pinio_sectiontitle">AVAILABLE PINS</string>
-    <string name="pinio_pintype_input">Input</string>
-    <string name="pinio_pintype_unknown">Unknown</string>
-    <string name="pinio_pintype_output">Output</string>
-    <string name="pinio_pintype_pwm">PWM</string>
-    <string name="pinio_pintype_servo">Servo</string>
-    <string name="pinio_pintype_analog">Analog</string>
-    <string name="pinio_pintype_low">Low</string>
-    <string name="pinio_pintype_high">High</string>
-    <string name="pinio_pinname_digital_format">Pin %d</string>
-    <string name="pinio_pinname_analog_format" formatted="false">Pin %d, Analog %d</string>
-    <string name="pinio_tag_mode">Mode</string>
-    <string name="pinio_help_title">Pin I/O Help</string>
-
-    <string name="pinio_capabilityquery_querying_title">Querying pin capabilities…</string>
-    <string name="pinio_capabilityquery_expired_title">No response to capability query</string>
-    <string name="pinio_capabilityquery_expired_message">Assuming default pin format (Arduino Uno)</string>
-
-    <string name="pinio_action_refresh">Query capabilities</string>
-
     <!-- Controller Activity -->
     <string name="title_activity_controller">Controller</string>
     <string name="controller_uartwarning">Please ensure that your Bluefruit LE module is set to DATA/UART mode when using this application</string>
@@ -187,7 +127,6 @@
     </string-array>
 
     <string-array name="controller_interface_items">
-        <item>Color Picker</item>
         <item>Control Pad</item>
     </string-array>
 

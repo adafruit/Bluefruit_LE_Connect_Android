@@ -117,13 +117,8 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
         interfaceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (position == 0) {
-                    Intent intent = new Intent(ControllerActivity.this, ColorPickerActivity.class);
-                    startActivityForResult(intent, kActivityRequestCode_ColorPickerActivity);
-                } else {
-                    Intent intent = new Intent(ControllerActivity.this, PadActivity.class);
-                    startActivityForResult(intent, kActivityRequestCode_PadActivity);
-                }
+            Intent intent = new Intent(ControllerActivity.this, PadActivity.class);
+            startActivityForResult(intent, kActivityRequestCode_PadActivity);
             }
         });
 
