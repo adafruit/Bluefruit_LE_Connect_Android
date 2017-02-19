@@ -47,6 +47,12 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".Patient.PatientActivity"
+            android:label="@string/title_activity_patient"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboardHidden|orientation|screenSize">
+        </activity>
+        <activity
             android:name=".app.MainHelpActivity"
             android:label="@string/title_activity_mainhelp"
             android:parentActivityName=".app.MainActivity"
@@ -175,6 +181,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.adafruit.bluefruit.le.connect.app.neopixel.NeopixelActivity" />
         </activity>
+        <!--<activity-->
+            <!--android:name=".Patient.PatientActivity"-->
+            <!--android:label="@string/title_activity_patient"-->
+            <!--android:theme="@style/AppTheme.NoActionBar"></activity>-->
     </application>
 
 </manifest>
