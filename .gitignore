@@ -10,3 +10,4 @@ dFULibrary/build
 app-release.apk
 manifest-merger-release-report.txt
 /.idea
+/.idea/misc.xml
