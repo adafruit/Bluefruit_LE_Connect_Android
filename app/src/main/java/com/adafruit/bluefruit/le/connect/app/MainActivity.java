@@ -1646,14 +1646,6 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             final byte[] manufacturerBytes = {deviceData.scanRecord[6], deviceData.scanRecord[5]};      // Little endan
             String manufacturer = BleUtils.bytesToHex(manufacturerBytes);
 
-            // Check if the manufacturer is known, and replace the id for a name
-            String kKnownManufacturers[] = getResources().getStringArray(R.array.beacon_manufacturers_ids);
-            int knownIndex = Arrays.asList(kKnownManufacturers).indexOf(manufacturer);
-            if (knownIndex >= 0) {
-                String kManufacturerNames[] = getResources().getStringArray(R.array.beacon_manufacturers_names);
-                manufacturer = kManufacturerNames[knownIndex];
-            }
-
             result.append(getString(R.string.scan_device_beacon_manufacturer)).append(": <b>").append(manufacturer == null ? "" : manufacturer).append("</b><br>");
 
             StringBuilder text = new StringBuilder();

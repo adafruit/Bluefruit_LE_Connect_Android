@@ -110,82 +110,18 @@
     <!-- Controller Activity -->
     <string name="title_activity_controller">Controller</string>
     <string name="controller_uartwarning">Please ensure that your Bluefruit LE module is set to DATA/UART mode when using this application</string>
-    <string name="controller_sectiontitle_stream">Stream Sensor Data</string>
     <string name="controller_sectiontitle_interface">Interface</string>
     <string name="controller_help_title">Controller Help</string>
     <string name="controller_location_unknown">Waiting for location data…</string>
     <string name="controller_location_disabled">Location is disabled. Go to settings and enable it to receive location data</string>
-    <string name="controller_magnetometermissing">Your device doesn\'t have magnetic sensor</string>
-
-    <string-array name="controller_stream_items">
-        <item>Quaternion</item>
-        <item>Accelerometer</item>
-        <item>Gyro</item>
-        <item>Magnetometer</item>
-        <item>Location</item>
-        <item>Magnetometer</item>
-    </string-array>
 
     <string-array name="controller_interface_items">
         <item>Control Pad</item>
+        <item>Control Pad with Predefined Values</item>
     </string-array>
 
     <!-- Pad Activity -->
     <string name="title_activity_pad">Control Pad</string>
-
-    <!-- Color Picker -->
-    <string name="title_activity_color_picker">Color Picker</string>
-    <string name="colorpicker_help_title">Color Picker Help</string>
-    <string name="colorpicker_about_title">Color Picker About</string>
-    <string name="colorpicker_send">Send</string>
-    <string name="colorpicker_rgbformat">R:%1$d G:%2$d B:%3$d</string>
-
-
-    <!-- Beacon -->
-    <string name="title_activity_beacon">Beacons</string>
-    <string name="beacon_help_title">Beacons Help</string>
-
-    <string name="beacon_manufacturer_choose_title">Choose Manufacturer</string>
-    <string-array name="beacon_manufacturers_names">
-        <item>Apple  (004C)</item>
-        <item>Nordic (0059)</item>
-    </string-array>
-
-    <string-array name="beacon_manufacturers_ids">
-        <item>004C</item>
-        <item>0059</item>
-    </string-array>
-
-    <string-array name="beacon_page_titles">
-        <item>Beacon</item>
-        <item>Eddystone</item>
-    </string-array>
-
-    <string name="beacon_ibeacon_vendor">Vendor:</string>
-    <string name="beacon_ibeacon_choose">Choose</string>
-    <string name="beacon_ibeacon_random">Random</string>
-    <string name="beacon_ibeacon_refreshrssi">Refresh</string>
-    <string name="beacon_ibeacon_major">Major:</string>
-    <string name="beacon_ibeacon_minor">Minor:</string>
-    <string name="beacon_ibeacon_rssi">Rssi@1m:</string>
-    <string name="beacon_uribeacon_uri">Uri:</string>
-    <string name="beacon_beacon_enable">Enable</string>
-    <string name="beacon_beacon_disable">Disable</string>
-
-    <string name="beacon_beacon_enabled">Beacon Enabled</string>
-    <string name="beacon_beacon_disabled">Beacon Disabled</string>
-    <string name="beacon_beacon_enabling">Resetting into Beacon Mode</string>
-
-    <string name="beacon_aterror">Device not responding to commands.\nPlease ensure that you are running firmware version 0.4.7 or higher</string>
-    <string name="beacon_ibeacon_subtitle">Beacon Data</string>
-    <string name="beacon_uribeacon_subtitle">Eddystone Data</string>
-
-    <string name="beacon_uribeacon_invalidprefix">Prefix must be one of the following values: http://www. https://www.  http:// https://  urn:uuid:</string>
-    <string name="beacon_uribeacon_uritoolong">Uri too long</string>
-    <string name="beacon_uribeacon_shorteneduriformat">Shortened uri: %s</string>
-    <string name="beacon_uribeacon_shorteningerror">Shortening error</string>
-    <string name="beacon_uribeacon_shortening">Shortening…</string>
-    <string name="beacon_uribeacon_validuri">Valid URI</string>
 
     <!-- Connected Settings -->
     <string name="title_activity_connected_settings">Firmware Updates</string>
@@ -203,49 +139,6 @@
     <string name="connectedsettings_bootloaderinstall_messageformat">Download and install bootloader version %s</string>
     <string name="connectedsettings_noexplorer_title">Unavailable</string>
     <string name="connectedsettings_noexplorer_message">File browser app not has not been found on your device. You should install an app like Dropbox, GoogleDrive…</string>
-
-    <!-- Neopixel -->
-    <string name="title_activity_neopixel">Neopixel</string>
-    <string name="neopixel_help_title">Neopixel Help</string>
-
-    <string name="neopixel_sketch_tooltip">Neopixel support requires a custom sketch to be running on your Arduino. You can export this sketch from the app by clicking the INFO icon in the top-right corner.</string>
-
-
-    <string name="neopixel_status">Status:</string>
-
-    <string name="neopixel_status_readytoconnect">Ready to Connect</string>
-    <string name="neopixel_status_notdetected">Not detected</string>
-    <string name="neopixel_status_waitingsetup">Waiting for Setup</string>
-    <string name="neopixel_status_readyforsetup">Ready for Setup</string>
-    <string name="neopixel_status_connected">Connected</string>
-
-    <string name="neopixel_connect">Connect</string>
-
-    <string name="neopixel_picker">Picker:</string>
-    <string name="neopixel_brightness">Brightness:</string>
-
-    <string name="neopixel_colorpicker_setcolor">Set</string>
-
-    <string name="neopixel_boardselector_boards_title">Standard Board Sizes</string>
-    <string name="neopixel_boardselector_custom_title">Custom Board Sizes</string>
-    <string name="neopixel_boardselector_custom_linestrip">Line Strip</string>
-
-    <string name="neopixel_boardselector_enterlinestrip_title">Select line strip length</string>
-    <string name="neopixel_boardselector_enterlinestrip_hint">Enter length</string>
-
-
-    <string name="neopixel_boardtype_types_title">Predefined Pixel Types</string>
-    <string name="neopixel_boardtype_custom_title">Pixel Config Register</string>
-    <string name="neopixel_boardtype_value_title">Decimal Value:</string>
-    <string name="neopixel_boardtype_value_set">Set</string>
-
-
-    <!-- Neopixel Help -->
-    <string name="neopixel_help_export">Export Sketch...</string>
-    <string name="neopixel_help_export_subject">Export Neopixel Sketch</string>
-    <string name="neopixel_help_export_text">Export Neopixel Sketch</string>
-    <string name="neopixel_help_export_chooser_title">Select app for Exporting Sketch</string>
-
 
     <!-- Settings -->
     <string name="title_activity_settings">Settings</string>
