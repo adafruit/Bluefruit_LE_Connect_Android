@@ -12,6 +12,11 @@
     <string name="action_refreshcache">Refresh Bluetooth Cache</string>
     <string name="action_about">About</string>
 
+    <!-- Login -->
+    <string name="patient">Patient</string>
+    <string name="therapist">Physical Therapist</string>
+    <string name="select_one">Select one:</string>
+
     <!-- Bluetooth Adapter -->
     <string name="dialog_error_no_ble">Bluetooth Low Energy not supported</string>
     <string name="dialog_error_no_bluetooth">Bluetooth not available</string>
@@ -90,7 +95,6 @@
     <string name="scan_filters_rssi_value_format">%d dBM</string>
     <string name="scan_filters_unnamed">Show unnamed devices</string>
     <string name="scan_filters_onlyuart">Must have UART service</string>
-
 
 
     <string-array name="scan_devicetypes">
@@ -427,6 +431,10 @@
     <!-- Common -->
     <string name="dialog_notice">Notice</string>
     <string name="dialog_dontshowagain">Don\'t show again</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_login">LoginActivity</string>
 
     <!-- Debug -->
 

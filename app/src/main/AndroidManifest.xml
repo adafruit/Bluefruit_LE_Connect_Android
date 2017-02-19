@@ -37,7 +37,7 @@
         <service android:name="org.eclipse.paho.android.service.MqttService" />
 
         <activity
-            android:name=".app.MainActivity"
+            android:name=".Login.LoginActivity"
             android:label="@string/app_name"
             android:screenOrientation="fullUser">
             <intent-filter>
@@ -166,7 +166,7 @@
             android:theme="@style/AppTheme.NoActionBarDialog" />
         <activity
             android:name=".app.neopixel.NeopixelBoardTypeActivity"
-            android:theme="@style/AppTheme.NoActionBarDialog"/>
+            android:theme="@style/AppTheme.NoActionBarDialog" />
         <activity
             android:name=".app.neopixel.NeopixelHelpActivity"
             android:parentActivityName=".app.neopixel.NeopixelActivity"
@@ -175,7 +175,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.adafruit.bluefruit.le.connect.app.neopixel.NeopixelActivity" />
         </activity>
-
     </application>
 
 </manifest>
