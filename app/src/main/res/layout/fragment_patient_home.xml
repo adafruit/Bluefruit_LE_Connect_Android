@@ -17,7 +17,8 @@
         android:id="@+id/exercise_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/today">
+        android:layout_below="@id/today"
+        android:layout_margin="10dp">
     </ListView>
 
 </RelativeLayout>

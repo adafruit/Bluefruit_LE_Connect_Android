@@ -21,6 +21,9 @@
     <!-- Patient Home -->
     <string name="patient_today">Today</string>
 
+    <!-- Patient Exercise Summary -->
+    <string name="squats">Squats</string>
+
     <!-- Bluetooth Adapter -->
     <string name="dialog_error_no_ble">Bluetooth Low Energy not supported</string>
     <string name="dialog_error_no_bluetooth">Bluetooth not available</string>

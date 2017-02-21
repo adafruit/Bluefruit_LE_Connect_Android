@@ -17,8 +17,11 @@ import java.util.ArrayList;
 
 public class ExercisesAdapter extends ArrayAdapter<Exercise> {
 
+    private PatientActivity patientActivity;
+
     public ExercisesAdapter(Context context, ArrayList<Exercise> exercises) {
         super(context, 0, exercises);
+        patientActivity = (PatientActivity) context;
     }
 
     @Override
@@ -33,6 +36,13 @@ public class ExercisesAdapter extends ArrayAdapter<Exercise> {
         TextView name = (TextView) convertView.findViewById(R.id.exercise_name);
         // Populate the data into the template view using the data object
         name.setText(exercise.getName());
+
+        convertView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                patientActivity.transitionToFragment(new ExerciseSummaryFragment());
+            }
+        });
 
         // Return completed view to render on screen
         return convertView;

@@ -11,6 +11,7 @@
         android:layout_marginTop="50dp"
         android:textSize="20dp"
         android:text="@string/select_one"/>
+
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -22,6 +23,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
+            android:layout_margin="15dp"
+            android:backgroundTint="#4dc3ff"
+            android:textAllCaps="false"
+            android:textSize="14dp"
             android:text="@string/patient"/>
 
         <Button
@@ -30,6 +35,11 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_below="@id/login_patient_button"
+            android:layout_margin="15dp"
+            android:padding="15dp"
+            android:backgroundTint="#3fd9a3"
+            android:textAllCaps="false"
+            android:textSize="15dp"
             android:text="@string/therapist"/>
     </RelativeLayout>
 

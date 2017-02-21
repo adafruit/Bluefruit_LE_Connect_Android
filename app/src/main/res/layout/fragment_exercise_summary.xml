@@ -1,0 +1,65 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.adafruit.bluefruit.le.connect.Patient.ExerciseSummaryFragment">
+
+    <TextView
+        android:id="@+id/exercise_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:textSize="20dp"
+        android:text="Bicep curls" />
+
+    <ImageView
+        android:id="@+id/image"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/exercise_name"
+        android:src="@drawable/exercise"/>
+
+    <TextView
+        android:id="@+id/summary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/image"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="20dp"
+        android:textSize="17dp"
+        android:text="3 sets, 10 reps each arm"/>
+
+    <TextView
+        android:id="@+id/details"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/summary"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="20dp"
+        android:textSize="15dp"
+        android:text="- Hold 5lb weights in each hand  "/>
+    <TextView
+        android:id="@+id/details2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/details"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="20dp"
+        android:textSize="15dp"
+        android:text="- Don't forget to alternate your arms! "/>
+
+    <Button
+        android:id="@+id/start_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="50dp"
+        android:textAllCaps="false"
+        android:textSize="15dp"
+        android:text="Start"/>
+
+
+</RelativeLayout>
