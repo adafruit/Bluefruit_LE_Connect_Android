@@ -2,7 +2,7 @@
 <resources>
 
     <!-- General -->
-    <string name="app_name">WYJIT</string>
+    <string name="app_name">Knetic</string>
     <string name="app_full_name">WYJIT Bluefruit LE Connect</string>
     <string name="action_info">Info</string>
     <string name="action_mqttsettings">MQTT</string>
@@ -19,7 +19,7 @@
 
     <!-- Patient -->
     <!-- Patient Home -->
-    <string name="patient_today">Today</string>
+    <string name="patient_today">Daily Tasks</string>
 
     <!-- Patient Exercise Summary -->
     <string name="squats">Squats</string>
