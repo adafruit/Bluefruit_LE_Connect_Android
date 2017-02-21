@@ -10,7 +10,6 @@
     <string name="action_licenses">Licenses</string>
     <string name="action_firmwareupdates">Firmware Updates</string>
     <string name="action_refreshcache">Refresh Bluetooth Cache</string>
-    <string name="action_about">About</string>
 
     <!-- Login -->
     <string name="patient">Patient</string>
@@ -22,7 +21,10 @@
     <string name="patient_today">Today</string>
 
     <!-- Patient Exercise Summary -->
-    <string name="squats">Squats</string>
+
+    <!-- PT -->
+    <!-- PT Home -->
+    <string name="pt_today">Today's Appointment</string>
 
     <!-- Bluetooth Adapter -->
     <string name="dialog_error_no_ble">Bluetooth Low Energy not supported</string>
@@ -35,7 +37,6 @@
     <!-- Scan Activity -->
     <string name="scan_scanbutton_scan">Scan for peripherals</string>
     <string name="scan_scanbutton_scanning">Scanning…</string>
-    <string name="scan_devicesheadertitle">PERIPHERALS</string>
     <string name="scan_nodevicesfound">No peripherals found</string>
     <string name="scan_device_localname">Local Name</string>
     <string name="scan_device_address">Address</string>
@@ -66,7 +67,6 @@
     <string name="scan_connectservice_neopixel">Neopixel</string>
     <string name="scan_softwareupdate_title">Update available</string>
     <string name="scan_softwareupdate_messageformat">Software version %s is available</string>
-    <string name="scan_bootloaderandfirmwareupdate_messageformat">Software version %1$s and Bootloader version %2$s are available. This is a two-step process: bootloader will be updated first and firmware the next time you connect to the device</string>
 
     <string name="scan_softwareupdate_install">Install</string>
     <string name="scan_softwareupdate_notnow">Ask later</string>
@@ -79,11 +79,6 @@
     <string name="scan_failedupdatedetected_title">Failed update detected</string>
     <string name="scan_failedupdatedetected_message">A failed update for this device has been detected.\nIt is strongly recommended to retry updating the device now</string>
     <string name="scan_failedupdatedetected_ok">Update now</string>
-
-
-    <string name="scan_secondphaseupdatedetected_title">Continue update</string>
-    <string name="scan_secondphaseupdatedetected_message">Firmware will be updated now</string>
-    <string name="scan_secondphaseupdatedetected_ok">Continue</string>
 
 
     <string name="scan_filters_title_filter_format">Filter: %s</string>
@@ -124,10 +119,7 @@
 
     <!-- Uart Activity -->
     <string name="title_activity_uart">UART</string>
-    <string name="uart_echo">Echo:</string>
-    <string name="uart_eol">EOL:</string>
     <string name="uart_format_ascii">Ascii</string>
-    <string name="uart_format_hex">Hex</string>
     <string name="uart_format_hexadecimal">Hexadecimal</string>
     <string name="uart_displaymode_text">Text</string>
     <string name="uart_displaymode_timestamp">Timestamp</string>
@@ -138,8 +130,6 @@
 
     <string name="uart_action_echo">Show Echo</string>
     <string name="uart_action_eol">Add Eol</string>
-    <string name="uart_action_enabled">On</string>
-    <string name="uart_action_disabled">Off</string>
 
     <string name="uart_copy">Copy</string>
     <string name="uart_share">Share</string>
@@ -169,7 +159,6 @@
     <string name="pinio_pintype_high">High</string>
     <string name="pinio_pinname_digital_format">Pin %d</string>
     <string name="pinio_pinname_analog_format" formatted="false">Pin %d, Analog %d</string>
-    <string name="pinio_tag_mode">Mode</string>
     <string name="pinio_help_title">Pin I/O Help</string>
 
     <string name="pinio_capabilityquery_querying_title">Querying pin capabilities…</string>
@@ -208,7 +197,6 @@
     <!-- Color Picker -->
     <string name="title_activity_color_picker">Color Picker</string>
     <string name="colorpicker_help_title">Color Picker Help</string>
-    <string name="colorpicker_about_title">Color Picker About</string>
     <string name="colorpicker_send">Send</string>
     <string name="colorpicker_rgbformat">R:%1$d G:%2$d B:%3$d</string>
 
@@ -245,7 +233,6 @@
     <string name="beacon_beacon_disable">Disable</string>
 
     <string name="beacon_beacon_enabled">Beacon Enabled</string>
-    <string name="beacon_beacon_disabled">Beacon Disabled</string>
     <string name="beacon_beacon_enabling">Resetting into Beacon Mode</string>
 
     <string name="beacon_aterror">Device not responding to commands.\nPlease ensure that you are running firmware version 0.4.7 or higher</string>
@@ -270,7 +257,6 @@
     <string name="connectedsettings_usecustombootloader">Use custom bootloader</string>
     <string name="connectedsettings_versionformat">Version %s</string>
     <string name="connectedsettings_betaversionformat">Beta Version %s</string>
-    <string name="connectedsettings_retrievinginfoformat">No releases found for this device (%s)</string>
     <string name="connectedsettings_firmwareinstall_messageformat">Download and install firmware version %s</string>
     <string name="connectedsettings_bootloaderinstall_messageformat">Download and install bootloader version %s</string>
     <string name="connectedsettings_noexplorer_title">Unavailable</string>
@@ -333,8 +319,6 @@
     <string name="settings_forcecloseconnection_summary">Force close connection before connect</string>
     <string name="settings_gattautoconnect_title">Reconnect</string>
     <string name="settings_gattautoconnect_summary">Try to reconnect when the connection to a device fails</string>
-    <string name="settings_blerefresh_title">Refresh cache</string>
-    <string name="settings_blerefresh_summary">Refresh bluetooth cache when scanning</string>
     <string name="settingsaction_confirmenablewifi_title">Wifi status</string>
     <string name="settingsaction_confirmenablewifi_message">Wifi was previously disabled to improve Bluetooth connections. Would you like to enable it again?</string>
     <string name="settings_category_update">Software updates</string>
@@ -352,7 +336,6 @@
     <string name="settings_pref_bootloaders_title">Show bootloaders</string>
     <string name="settings_pref_betaversions_summary">Show pre-release firmware and bootloaders</string>
     <string name="settings_pref_betaversions_title">Show beta releases</string>
-    <string name="pref_key_reset_settings">pref_key_reset_settings</string>
     <string name="settings_category_reset">Reset</string>
     <string name="settings_pref_reset_title">Reset Preferences</string>
     <string name="settings_pref_reset_summmary">Restore default values for all settings</string>
@@ -405,7 +388,6 @@
     <string name="mqtt_disable">Disable</string>
     <string name="mqtt_service_status">Mqtt Service Status:</string>
 
-    <string name="mqtt_qrconfig">Configure using AdafruitIO QR-Code</string>
     <string name="mqtt_qrconfig_action">Scan Code</string>
 
     <string name="mqtt_status_connected">Connected</string>
@@ -440,9 +422,8 @@
     <string name="dialog_dontshowagain">Don\'t show again</string>
 
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="title_activity_login">LoginActivity</string>
     <string name="title_activity_patient">PatientActivity</string>
+    <string name="title_activity_pt">PTActivity</string>
 
     <!-- Debug -->
 

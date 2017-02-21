@@ -48,10 +48,9 @@
         </activity>
         <activity
             android:name=".Patient.PatientActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_patient"
-            android:screenOrientation="portrait"
-            android:configChanges="keyboardHidden|orientation|screenSize">
-        </activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".app.MainHelpActivity"
             android:label="@string/title_activity_mainhelp"
@@ -181,10 +180,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.adafruit.bluefruit.le.connect.app.neopixel.NeopixelActivity" />
         </activity>
-        <!--<activity-->
-            <!--android:name=".Patient.PatientActivity"-->
-            <!--android:label="@string/title_activity_patient"-->
-            <!--android:theme="@style/AppTheme.NoActionBar"></activity>-->
+        <!-- <activity -->
+        <!-- android:name=".Patient.PatientActivity" -->
+        <!-- android:label="@string/title_activity_patient" -->
+        <!-- android:theme="@style/AppTheme.NoActionBar"></activity> -->
+        <activity
+            android:name=".PT.PTActivity"
+            android:label="@string/title_activity_pt"
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

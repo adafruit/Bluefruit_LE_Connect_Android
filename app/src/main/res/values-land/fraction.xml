@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="hexadecimalKeyboardKeyHeight" type="fraction">15%p</item>
-    <item name="binaryKeyboardKeyHeight" type="fraction">12%p</item>
 </resources>
