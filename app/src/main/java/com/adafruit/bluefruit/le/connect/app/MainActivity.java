@@ -54,7 +54,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.adafruit.bluefruit.le.connect.R;
-import com.adafruit.bluefruit.le.connect.app.neopixel.NeopixelActivity;
 import com.adafruit.bluefruit.le.connect.app.settings.SettingsActivity;
 import com.adafruit.bluefruit.le.connect.app.update.FirmwareUpdater;
 import com.adafruit.bluefruit.le.connect.app.update.ReleasesParser;
@@ -92,11 +91,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
     // Components
     private final static int kComponentsNameIds[] = {
             R.string.scan_connectservice_info,
-            R.string.scan_connectservice_uart,
-            R.string.scan_connectservice_pinio,
-            R.string.scan_connectservice_controller,
-            R.string.scan_connectservice_beacon,
-            R.string.scan_connectservice_neopixel,
+            R.string.scan_connectservice_controller
     };
 
     // Activity request codes (used for onActivityResult)
@@ -622,24 +617,8 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
                                 mComponentToStartWhenConnected = InfoActivity.class;
                                 break;
                             }
-                            case R.string.scan_connectservice_uart: {           // Uart
-                                mComponentToStartWhenConnected = UartActivity.class;
-                                break;
-                            }
-                            case R.string.scan_connectservice_pinio: {        // PinIO
-                                mComponentToStartWhenConnected = PinIOActivity.class;
-                                break;
-                            }
                             case R.string.scan_connectservice_controller: {    // Controller
                                 mComponentToStartWhenConnected = ControllerActivity.class;
-                                break;
-                            }
-                            case R.string.scan_connectservice_beacon: {        // Beacon
-                                mComponentToStartWhenConnected = BeaconActivity.class;
-                                break;
-                            }
-                            case R.string.scan_connectservice_neopixel: {       // Neopixel
-                                mComponentToStartWhenConnected = NeopixelActivity.class;
                                 break;
                             }
                         }
@@ -1109,9 +1088,6 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         if (mComponentToStartWhenConnected != null) {
             Log.d(TAG, "Start component:" + mComponentToStartWhenConnected);
             Intent intent = new Intent(MainActivity.this, mComponentToStartWhenConnected);
-            if (mComponentToStartWhenConnected == BeaconActivity.class && mSelectedDeviceData != null) {
-                intent.putExtra("rssi", mSelectedDeviceData.rssi);
-            }
             startActivityForResult(intent, kActivityRequestCode_ConnectedActivity);
         }
     }
@@ -1619,21 +1595,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         @Override
         public Spanned getChild(int groupPosition, int childPosition) {
             BluetoothDeviceData deviceData = mFilteredPeripherals.get(groupPosition);
-
-            String text;
-            switch (deviceData.type) {
-                case BluetoothDeviceData.kType_Beacon:
-                    text = getChildBeacon(deviceData);
-                    break;
-
-                case BluetoothDeviceData.kType_UriBeacon:
-                    text = getChildUriBeacon(deviceData);
-                    break;
-
-                default:
-                    text = getChildCommon(deviceData);
-                    break;
-            }
+            String text = getChildCommon(deviceData);
 
             Spanned result;
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
@@ -1643,27 +1605,6 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             }
             return result;
         }
-
-
-        private String getChildUriBeacon(BluetoothDeviceData deviceData) {
-            StringBuilder result = new StringBuilder();
-
-            String name = deviceData.getName();
-            if (name != null) {
-                result.append(getString(R.string.scan_device_localname)).append(": <b>").append(name).append("</b><br>");
-            }
-
-            String address = deviceData.device.getAddress();
-            result.append(getString(R.string.scan_device_address) + ": <b>" + (address == null ? "" : address) + "</b><br>");
-
-            String uri = UriBeaconUtils.getUriFromAdvertisingPacket(deviceData.scanRecord) + "</b><br>";
-            result.append(getString(R.string.scan_device_uribeacon_uri)).append(": <b>").append(uri);
-
-            result.append(getString(R.string.scan_device_txpower)).append(": <b>").append(deviceData.txPower).append("</b>");
-
-            return result.toString();
-        }
-
 
         private String getChildCommon(BluetoothDeviceData deviceData) {
             StringBuilder result = new StringBuilder();
@@ -1704,14 +1645,6 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
 
             final byte[] manufacturerBytes = {deviceData.scanRecord[6], deviceData.scanRecord[5]};      // Little endan
             String manufacturer = BleUtils.bytesToHex(manufacturerBytes);
-
-            // Check if the manufacturer is known, and replace the id for a name
-            String kKnownManufacturers[] = getResources().getStringArray(R.array.beacon_manufacturers_ids);
-            int knownIndex = Arrays.asList(kKnownManufacturers).indexOf(manufacturer);
-            if (knownIndex >= 0) {
-                String kManufacturerNames[] = getResources().getStringArray(R.array.beacon_manufacturers_names);
-                manufacturer = kManufacturerNames[knownIndex];
-            }
 
             result.append(getString(R.string.scan_device_beacon_manufacturer)).append(": <b>").append(manufacturer == null ? "" : manufacturer).append("</b><br>");
 

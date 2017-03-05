@@ -47,18 +47,6 @@ public class KnownUUIDs extends StandardUUIDs {
         aMap.put(UartInterfaceActivity.UUID_TX.toUpperCase(), "TX Buffer");
         aMap.put(UartInterfaceActivity.UUID_DFU.toUpperCase(), "DFU Service");
 
-        // Eddystone
-        aMap.put("ee0c2081-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone Lock State");
-        aMap.put("ee0c2082-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone Lock");
-        aMap.put("ee0c2083-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone Unlock");
-        aMap.put("ee0c2084-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone URI Data");
-        aMap.put("ee0c2085-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone Flags");
-        aMap.put("ee0c2086-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone Adv. TX Power Levels");
-        aMap.put("ee0c2087-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone TX Power Mode");
-        aMap.put("ee0c2088-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone Beacon Period");
-        aMap.put("ee0c2089-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone Reset");
-        aMap.put("ee0c2090-8786-40ba-ab96-99b91ac981d8".toUpperCase(), "Eddystone (Reserved)");
-
         // Newtmgr
         aMap.put("DA2E7828-FBCE-4E01-AE9E-261174997C48".toUpperCase(), "Newtmgr Characteristic");
 

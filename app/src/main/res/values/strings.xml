@@ -2,8 +2,8 @@
 <resources>
 
     <!-- General -->
-    <string name="app_name">Bluefruit LE</string>
-    <string name="app_full_name">Bluefruit LE Connect</string>
+    <string name="app_name">Becky Lovely Car</string>
+    <string name="app_full_name">Becky Lovely Car</string>
     <string name="action_info">Info</string>
     <string name="action_mqttsettings">MQTT</string>
     <string name="action_settings">Settings</string>
@@ -47,11 +47,7 @@
     <string name="scan_unexpecteddisconnect">Peripheral disconnected</string>
     <string name="scan_tag_id">Id</string>
     <string name="scan_connectservice_info">Info</string>
-    <string name="scan_connectservice_uart">UART</string>
-    <string name="scan_connectservice_pinio">Pin I/O</string>
     <string name="scan_connectservice_controller">Controller</string>
-    <string name="scan_connectservice_beacon">Beacon</string>
-    <string name="scan_connectservice_neopixel">Neopixel</string>
     <string name="scan_softwareupdate_title">Update available</string>
     <string name="scan_softwareupdate_messageformat">Software version %s is available</string>
     <string name="scan_bootloaderandfirmwareupdate_messageformat">Software version %1$s and Bootloader version %2$s are available. This is a two-step process: bootloader will be updated first and firmware the next time you connect to the device</string>
@@ -111,142 +107,21 @@
     <string name="info_item_service">Service</string>
     <string name="info_help_title">Info List Help</string>
 
-    <!-- Uart Activity -->
-    <string name="title_activity_uart">UART</string>
-    <string name="uart_echo">Echo:</string>
-    <string name="uart_eol">EOL:</string>
-    <string name="uart_format_ascii">Ascii</string>
-    <string name="uart_format_hex">Hex</string>
-    <string name="uart_format_hexadecimal">Hexadecimal</string>
-    <string name="uart_displaymode_text">Text</string>
-    <string name="uart_displaymode_timestamp">Timestamp</string>
-    <string name="uart_help_title">UART Help</string>
-
-    <string name="uart_action_displaymode_format">Display Mode: %s</string>
-    <string name="uart_action_datamode_format">Data Mode: %s</string>
-
-    <string name="uart_action_echo">Show Echo</string>
-    <string name="uart_action_eol">Add Eol</string>
-    <string name="uart_action_enabled">On</string>
-    <string name="uart_action_disabled">Off</string>
-
-    <string name="uart_copy">Copy</string>
-    <string name="uart_share">Share</string>
-    <string name="uart_clear">Clear</string>
-    <string name="uart_send">SEND</string>
-
-    <string name="uart_share_subject">UART</string>
-    <string name="uart_share_empty">Nothing to share. UART text is empty</string>
-
-    <string name="uart_sharechooser_title">Send UART text to…</string>
-
-    <string name="uart_sentbytes_format">Sent: %d bytes </string>
-    <string name="uart_receivedbytes_format">Received: %d bytes</string>
-
-    <string name="uart_text_dataomitted">(Previous data omitted to improve performance…)</string>
-
-    <!-- PinIO Activity -->
-    <string name="title_activity_pin_io">PinIO</string>
-    <string name="pinio_sectiontitle">AVAILABLE PINS</string>
-    <string name="pinio_pintype_input">Input</string>
-    <string name="pinio_pintype_unknown">Unknown</string>
-    <string name="pinio_pintype_output">Output</string>
-    <string name="pinio_pintype_pwm">PWM</string>
-    <string name="pinio_pintype_servo">Servo</string>
-    <string name="pinio_pintype_analog">Analog</string>
-    <string name="pinio_pintype_low">Low</string>
-    <string name="pinio_pintype_high">High</string>
-    <string name="pinio_pinname_digital_format">Pin %d</string>
-    <string name="pinio_pinname_analog_format" formatted="false">Pin %d, Analog %d</string>
-    <string name="pinio_tag_mode">Mode</string>
-    <string name="pinio_help_title">Pin I/O Help</string>
-
-    <string name="pinio_capabilityquery_querying_title">Querying pin capabilities…</string>
-    <string name="pinio_capabilityquery_expired_title">No response to capability query</string>
-    <string name="pinio_capabilityquery_expired_message">Assuming default pin format (Arduino Uno)</string>
-
-    <string name="pinio_action_refresh">Query capabilities</string>
-
     <!-- Controller Activity -->
     <string name="title_activity_controller">Controller</string>
     <string name="controller_uartwarning">Please ensure that your Bluefruit LE module is set to DATA/UART mode when using this application</string>
-    <string name="controller_sectiontitle_stream">Stream Sensor Data</string>
     <string name="controller_sectiontitle_interface">Interface</string>
     <string name="controller_help_title">Controller Help</string>
     <string name="controller_location_unknown">Waiting for location data…</string>
     <string name="controller_location_disabled">Location is disabled. Go to settings and enable it to receive location data</string>
-    <string name="controller_magnetometermissing">Your device doesn\'t have magnetic sensor</string>
-
-    <string-array name="controller_stream_items">
-        <item>Quaternion</item>
-        <item>Accelerometer</item>
-        <item>Gyro</item>
-        <item>Magnetometer</item>
-        <item>Location</item>
-        <item>Magnetometer</item>
-    </string-array>
 
     <string-array name="controller_interface_items">
-        <item>Color Picker</item>
         <item>Control Pad</item>
+        <item>Control Pad with Predefined Values</item>
     </string-array>
 
     <!-- Pad Activity -->
     <string name="title_activity_pad">Control Pad</string>
-
-    <!-- Color Picker -->
-    <string name="title_activity_color_picker">Color Picker</string>
-    <string name="colorpicker_help_title">Color Picker Help</string>
-    <string name="colorpicker_about_title">Color Picker About</string>
-    <string name="colorpicker_send">Send</string>
-    <string name="colorpicker_rgbformat">R:%1$d G:%2$d B:%3$d</string>
-
-
-    <!-- Beacon -->
-    <string name="title_activity_beacon">Beacons</string>
-    <string name="beacon_help_title">Beacons Help</string>
-
-    <string name="beacon_manufacturer_choose_title">Choose Manufacturer</string>
-    <string-array name="beacon_manufacturers_names">
-        <item>Apple  (004C)</item>
-        <item>Nordic (0059)</item>
-    </string-array>
-
-    <string-array name="beacon_manufacturers_ids">
-        <item>004C</item>
-        <item>0059</item>
-    </string-array>
-
-    <string-array name="beacon_page_titles">
-        <item>Beacon</item>
-        <item>Eddystone</item>
-    </string-array>
-
-    <string name="beacon_ibeacon_vendor">Vendor:</string>
-    <string name="beacon_ibeacon_choose">Choose</string>
-    <string name="beacon_ibeacon_random">Random</string>
-    <string name="beacon_ibeacon_refreshrssi">Refresh</string>
-    <string name="beacon_ibeacon_major">Major:</string>
-    <string name="beacon_ibeacon_minor">Minor:</string>
-    <string name="beacon_ibeacon_rssi">Rssi@1m:</string>
-    <string name="beacon_uribeacon_uri">Uri:</string>
-    <string name="beacon_beacon_enable">Enable</string>
-    <string name="beacon_beacon_disable">Disable</string>
-
-    <string name="beacon_beacon_enabled">Beacon Enabled</string>
-    <string name="beacon_beacon_disabled">Beacon Disabled</string>
-    <string name="beacon_beacon_enabling">Resetting into Beacon Mode</string>
-
-    <string name="beacon_aterror">Device not responding to commands.\nPlease ensure that you are running firmware version 0.4.7 or higher</string>
-    <string name="beacon_ibeacon_subtitle">Beacon Data</string>
-    <string name="beacon_uribeacon_subtitle">Eddystone Data</string>
-
-    <string name="beacon_uribeacon_invalidprefix">Prefix must be one of the following values: http://www. https://www.  http:// https://  urn:uuid:</string>
-    <string name="beacon_uribeacon_uritoolong">Uri too long</string>
-    <string name="beacon_uribeacon_shorteneduriformat">Shortened uri: %s</string>
-    <string name="beacon_uribeacon_shorteningerror">Shortening error</string>
-    <string name="beacon_uribeacon_shortening">Shortening…</string>
-    <string name="beacon_uribeacon_validuri">Valid URI</string>
 
     <!-- Connected Settings -->
     <string name="title_activity_connected_settings">Firmware Updates</string>
@@ -264,49 +139,6 @@
     <string name="connectedsettings_bootloaderinstall_messageformat">Download and install bootloader version %s</string>
     <string name="connectedsettings_noexplorer_title">Unavailable</string>
     <string name="connectedsettings_noexplorer_message">File browser app not has not been found on your device. You should install an app like Dropbox, GoogleDrive…</string>
-
-    <!-- Neopixel -->
-    <string name="title_activity_neopixel">Neopixel</string>
-    <string name="neopixel_help_title">Neopixel Help</string>
-
-    <string name="neopixel_sketch_tooltip">Neopixel support requires a custom sketch to be running on your Arduino. You can export this sketch from the app by clicking the INFO icon in the top-right corner.</string>
-
-
-    <string name="neopixel_status">Status:</string>
-
-    <string name="neopixel_status_readytoconnect">Ready to Connect</string>
-    <string name="neopixel_status_notdetected">Not detected</string>
-    <string name="neopixel_status_waitingsetup">Waiting for Setup</string>
-    <string name="neopixel_status_readyforsetup">Ready for Setup</string>
-    <string name="neopixel_status_connected">Connected</string>
-
-    <string name="neopixel_connect">Connect</string>
-
-    <string name="neopixel_picker">Picker:</string>
-    <string name="neopixel_brightness">Brightness:</string>
-
-    <string name="neopixel_colorpicker_setcolor">Set</string>
-
-    <string name="neopixel_boardselector_boards_title">Standard Board Sizes</string>
-    <string name="neopixel_boardselector_custom_title">Custom Board Sizes</string>
-    <string name="neopixel_boardselector_custom_linestrip">Line Strip</string>
-
-    <string name="neopixel_boardselector_enterlinestrip_title">Select line strip length</string>
-    <string name="neopixel_boardselector_enterlinestrip_hint">Enter length</string>
-
-
-    <string name="neopixel_boardtype_types_title">Predefined Pixel Types</string>
-    <string name="neopixel_boardtype_custom_title">Pixel Config Register</string>
-    <string name="neopixel_boardtype_value_title">Decimal Value:</string>
-    <string name="neopixel_boardtype_value_set">Set</string>
-
-
-    <!-- Neopixel Help -->
-    <string name="neopixel_help_export">Export Sketch...</string>
-    <string name="neopixel_help_export_subject">Export Neopixel Sketch</string>
-    <string name="neopixel_help_export_text">Export Neopixel Sketch</string>
-    <string name="neopixel_help_export_chooser_title">Select app for Exporting Sketch</string>
-
 
     <!-- Settings -->
     <string name="title_activity_settings">Settings</string>
