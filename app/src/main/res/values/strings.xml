@@ -2,8 +2,8 @@
 <resources>
 
     <!-- General -->
-    <string name="app_name">Becky\'s Car</string>
-    <string name="app_full_name">Becky\'s Car</string>
+    <string name="app_name">Becky Lovely Car</string>
+    <string name="app_full_name">Becky Lovely Car</string>
     <string name="action_info">Info</string>
     <string name="action_mqttsettings">MQTT</string>
     <string name="action_settings">Settings</string>
