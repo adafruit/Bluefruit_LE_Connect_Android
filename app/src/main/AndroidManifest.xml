@@ -166,7 +166,7 @@
             android:theme="@style/AppTheme.NoActionBarDialog" />
         <activity
             android:name=".app.neopixel.NeopixelBoardTypeActivity"
-            android:theme="@style/AppTheme.NoActionBarDialog"/>
+            android:theme="@style/AppTheme.NoActionBarDialog" />
         <activity
             android:name=".app.neopixel.NeopixelHelpActivity"
             android:parentActivityName=".app.neopixel.NeopixelActivity"
