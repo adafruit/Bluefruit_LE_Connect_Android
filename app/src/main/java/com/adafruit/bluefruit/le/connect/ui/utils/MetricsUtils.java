@@ -8,10 +8,18 @@ import android.util.DisplayMetrics;
 public class MetricsUtils {
 
     public static float convertPixelsToDp(final Context context, final float px) {
-        return px / context.getResources().getDisplayMetrics().density;
+        if (context != null) {
+            return px / context.getResources().getDisplayMetrics().density;
+        } else {
+            return 0f;
+        }
     }
 
     public static float convertDpToPixel(final Context context, final float dp) {
-        return dp * context.getResources().getDisplayMetrics().density;
+        if (context != null) {
+            return dp * context.getResources().getDisplayMetrics().density;
+        } else {
+            return 0f;
+        }
     }
 }
