@@ -1,11 +1,14 @@
 package com.adafruit.bluefruit.le.connect.PT;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+
+import com.adafruit.bluefruit.le.connect.R;
 
 import java.util.ArrayList;
 
@@ -27,17 +30,28 @@ public class MeetingsAdapter extends ArrayAdapter<Meeting> {
         final Meeting meeting = getItem(position);
         // check if a view is being used, else inflate the view
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.exercise_patient, parent, false);
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.meeting_pt, parent, false);
         }
         // Lookup the view to populate items
         TextView name = (TextView) convertView.findViewById(R.id.meeting_name);
+        TextView time = (TextView) convertView.findViewById(R.id.meeting_time);
         // Populate the data into the template view using the data object
         name.setText(meeting.getPatientName());
+        time.setText(meeting.getStartTime());
 
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mActivity.transitionToFragment(new PTActivityFragment());
+                MeetingSummaryFragment f = new MeetingSummaryFragment();
+                // supply patient info
+                Bundle args = new Bundle();
+                args.putString("name", meeting.getPatientName());
+                args.putInt("age", meeting.getPatientAge());
+                args.putInt("weight", meeting.getPatientWeight());
+                args.putInt("height", meeting.getPatientHeight());
+                f.setArguments(args);
+
+                mActivity.transitionToFragment(f);
             }
         });
 

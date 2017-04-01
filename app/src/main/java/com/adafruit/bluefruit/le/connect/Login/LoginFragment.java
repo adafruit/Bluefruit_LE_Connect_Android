@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import com.adafruit.bluefruit.le.connect.PT.PTActivity;
 import com.adafruit.bluefruit.le.connect.Patient.PatientActivity;
 import com.adafruit.bluefruit.le.connect.R;
 
@@ -44,7 +45,7 @@ public class LoginFragment extends Fragment {
         therapistButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // launch therapist activity
+                startActivity(new Intent(getActivity(), PTActivity.class));
             }
         });
 

@@ -1,0 +1,54 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.adafruit.bluefruit.le.connect.PT.MeetingSummaryFragment">
+
+    <TextView
+        android:id="@+id/patient_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:textSize="20dp"
+        android:text="Wilson" />
+
+    <ImageView
+        android:id="@+id/patient_image"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/patient_name"
+        android:src="@drawable/exercise"/>
+
+    <TextView
+        android:id="@+id/patient_summary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/patient_image"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="20dp"
+        android:textSize="17dp"
+        android:text="63 years old, 152 lbs, 5 feet 6 inches"/>
+
+    <TextView
+        android:id="@+id/current_exercise"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/patient_summary"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="20dp"
+        android:textSize="17dp"
+        android:text="Current Exercises:"/>
+
+    <TextView
+        android:id="@+id/details"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/current_exercise"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="20dp"
+        android:textSize="15dp"
+        android:text="- Bicep Curls"/>
+
+</RelativeLayout>

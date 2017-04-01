@@ -24,6 +24,18 @@ public class Meeting {
         return this.patient.getName();
     }
 
+    public Integer getPatientAge() {
+        return this.patient.getAge();
+    }
+
+    public Integer getPatientWeight() {
+        return this.patient.getWeight();
+    }
+
+    public Integer getPatientHeight() {
+        return this.patient.getHeight();
+    }
+
     public String getStartTime() {
         return this.start.toString();
     }

@@ -24,7 +24,7 @@
 
     <!-- PT -->
     <!-- PT Home -->
-    <string name="pt_today">Today's Appointment</string>
+    <string name="pt_today">Appointments</string>
 
     <!-- Bluetooth Adapter -->
     <string name="dialog_error_no_ble">Bluetooth Low Energy not supported</string>
@@ -424,6 +424,9 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="title_activity_patient">PatientActivity</string>
     <string name="title_activity_pt">PTActivity</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <!-- Debug -->
 
