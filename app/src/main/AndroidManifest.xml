@@ -51,6 +51,7 @@
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_patient"
             android:screenOrientation="portrait" />
+
         <activity
             android:name=".app.MainHelpActivity"
             android:label="@string/title_activity_mainhelp"
