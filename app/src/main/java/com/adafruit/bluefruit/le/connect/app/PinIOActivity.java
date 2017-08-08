@@ -404,7 +404,13 @@ public class PinIOActivity extends UartInterfaceActivity {
                                 // I2C
                                 i++;        // skip resolution byte
                                 break;
+                            case 0x0b:
+                                // INPUT_PULLUP
+                                isInput = true;
+                                i++;        // skip resolution byte
+                                break;
                             default:
+                                i++;        // skip resolution byte for unknown commands
                                 break;
                         }
                         i++;
@@ -589,12 +595,24 @@ public class PinIOActivity extends UartInterfaceActivity {
             pin.analogValue = value;
 
             // Send
-            byte data0 = (byte) (0xe0 + pin.digitalPinId);
-            byte data1 = (byte) (value & 0x7f);      // only 7 bottom bits
-            byte data2 = (byte) (value >> 7);        // top bit in second byte
+            byte bytes[];
+            if (pin.digitalPinId > 15) {
+                // Extended analog
+                byte data0 = (byte) (pin.digitalPinId);
+                byte data1 = (byte) (value & 0x7f);      // only 7 bottom bits
+                byte data2 = (byte) (value >> 7);        // top bit in second byte
 
-            byte bytes[] = new byte[]{data0, data1, data2};
+                bytes = new byte[]{SYSEX_START, 0x6f, data0, data1, data2, SYSEX_END};
+
+            } else {
+                byte data0 = (byte) (0xe0 + pin.digitalPinId);
+                byte data1 = (byte) (value & 0x7f);      // only 7 bottom bits
+                byte data2 = (byte) (value >> 7);        // top bit in second byte
+
+                bytes= new byte[]{data0, data1, data2};
+            }
             sendHexData(bytes);
+
 
             return true;
         } else {
