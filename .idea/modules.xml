@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/BluefruitLEConnect_Android.iml" filepath="$PROJECT_DIR$/BluefruitLEConnect_Android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/OfficeVitae_Bluefruit.iml" filepath="$PROJECT_DIR$/OfficeVitae_Bluefruit.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

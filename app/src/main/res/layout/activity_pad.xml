@@ -7,12 +7,6 @@
               android:orientation="vertical"
               tools:context="com.adafruit.bluefruit.le.connect.app.PadActivity">
 
-    <View
-        android:id="@+id/topSpacerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:background="#000000"/>
-
     <LinearLayout
         android:id="@+id/mainLayout"
         android:layout_width="match_parent"
@@ -40,7 +34,7 @@
                 <View
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1" />
 
                 <ImageButton
                     android:id="@+id/upArrowImageButton"
@@ -51,12 +45,12 @@
                     android:background="@drawable/roundedbutton"
                     android:scaleType="centerInside"
                     android:src="@drawable/pad_arrow_button_up"
-                    android:tag="5"/>
+                    android:tag="5" />
 
                 <View
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1" />
             </LinearLayout>
 
             <LinearLayout
@@ -74,12 +68,12 @@
                     android:background="@drawable/roundedbutton"
                     android:scaleType="centerInside"
                     android:src="@drawable/pad_arrow_button_left"
-                    android:tag="7"/>
+                    android:tag="7" />
 
                 <View
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1" />
 
                 <ImageButton
                     android:id="@+id/rightArrowImageButton"
@@ -90,7 +84,7 @@
                     android:background="@drawable/roundedbutton"
                     android:scaleType="centerInside"
                     android:src="@drawable/pad_arrow_button_right"
-                    android:tag="8"/>
+                    android:tag="8" />
             </LinearLayout>
 
             <LinearLayout
@@ -102,7 +96,7 @@
                 <View
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1" />
 
                 <ImageButton
                     android:id="@+id/bottomArrowImageButton"
@@ -114,12 +108,12 @@
 
                     android:scaleType="centerInside"
                     android:src="@drawable/pad_arrow_button_down"
-                    android:tag="6"/>
+                    android:tag="6" />
 
                 <View
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1" />
             </LinearLayout>
         </LinearLayout>
 
@@ -133,7 +127,7 @@
             android:onClick="onClickExit"
             android:padding="10dp"
             android:scaleType="centerInside"
-            android:src="@drawable/pad_button_exit"/>
+            android:src="@drawable/pad_button_exit" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -160,12 +154,12 @@
                     android:background="@drawable/roundedbutton"
                     android:scaleType="centerInside"
                     android:src="@drawable/pad_button_numbers_1"
-                    android:tag="1"/>
+                    android:tag="1" />
 
                 <View
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1" />
 
                 <ImageButton
                     android:id="@+id/button2ImageButton"
@@ -175,14 +169,14 @@
                     android:background="@drawable/roundedbutton"
                     android:scaleType="centerInside"
                     android:src="@drawable/pad_button_numbers_2"
-                    android:tag="2"/>
+                    android:tag="2" />
 
             </LinearLayout>
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"/>
+                android:layout_weight="1" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -198,12 +192,12 @@
                     android:background="@drawable/roundedbutton"
                     android:scaleType="centerInside"
                     android:src="@drawable/pad_button_numbers_3"
-                    android:tag="3"/>
+                    android:tag="3" />
 
                 <View
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1" />
 
                 <ImageButton
                     android:id="@+id/button4ImageButton"
@@ -213,10 +207,16 @@
                     android:background="@drawable/roundedbutton"
                     android:scaleType="centerInside"
                     android:src="@drawable/pad_button_numbers_4"
-                    android:tag="4"/>
+                    android:tag="4" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
+
+    <View
+        android:id="@+id/topSpacerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="#000000"/>
 
     <View
         android:id="@+id/bottomSpacerView"
