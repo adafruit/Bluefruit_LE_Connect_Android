@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -43,10 +42,21 @@
         app:layout_constraintBaseline_toBaselineOf="@+id/goalField"
         app:layout_constraintLeft_toLeftOf="@+id/standText" />
 
+    <ProgressBar
+        android:id="@+id/progressBar2"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="@+id/goalField"
+        app:layout_constraintRight_toRightOf="@+id/standField"
+        app:layout_constraintTop_toBottomOf="@+id/goalField" />
+
     <GridLayout
         android:id="@+id/ButtonLayout"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
+        android:layout_width="347dp"
+        android:layout_height="0dp"
         android:layout_marginBottom="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginLeft="16dp"
@@ -54,14 +64,13 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:columnCount="4"
-        android:elevation="0dp"
         android:rowCount="3"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.6"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/goalField"
-        app:layout_constraintVertical_bias="0.58">
+        app:layout_constraintTop_toBottomOf="@+id/progressBar2"
+        app:layout_constraintVertical_bias="0.0">
 
         <ImageButton
             android:id="@+id/BtnUp"
@@ -69,6 +78,7 @@
             android:layout_height="wrap_content"
             android:layout_column="0"
             android:layout_row="0"
+            android:tag="5"
             app:srcCompat="@drawable/pad_arrow_button_up" />
 
         <ImageButton
@@ -77,6 +87,7 @@
             android:layout_height="wrap_content"
             android:layout_column="0"
             android:layout_row="1"
+            android:tag="6"
             app:srcCompat="@drawable/pad_arrow_button_down" />
 
         <Button
@@ -85,6 +96,7 @@
             android:layout_height="wrap_content"
             android:layout_column="2"
             android:layout_row="0"
+            android:tag="1"
             android:text="@string/ctrl_minHeight" />
 
         <Button
@@ -93,6 +105,7 @@
             android:layout_height="wrap_content"
             android:layout_column="3"
             android:layout_row="0"
+            android:tag="3"
             android:text="@string/ctrl_minPref" />
 
         <Button
@@ -101,6 +114,7 @@
             android:layout_height="wrap_content"
             android:layout_column="2"
             android:layout_row="1"
+            android:tag="2"
             android:text="@string/ctrl_maxHeight" />
 
         <Button
@@ -109,6 +123,7 @@
             android:layout_height="wrap_content"
             android:layout_column="3"
             android:layout_row="1"
+            android:tag="4"
             android:text="@string/ctrl_maxPref" />
     </GridLayout>
 

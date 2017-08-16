@@ -7,6 +7,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 
 import com.adafruit.bluefruit.le.connect.R;
@@ -24,34 +25,30 @@ public class PadActivity extends UartInterfaceActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.activity_pad);
-        setContentView(R.layout.activity_pad_vitae); // DEBUG test
+        setContentView(R.layout.activity_pad_vitae);
 
         mBleManager = BleManager.getInstance(this);
 
-        /*
+
         // UI
-        ImageButton upArrowImageButton = (ImageButton) findViewById(R.id.upArrowImageButton);
+        ImageButton upArrowImageButton = (ImageButton) findViewById(R.id.BtnUp);
         upArrowImageButton.setOnTouchListener(mPadButtonTouchListener);
-        //ImageButton leftArrowImageButton = (ImageButton) findViewById(R.id.leftArrowImageButton);
-        //leftArrowImageButton.setOnTouchListener(mPadButtonTouchListener);
-        //ImageButton rightArrowImageButton = (ImageButton) findViewById(R.id.rightArrowImageButton);
-        //rightArrowImageButton.setOnTouchListener(mPadButtonTouchListener);
-        ImageButton bottomArrowImageButton = (ImageButton) findViewById(R.id.bottomArrowImageButton);
+        ImageButton bottomArrowImageButton = (ImageButton) findViewById(R.id.btnDown);
         bottomArrowImageButton.setOnTouchListener(mPadButtonTouchListener);
 
-        ImageButton button1ImageButton = (ImageButton) findViewById(R.id.button1ImageButton);
-        button1ImageButton.setOnTouchListener(mPadButtonTouchListener);
-        ImageButton button2ImageButton = (ImageButton) findViewById(R.id.button2ImageButton);
-        button2ImageButton.setOnTouchListener(mPadButtonTouchListener);
-        ImageButton button3ImageButton = (ImageButton) findViewById(R.id.button3ImageButton);
-        button3ImageButton.setOnTouchListener(mPadButtonTouchListener);
-        ImageButton button4ImageButton = (ImageButton) findViewById(R.id.button4ImageButton);
-        button4ImageButton.setOnTouchListener(mPadButtonTouchListener);
+        Button button1Button = (Button) findViewById(R.id.Btn1);
+        button1Button.setOnTouchListener(mPadButtonTouchListener);
+        Button button2Button = (Button) findViewById(R.id.Btn2);
+        button2Button.setOnTouchListener(mPadButtonTouchListener);
+        Button button3Button = (Button) findViewById(R.id.Btn3);
+        button3Button.setOnTouchListener(mPadButtonTouchListener);
+        Button button4Button = (Button) findViewById(R.id.Btn4);
+        button4Button.setOnTouchListener(mPadButtonTouchListener);
+
+        Log.d(TAG, "OnCreate() initiated all buttons");
 
         // Start services
         onServicesDiscovered();
-        */
     }
 
     private void adjustAspectRatio() {
@@ -76,6 +73,7 @@ public class PadActivity extends UartInterfaceActivity {
         */
     }
 
+    // sends a press or release
     View.OnTouchListener mPadButtonTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent event) {
@@ -93,6 +91,7 @@ public class PadActivity extends UartInterfaceActivity {
         }
     };
 
+    // sends the tag TODO see where the bluetooth is handles from here.
     private void sendTouchEvent(int tag, boolean pressed) {
         String data = "!B" + tag + (pressed ? "1" : "0");
         ByteBuffer buffer = ByteBuffer.allocate(data.length()).order(java.nio.ByteOrder.LITTLE_ENDIAN);
