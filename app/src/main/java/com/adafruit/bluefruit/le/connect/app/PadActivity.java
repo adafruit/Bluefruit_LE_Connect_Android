@@ -6,7 +6,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 
@@ -14,6 +13,10 @@ import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 
 import java.nio.ByteBuffer;
+
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
 
 public class PadActivity extends UartInterfaceActivity {
     // Log
@@ -28,7 +31,6 @@ public class PadActivity extends UartInterfaceActivity {
         setContentView(R.layout.activity_pad_vitae);
 
         mBleManager = BleManager.getInstance(this);
-
 
         // UI
         ImageButton upArrowImageButton = (ImageButton) findViewById(R.id.BtnUp);
@@ -45,7 +47,16 @@ public class PadActivity extends UartInterfaceActivity {
         Button button4Button = (Button) findViewById(R.id.Btn4);
         button4Button.setOnTouchListener(mPadButtonTouchListener);
 
-        Log.d(TAG, "OnCreate() initiated all buttons");
+        // initialize the graph
+        GraphView graph = (GraphView) findViewById(R.id.graph);
+        LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[] {
+                new DataPoint(0, 1),
+                new DataPoint(1, 5),
+                new DataPoint(2, 3),
+                new DataPoint(3, 2),
+                new DataPoint(4, 6)
+        });
+        graph.addSeries(series);
 
         // Start services
         onServicesDiscovered();
