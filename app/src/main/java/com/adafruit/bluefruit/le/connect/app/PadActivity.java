@@ -6,13 +6,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
 
 import java.nio.ByteBuffer;
+
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
 
 public class PadActivity extends UartInterfaceActivity {
     // Log
@@ -24,34 +28,42 @@ public class PadActivity extends UartInterfaceActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_pad);
+        setContentView(R.layout.activity_pad_vitae);
 
         mBleManager = BleManager.getInstance(this);
 
         // UI
-        ImageButton upArrowImageButton = (ImageButton) findViewById(R.id.upArrowImageButton);
+        ImageButton upArrowImageButton = (ImageButton) findViewById(R.id.BtnUp);
         upArrowImageButton.setOnTouchListener(mPadButtonTouchListener);
-        ImageButton leftArrowImageButton = (ImageButton) findViewById(R.id.leftArrowImageButton);
-        leftArrowImageButton.setOnTouchListener(mPadButtonTouchListener);
-        ImageButton rightArrowImageButton = (ImageButton) findViewById(R.id.rightArrowImageButton);
-        rightArrowImageButton.setOnTouchListener(mPadButtonTouchListener);
-        ImageButton bottomArrowImageButton = (ImageButton) findViewById(R.id.bottomArrowImageButton);
+        ImageButton bottomArrowImageButton = (ImageButton) findViewById(R.id.btnDown);
         bottomArrowImageButton.setOnTouchListener(mPadButtonTouchListener);
 
-        ImageButton button1ImageButton = (ImageButton) findViewById(R.id.button1ImageButton);
-        button1ImageButton.setOnTouchListener(mPadButtonTouchListener);
-        ImageButton button2ImageButton = (ImageButton) findViewById(R.id.button2ImageButton);
-        button2ImageButton.setOnTouchListener(mPadButtonTouchListener);
-        ImageButton button3ImageButton = (ImageButton) findViewById(R.id.button3ImageButton);
-        button3ImageButton.setOnTouchListener(mPadButtonTouchListener);
-        ImageButton button4ImageButton = (ImageButton) findViewById(R.id.button4ImageButton);
-        button4ImageButton.setOnTouchListener(mPadButtonTouchListener);
+        Button button1Button = (Button) findViewById(R.id.Btn1);
+        button1Button.setOnTouchListener(mPadButtonTouchListener);
+        Button button2Button = (Button) findViewById(R.id.Btn2);
+        button2Button.setOnTouchListener(mPadButtonTouchListener);
+        Button button3Button = (Button) findViewById(R.id.Btn3);
+        button3Button.setOnTouchListener(mPadButtonTouchListener);
+        Button button4Button = (Button) findViewById(R.id.Btn4);
+        button4Button.setOnTouchListener(mPadButtonTouchListener);
+
+        // initialize the graph
+        GraphView graph = (GraphView) findViewById(R.id.graph);
+        LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[] {
+                new DataPoint(0, 1),
+                new DataPoint(1, 5),
+                new DataPoint(2, 3),
+                new DataPoint(3, 2),
+                new DataPoint(4, 6)
+        });
+        graph.addSeries(series);
 
         // Start services
         onServicesDiscovered();
     }
 
     private void adjustAspectRatio() {
+        /*
         ViewGroup rootLayout = (ViewGroup) findViewById(R.id.rootLayout);
         int mainWidth = rootLayout.getWidth();
 
@@ -69,8 +81,10 @@ public class PadActivity extends UartInterfaceActivity {
                 }
             }
         }
+        */
     }
 
+    // sends a press or release
     View.OnTouchListener mPadButtonTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent event) {
@@ -88,6 +102,7 @@ public class PadActivity extends UartInterfaceActivity {
         }
     };
 
+    // sends the tag TODO see where the bluetooth is handles from here.
     private void sendTouchEvent(int tag, boolean pressed) {
         String data = "!B" + tag + (pressed ? "1" : "0");
         ByteBuffer buffer = ByteBuffer.allocate(data.length()).order(java.nio.ByteOrder.LITTLE_ENDIAN);
@@ -129,6 +144,7 @@ public class PadActivity extends UartInterfaceActivity {
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
+        /*
         super.onWindowFocusChanged(hasFocus);
 
         // Set full screen mode
@@ -142,7 +158,7 @@ public class PadActivity extends UartInterfaceActivity {
                             | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
             adjustAspectRatio();
         }
-
+        */
     }
 
     public void onClickExit(View view) {

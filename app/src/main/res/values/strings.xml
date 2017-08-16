@@ -427,6 +427,12 @@
     <!-- Common -->
     <string name="dialog_notice">Notice</string>
     <string name="dialog_dontshowagain">Don\'t show again</string>
+    <string name="goal_text">Daily goal:</string>
+    <string name="stand_text">Max time standing</string>
+    <string name="ctrl_minHeight">min height</string>
+    <string name="ctrl_maxHeight">max height</string>
+    <string name="ctrl_minPref">min pref</string>
+    <string name="ctrl_maxPref">max pref</string>
 
     <!-- Debug -->
 
