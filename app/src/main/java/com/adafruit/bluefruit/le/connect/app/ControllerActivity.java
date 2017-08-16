@@ -54,6 +54,8 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
     private static final int kActivityRequestCode_ConnectedSettingsActivity = 0;
     private static final int kActivityRequestCode_PadActivity = 1;
     private static final int kActivityRequestCode_ColorPickerActivity = 2;
+    //private static final int kActivityRequestCode_VitaePadActivity = 3;
+
 
     // Constants
     private final static String kPreferences = "ControllerActivity_prefs";

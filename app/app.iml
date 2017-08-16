@@ -105,6 +105,7 @@
     <orderEntry type="library" exported="" name="play-services-vision-11.0.4" level="project" />
     <orderEntry type="library" exported="" name="play-services-tagmanager-v4-impl-11.0.4" level="project" />
     <orderEntry type="library" exported="" name="play-services-analytics-11.0.4" level="project" />
+    <orderEntry type="library" exported="" name="constraint-layout-1.0.2" level="project" />
     <orderEntry type="library" exported="" name="transition-25.3.1" level="project" />
     <orderEntry type="library" exported="" name="design-25.3.1" level="project" />
     <orderEntry type="library" exported="" name="support-core-ui-25.3.1" level="project" />
@@ -118,6 +119,7 @@
     <orderEntry type="library" exported="" name="play-services-location-11.0.4" level="project" />
     <orderEntry type="library" exported="" name="play-services-vision-common-11.0.4" level="project" />
     <orderEntry type="library" exported="" name="gson-2.5" level="project" />
+    <orderEntry type="library" exported="" name="constraint-layout-solver-1.0.2" level="project" />
     <orderEntry type="library" exported="" name="HoloColorPicker-1.4" level="project" />
     <orderEntry type="library" exported="" name="support-v4-25.3.1" level="project" />
     <orderEntry type="library" exported="" name="support-media-compat-25.3.1" level="project" />

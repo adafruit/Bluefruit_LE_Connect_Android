@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/goalText"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/goal_text"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/standText"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/standText"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:text="@string/stand_text"
+        app:layout_constraintLeft_toRightOf="@+id/goalText"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBaseline_toBaselineOf="@+id/goalText" />
+
+    <EditText
+        android:id="@+id/goalField"
+        android:layout_width="100dp"
+        android:layout_height="35dp"
+        android:ems="10"
+        android:inputType="number"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/standText"
+        app:layout_constraintLeft_toLeftOf="@+id/goalText" />
+
+    <EditText
+        android:id="@+id/standField"
+        android:layout_width="100dp"
+        android:layout_height="35dp"
+        android:ems="10"
+        android:inputType="number"
+        app:layout_constraintBaseline_toBaselineOf="@+id/goalField"
+        app:layout_constraintLeft_toLeftOf="@+id/standText" />
+
+    <GridLayout
+        android:id="@+id/ButtonLayout"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:columnCount="4"
+        android:elevation="0dp"
+        android:rowCount="3"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/goalField"
+        app:layout_constraintVertical_bias="0.58">
+
+        <ImageButton
+            android:id="@+id/BtnUp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_row="0"
+            app:srcCompat="@drawable/pad_arrow_button_up" />
+
+        <ImageButton
+            android:id="@+id/btnDown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_row="1"
+            app:srcCompat="@drawable/pad_arrow_button_down" />
+
+        <Button
+            android:id="@+id/Btn1"
+            android:layout_width="@dimen/btnSize"
+            android:layout_height="wrap_content"
+            android:layout_column="2"
+            android:layout_row="0"
+            android:text="@string/ctrl_minHeight" />
+
+        <Button
+            android:id="@+id/Btn2"
+            android:layout_width="@dimen/btnSize"
+            android:layout_height="wrap_content"
+            android:layout_column="3"
+            android:layout_row="0"
+            android:text="@string/ctrl_minPref" />
+
+        <Button
+            android:id="@+id/Btn3"
+            android:layout_width="@dimen/btnSize"
+            android:layout_height="wrap_content"
+            android:layout_column="2"
+            android:layout_row="1"
+            android:text="@string/ctrl_maxHeight" />
+
+        <Button
+            android:id="@+id/Btn4"
+            android:layout_width="@dimen/btnSize"
+            android:layout_height="wrap_content"
+            android:layout_column="3"
+            android:layout_row="1"
+            android:text="@string/ctrl_maxPref" />
+    </GridLayout>
+
+</android.support.constraint.ConstraintLayout>

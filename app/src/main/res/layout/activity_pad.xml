@@ -1,40 +1,41 @@
-<LinearLayout android:id="@+id/rootLayout"
-              xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:background="@drawable/default_background"
-              android:orientation="vertical"
-              tools:context="com.adafruit.bluefruit.le.connect.app.PadActivity">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/default_background"
+    android:orientation="vertical"
+    tools:context="com.adafruit.bluefruit.le.connect.app.PadActivity">
+
+    <View
+        android:id="@+id/topSpacerView"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="#000000" />
 
     <LinearLayout
         android:id="@+id/mainLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
         android:baselineAligned="false"
         android:orientation="horizontal">
 
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="30dp"
             android:layout_marginTop="30dp"
-            android:layout_weight="1.2"
+            android:layout_weight="0"
             android:orientation="vertical"
             android:paddingLeft="10dp"
             android:paddingRight="10dp">
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="horizontal">
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
 
                 <ImageButton
                     android:id="@+id/upArrowImageButton"
@@ -47,56 +48,13 @@
                     android:src="@drawable/pad_arrow_button_up"
                     android:tag="5" />
 
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
             </LinearLayout>
 
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1.1"
-                android:orientation="horizontal">
-
-                <ImageButton
-                    android:id="@+id/leftArrowImageButton"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_margin="2dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/roundedbutton"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/pad_arrow_button_left"
-                    android:tag="7" />
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
-
-                <ImageButton
-                    android:id="@+id/rightArrowImageButton"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_margin="2dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/roundedbutton"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/pad_arrow_button_right"
-                    android:tag="8" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="horizontal">
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
 
                 <ImageButton
                     android:id="@+id/bottomArrowImageButton"
@@ -110,10 +68,6 @@
                     android:src="@drawable/pad_arrow_button_down"
                     android:tag="6" />
 
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
             </LinearLayout>
         </LinearLayout>
 
@@ -124,14 +78,15 @@
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
             android:background="#929292"
+            android:cropToPadding="false"
             android:onClick="onClickExit"
             android:padding="10dp"
             android:scaleType="centerInside"
             android:src="@drawable/pad_button_exit" />
 
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="50dp"
             android:layout_marginTop="50dp"
             android:layout_weight="1"
@@ -175,7 +130,7 @@
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1" />
 
             <LinearLayout
@@ -213,15 +168,9 @@
     </LinearLayout>
 
     <View
-        android:id="@+id/topSpacerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:background="#000000"/>
-
-    <View
         android:id="@+id/bottomSpacerView"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="50dp"
 
-        android:background="#000000"/>
+        android:background="#000000" />
 </LinearLayout>

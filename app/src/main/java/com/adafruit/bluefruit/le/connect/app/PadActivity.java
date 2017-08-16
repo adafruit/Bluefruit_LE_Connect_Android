@@ -24,17 +24,19 @@ public class PadActivity extends UartInterfaceActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_pad);
+        //setContentView(R.layout.activity_pad);
+        setContentView(R.layout.activity_pad_vitae); // DEBUG test
 
         mBleManager = BleManager.getInstance(this);
 
+        /*
         // UI
         ImageButton upArrowImageButton = (ImageButton) findViewById(R.id.upArrowImageButton);
         upArrowImageButton.setOnTouchListener(mPadButtonTouchListener);
-        ImageButton leftArrowImageButton = (ImageButton) findViewById(R.id.leftArrowImageButton);
-        leftArrowImageButton.setOnTouchListener(mPadButtonTouchListener);
-        ImageButton rightArrowImageButton = (ImageButton) findViewById(R.id.rightArrowImageButton);
-        rightArrowImageButton.setOnTouchListener(mPadButtonTouchListener);
+        //ImageButton leftArrowImageButton = (ImageButton) findViewById(R.id.leftArrowImageButton);
+        //leftArrowImageButton.setOnTouchListener(mPadButtonTouchListener);
+        //ImageButton rightArrowImageButton = (ImageButton) findViewById(R.id.rightArrowImageButton);
+        //rightArrowImageButton.setOnTouchListener(mPadButtonTouchListener);
         ImageButton bottomArrowImageButton = (ImageButton) findViewById(R.id.bottomArrowImageButton);
         bottomArrowImageButton.setOnTouchListener(mPadButtonTouchListener);
 
@@ -49,9 +51,11 @@ public class PadActivity extends UartInterfaceActivity {
 
         // Start services
         onServicesDiscovered();
+        */
     }
 
     private void adjustAspectRatio() {
+        /*
         ViewGroup rootLayout = (ViewGroup) findViewById(R.id.rootLayout);
         int mainWidth = rootLayout.getWidth();
 
@@ -69,6 +73,7 @@ public class PadActivity extends UartInterfaceActivity {
                 }
             }
         }
+        */
     }
 
     View.OnTouchListener mPadButtonTouchListener = new View.OnTouchListener() {
@@ -129,6 +134,7 @@ public class PadActivity extends UartInterfaceActivity {
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
+        /*
         super.onWindowFocusChanged(hasFocus);
 
         // Set full screen mode
@@ -142,7 +148,7 @@ public class PadActivity extends UartInterfaceActivity {
                             | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
             adjustAspectRatio();
         }
-
+        */
     }
 
     public void onClickExit(View view) {
