@@ -12,6 +12,7 @@ import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
 import java.util.UUID;
 
 public class BleUtils {
@@ -194,6 +195,24 @@ public class BleUtils {
         } else {
             return "" + hexArray[value & 0x0F];
         }
+    }
+
+    public static String bytesToHex2(byte[] bytes) {
+        StringBuilder stringBuffer = new StringBuilder();
+        for (byte aByte : bytes) {
+            String charString = String.format("%02X", (byte) aByte);
+
+            stringBuffer.append(charString).append(" ");
+        }
+        return stringBuffer.toString();
+    }
+
+    public static String bytesToText(byte[] bytes, boolean simplifyNewLine) {
+        String text = new String(bytes, Charset.forName("UTF-8"));
+        if (simplifyNewLine) {
+            text = text.replaceAll("(\\r\\n|\\r)", "\n");
+        }
+        return text;
     }
 
     public static String stringToHex(String string) {

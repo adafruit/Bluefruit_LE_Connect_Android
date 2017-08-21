@@ -37,6 +37,7 @@ import com.adafruit.bluefruit.le.connect.app.settings.ConnectedSettingsActivity;
 import com.adafruit.bluefruit.le.connect.app.settings.MqttUartSettingsActivity;
 import com.adafruit.bluefruit.le.connect.app.settings.PreferencesFragment;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;
+import com.adafruit.bluefruit.le.connect.ble.BleUtils;
 import com.adafruit.bluefruit.le.connect.mqtt.MqttManager;
 import com.adafruit.bluefruit.le.connect.mqtt.MqttSettings;
 
@@ -55,6 +56,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
     // Configuration
     private final static boolean kUseColorsForData = true;
     public final static int kDefaultMaxPacketsToPaintAsText = 500;
+    private final static int kInfoColor = Color.parseColor("#F21625");
 
     // Activity request codes (used for onActivityResult)
     private static final int kActivityRequestCode_ConnectedSettingsActivity = 0;
@@ -70,7 +72,6 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
     // Colors
     private int mTxColor;
     private int mRxColor;
-    private int mInfoColor = Color.parseColor("#F21625");
 
     // UI
     private EditText mBufferTextView;
@@ -82,7 +83,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
     private TextView mSentBytesTextView;
     private TextView mReceivedBytesTextView;
 
-    // UI TextBuffer (refreshing the text buffer is managed with a timer because a lot of changes an arrive really fast and could stall the main thread)
+    // UI TextBuffer (refreshing the text buffer is managed with a timer because a lot of changes can arrive really fast and could stall the main thread)
     private Handler mUIRefreshTimerHandler = new Handler();
     private Runnable mUIRefreshTimerRunnable = new Runnable() {
         @Override
@@ -283,7 +284,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
         UartDataChunk dataChunk = new UartDataChunk(System.currentTimeMillis(), UartDataChunk.TRANSFERMODE_TX, bytes);
         mDataBuffer.add(dataChunk);
 
-        final String formattedData = mShowDataInHexFormat ? bytesToHex(bytes) : bytesToText(bytes, true);
+        final String formattedData = mShowDataInHexFormat ? BleUtils.bytesToHex2(bytes) : BleUtils.bytesToText(bytes, true);
         if (mIsTimestampDisplayMode) {
             final String currentDateTimeString = DateFormat.getTimeInstance().format(new Date(dataChunk.getTimestamp()));
             mBufferListAdapter.add(new TimestampData("[" + currentDateTimeString + "] TX: " + formattedData, mTxColor));
@@ -569,7 +570,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
                     public void run() {
                         if (mIsTimestampDisplayMode) {
                             final String currentDateTimeString = DateFormat.getTimeInstance().format(new Date(dataChunk.getTimestamp()));
-                            final String formattedData = mShowDataInHexFormat ? bytesToHex(bytes) : bytesToText(bytes, true);
+                            final String formattedData = mShowDataInHexFormat ? BleUtils.bytesToHex2(bytes) : BleUtils.bytesToText(bytes, true);
 
                             mBufferListAdapter.add(new TimestampData("[" + currentDateTimeString + "] RX: " + formattedData, mRxColor));
                             //mBufferListAdapter.add("[" + currentDateTimeString + "] RX: " + formattedData);
@@ -585,20 +586,14 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
                 if (settings.isPublishEnabled()) {
                     String topic = settings.getPublishTopic(MqttUartSettingsActivity.kPublishFeed_RX);
                     final int qos = settings.getPublishQos(MqttUartSettingsActivity.kPublishFeed_RX);
-                    final String text = bytesToText(bytes, false);
+                    final String text = BleUtils.bytesToText(bytes, false);
                     mMqttManager.publish(topic, text, qos);
                 }
             }
         }
     }
 
-    private String bytesToText(byte[] bytes, boolean simplifyNewLine) {
-        String text = new String(bytes, Charset.forName("UTF-8"));
-        if (simplifyNewLine) {
-            text = text.replaceAll("(\\r\\n|\\r)", "\n");
-        }
-        return text;
-    }
+
 /*
     @Override
     public void onDataAvailable(BluetoothGattDescriptor descriptor) {
@@ -628,7 +623,6 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
         mReceivedBytesTextView.setText(String.format(getString(R.string.uart_receivedbytes_format), mReceivedBytes));
     }
 
-
     private int mDataBufferLastSize = 0;
 
     private void updateTextDataUI() {
@@ -640,7 +634,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
                 if (bufferSize > maxPacketsToPaintAsText) {
                     mDataBufferLastSize = bufferSize - maxPacketsToPaintAsText;
                     mTextSpanBuffer.clear();
-                    addTextToSpanBuffer(mTextSpanBuffer, getString(R.string.uart_text_dataomitted) + "\n", mInfoColor);
+                    addTextToSpanBuffer(mTextSpanBuffer, getString(R.string.uart_text_dataomitted) + "\n", kInfoColor);
                 }
 
                 // Log.d(TAG, "update packets: "+(bufferSize-mDataBufferLastSize));
@@ -648,7 +642,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
                     final UartDataChunk dataChunk = mDataBuffer.get(i);
                     final boolean isRX = dataChunk.getMode() == UartDataChunk.TRANSFERMODE_RX;
                     final byte[] bytes = dataChunk.getData();
-                    final String formattedData = mShowDataInHexFormat ? bytesToHex(bytes) : bytesToText(bytes, true);
+                    final String formattedData = mShowDataInHexFormat ? BleUtils.bytesToHex2(bytes) : BleUtils.bytesToText(bytes, true);
                     addTextToSpanBuffer(mTextSpanBuffer, formattedData, isRX ? mRxColor : mTxColor);
                 }
 
@@ -670,7 +664,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
                 final UartDataChunk dataChunk = mDataBuffer.get(i);
                 final boolean isRX = dataChunk.getMode() == UartDataChunk.TRANSFERMODE_RX;
                 final byte[] bytes = dataChunk.getData();
-                final String formattedData = mShowDataInHexFormat ? bytesToHex(bytes) : bytesToText(bytes, true);
+                final String formattedData = mShowDataInHexFormat ? BleUtils.bytesToHex2(bytes) : BleUtils.bytesToText(bytes, true);
 
                 final String currentDateTimeString = DateFormat.getTimeInstance().format(new Date(dataChunk.getTimestamp()));
                 mBufferListAdapter.add(new TimestampData("[" + currentDateTimeString + "] " + (isRX ? "RX" : "TX") + ": " + formattedData, isRX ? mRxColor : mTxColor));
@@ -684,15 +678,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
         }
     }
 
-    private String bytesToHex(byte[] bytes) {
-        StringBuilder stringBuffer = new StringBuilder();
-        for (byte aByte : bytes) {
-            String charString = String.format("%02X", (byte) aByte);
 
-            stringBuffer.append(charString).append(" ");
-        }
-        return stringBuffer.toString();
-    }
 
     // region DataFragment
     public static class DataFragment extends Fragment {

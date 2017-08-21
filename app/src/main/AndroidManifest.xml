@@ -101,10 +101,11 @@
         <activity
             android:name=".app.PadActivity"
             android:label="@string/title_activity_pad"
+            android:parentActivityName=".app.ControllerActivity"
             android:screenOrientation="fullUser">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.adafruit.bluefruit.le.connect.app.MainActivity" />
+                android:value="com.adafruit.bluefruit.le.connect.app.ControllerActivity" />
         </activity>
         <activity
             android:name=".app.settings.SettingsActivity"

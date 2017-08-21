@@ -77,6 +77,7 @@ public class UartInterfaceActivity extends AppCompatActivity implements BleManag
     final private Handler sendDataTimeoutHandler = new Handler();
     private Runnable sendDataRunnable = null;
     private SendDataCompletionHandler sendDataCompletionHandler = null;
+
     protected void sendData(byte[] data, SendDataCompletionHandler completionHandler) {
 
         if (completionHandler == null) {
@@ -99,7 +100,7 @@ public class UartInterfaceActivity extends AppCompatActivity implements BleManag
             @Override
             public void run() {
                 Log.d(TAG, "sendData timeout");
-                final SendDataCompletionHandler dataCompletionHandler =  sendDataCompletionHandler;
+                final SendDataCompletionHandler dataCompletionHandler = sendDataCompletionHandler;
 
                 UartInterfaceActivity.this.sendDataRunnable = null;
                 UartInterfaceActivity.this.sendDataCompletionHandler = null;
@@ -108,7 +109,7 @@ public class UartInterfaceActivity extends AppCompatActivity implements BleManag
             }
         };
 
-        sendDataTimeoutHandler.postDelayed(sendDataRunnable, 2*1000);
+        sendDataTimeoutHandler.postDelayed(sendDataRunnable, 2 * 1000);
         sendData(data);
 
     }
@@ -161,14 +162,13 @@ public class UartInterfaceActivity extends AppCompatActivity implements BleManag
                         final byte[] bytes = characteristic.getValue();
                         final String data = new String(bytes, Charset.forName("UTF-8"));
 
-                        final SendDataCompletionHandler dataCompletionHandler =  sendDataCompletionHandler;
+                        final SendDataCompletionHandler dataCompletionHandler = sendDataCompletionHandler;
                         sendDataCompletionHandler = null;
                         dataCompletionHandler.sendDataResponse(data);
                     }
                 }
             }
         }
-
     }
 
     @Override

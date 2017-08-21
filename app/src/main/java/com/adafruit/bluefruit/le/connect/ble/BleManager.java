@@ -43,8 +43,7 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
     private BleManagerListener mBleListener;
 
     public static BleManager getInstance(Context context) {
-        if(mInstance == null)
-        {
+        if (mInstance == null) {
             mInstance = new BleManager(context);
         }
         return mInstance;
@@ -54,7 +53,9 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
         return mConnectionState;
     }
 
-    public BluetoothDevice getConnectedDevice() {return mDevice;}
+    public BluetoothDevice getConnectedDevice() {
+        return mDevice;
+    }
 
     public String getConnectedDeviceAddress() {
         return mDeviceAddress;
@@ -119,8 +120,6 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
             return false;
         }
 
-
-
 /*
         // Refresh device cache
         final boolean refreshDeviceCache = sharedPreferences.getBoolean("pref_refreshdevicecache", true);
@@ -149,11 +148,11 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
     }
 
     /**
-    * Call to private Android method 'refresh'
-    * This method does actually clear the cache from a bluetooth device. But the problem is that we don't have access to it. But in java we have reflection, so we can access this method.
-    * http://stackoverflow.com/questions/22596951/how-to-programmatically-force-bluetooth-low-energy-service-discovery-on-android
-    */
-    public boolean refreshDeviceCache(){
+     * Call to private Android method 'refresh'
+     * This method does actually clear the cache from a bluetooth device. But the problem is that we don't have access to it. But in java we have reflection, so we can access this method.
+     * http://stackoverflow.com/questions/22596951/how-to-programmatically-force-bluetooth-low-energy-service-discovery-on-android
+     */
+    public boolean refreshDeviceCache() {
         try {
             BluetoothGatt localBluetoothGatt = mGatt;
             Method localMethod = localBluetoothGatt.getClass().getMethod("refresh");
@@ -164,8 +163,7 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
                 }
                 return result;
             }
-        }
-        catch (Exception localException) {
+        } catch (Exception localException) {
             Log.e(TAG, "An exception occurred while refreshing device");
         }
         return false;
@@ -211,8 +209,7 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
     public boolean readRssi() {
         if (mGatt != null) {
             return mGatt.readRemoteRssi();  // if true: Caller should wait for onReadRssi callback
-        }
-        else {
+        } else {
             return false;           // Rsii read is not available
         }
     }
@@ -237,8 +234,7 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
         }
     }
 
-    public void writeService(BluetoothGattService service, String uuid, byte[] value)
-    {
+    public void writeService(BluetoothGattService service, String uuid, byte[] value) {
         if (service != null) {
             if (mAdapter == null || mGatt == null) {
                 Log.w(TAG, "writeService: BluetoothAdapter not initialized");
@@ -275,7 +271,6 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
             mExecutor.execute(mGatt);
         }
     }
-
 
     // Properties
     private int getCharacteristicProperties(BluetoothGattService service, String characteristicUUIDString) {
@@ -324,7 +319,6 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
         return isReadable;
     }
 
-
     /**
      * Retrieves a list of supported GATT services on the connected device. This should be
      * invoked only after {@code BluetoothGatt#discoverServices()} completes successfully.
@@ -352,22 +346,19 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
         if (mGatt != null) {
             List<BluetoothGattService> services = getSupportedGattServices();
             boolean found = false;
-            int i=0;
-            while (i<services.size() && !found) {
+            int i = 0;
+            while (i < services.size() && !found) {
                 BluetoothGattService service = services.get(i);
-                if (service.getUuid().toString().equalsIgnoreCase(uuid) && service.getInstanceId() == instanceId)
-                {
+                if (service.getUuid().toString().equalsIgnoreCase(uuid) && service.getInstanceId() == instanceId) {
                     found = true;
-                }
-                else {
+                } else {
                     i++;
                 }
             }
 
             if (found) {
                 return services.get(i);
-            }
-            else {
+            } else {
                 return null;
             }
         } else {
@@ -408,27 +399,27 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
     // region BleExecutorListener
     @Override
     public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-       // if (status == BluetoothGatt.GATT_SUCCESS) {
-            // Call listener
-            if (mBleListener != null)
-                mBleListener.onServicesDiscovered();
-       // }
+        // if (status == BluetoothGatt.GATT_SUCCESS) {
+        // Call listener
+        if (mBleListener != null)
+            mBleListener.onServicesDiscovered();
+        // }
 
         if (status != BluetoothGatt.GATT_SUCCESS) {
-            Log.d(TAG, "onServicesDiscovered status: "+status);
+            Log.d(TAG, "onServicesDiscovered status: " + status);
         }
     }
 
     @Override
     public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-       // if (status == BluetoothGatt.GATT_SUCCESS) {
-            if (mBleListener != null) {
-                mBleListener.onDataAvailable(characteristic);
-            }
-       // }
+        // if (status == BluetoothGatt.GATT_SUCCESS) {
+        if (mBleListener != null) {
+            mBleListener.onDataAvailable(characteristic);
+        }
+        // }
 
         if (status != BluetoothGatt.GATT_SUCCESS) {
-            Log.d(TAG, "onCharacteristicRead status: "+status);
+            Log.d(TAG, "onCharacteristicRead status: " + status);
         }
     }
 
@@ -441,14 +432,14 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
 
     @Override
     public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-     //   if (status == BluetoothGatt.GATT_SUCCESS) {
-            if (mBleListener != null) {
-                mBleListener.onDataAvailable(descriptor);
-            }
-     //   }
+        //   if (status == BluetoothGatt.GATT_SUCCESS) {
+        if (mBleListener != null) {
+            mBleListener.onDataAvailable(descriptor);
+        }
+        //   }
 
         if (status != BluetoothGatt.GATT_SUCCESS) {
-            Log.d(TAG, "onDescriptorRead status: "+status);
+            Log.d(TAG, "onDescriptorRead status: " + status);
         }
     }
 
@@ -459,7 +450,7 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
         }
 
         if (status != BluetoothGatt.GATT_SUCCESS) {
-            Log.d(TAG, "onReadRemoteRssi status: "+status);
+            Log.d(TAG, "onReadRemoteRssi status: " + status);
         }
 
     }
@@ -468,11 +459,15 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
     public interface BleManagerListener {
 
         void onConnected();
+
         void onConnecting();
+
         void onDisconnected();
+
         void onServicesDiscovered();
 
         void onDataAvailable(BluetoothGattCharacteristic characteristic);
+
         void onDataAvailable(BluetoothGattDescriptor descriptor);
 
         void onReadRemoteRssi(int rssi);

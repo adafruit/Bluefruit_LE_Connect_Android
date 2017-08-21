@@ -609,7 +609,7 @@ public class PinIOActivity extends UartInterfaceActivity {
                 byte data1 = (byte) (value & 0x7f);      // only 7 bottom bits
                 byte data2 = (byte) (value >> 7);        // top bit in second byte
 
-                bytes= new byte[]{data0, data1, data2};
+                bytes = new byte[]{data0, data1, data2};
             }
             sendHexData(bytes);
 

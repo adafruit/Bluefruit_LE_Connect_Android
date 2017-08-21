@@ -226,35 +226,7 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
         super.onDestroy();
     }
 
-    private Runnable mPeriodicallySendData = new Runnable() {
-        @Override
-        public void run() {
-            final String[] prefixes = {"!Q", "!A", "!G", "!M", "!L"};     // same order that kSensorType
 
-            for (int i = 0; i < mSensorData.length; i++) {
-                SensorData sensorData = mSensorData[i];
-
-                if (sensorData.enabled && sensorData.values != null) {
-                    ByteBuffer buffer = ByteBuffer.allocate(2 + sensorData.values.length * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
-
-                    // prefix
-                    String prefix = prefixes[sensorData.sensorType];
-                    buffer.put(prefix.getBytes());
-
-                    // values
-                    for (int j = 0; j < sensorData.values.length; j++) {
-                        buffer.putFloat(sensorData.values[j]);
-                    }
-
-                    byte[] result = buffer.array();
-                    Log.d(TAG, "Send data for sensor: " + i);
-                    sendDataWithCRC(result);
-                }
-            }
-
-            sendDataHandler.postDelayed(this, kSendDataInterval);
-        }
-    };
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -319,6 +291,37 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
                 .addApi(LocationServices.API)
                 .build();
     }
+
+    private Runnable mPeriodicallySendData = new Runnable() {
+        @Override
+        public void run() {
+            final String[] prefixes = {"!Q", "!A", "!G", "!M", "!L"};     // same order that kSensorType
+
+            for (int i = 0; i < mSensorData.length; i++) {
+                SensorData sensorData = mSensorData[i];
+
+                if (sensorData.enabled && sensorData.values != null) {
+                    ByteBuffer buffer = ByteBuffer.allocate(2 + sensorData.values.length * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+
+                    // prefix
+                    String prefix = prefixes[sensorData.sensorType];
+                    buffer.put(prefix.getBytes());
+
+                    // values
+                    for (int j = 0; j < sensorData.values.length; j++) {
+                        buffer.putFloat(sensorData.values[j]);
+                    }
+
+                    byte[] result = buffer.array();
+                    Log.d(TAG, "Send data for sensor: " + i);
+                    sendDataWithCRC(result);
+                }
+            }
+
+            sendDataHandler.postDelayed(this, kSendDataInterval);
+        }
+    };
+
 
     private boolean isLocationEnabled() {
         int locationMode;
@@ -469,6 +472,9 @@ public class ControllerActivity extends UartInterfaceActivity implements SensorE
             }
         }
     }
+
+
+
 
     // region BleManagerListener
     /*
