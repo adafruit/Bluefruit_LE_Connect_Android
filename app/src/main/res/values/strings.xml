@@ -148,14 +148,18 @@
     <!-- PinIO Activity -->
     <string name="title_activity_pin_io">PinIO</string>
     <string name="pinio_sectiontitle">AVAILABLE PINS</string>
-    <string name="pinio_pintype_input">Input</string>
+    <string name="pinio_pintype_inputfloating_long">Input Floating</string>
+    <string name="pinio_pintype_inputpullup_long">Input Pullup</string>
     <string name="pinio_pintype_unknown">Unknown</string>
+    <string name="pinio_pintype_input">Input</string>
     <string name="pinio_pintype_output">Output</string>
     <string name="pinio_pintype_pwm">PWM</string>
     <string name="pinio_pintype_servo">Servo</string>
     <string name="pinio_pintype_analog">Analog</string>
     <string name="pinio_pintype_low">Low</string>
     <string name="pinio_pintype_high">High</string>
+    <string name="pinio_pintype_input_floating">Floating</string>
+    <string name="pinio_pintype_input_pullup">Pull Up</string>
     <string name="pinio_pinname_digital_format">Pin %d</string>
     <string name="pinio_pinname_analog_format" formatted="false">Pin %d, Analog %d</string>
     <string name="pinio_tag_mode">Mode</string>

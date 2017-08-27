@@ -1,117 +1,174 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:orientation="vertical"
-              android:padding="10dp">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#eeeeee"
+    android:orientation="vertical"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingTop="10dp">
 
     <RadioGroup
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:background="@drawable/border_gray"
+        android:orientation="horizontal"
+        android:paddingBottom="4dp"
+        android:paddingTop="4dp">
 
         <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
 
         <RadioButton
             android:id="@+id/inputRadioButton"
-            android:layout_width="wrap_content"
+            android:layout_width="80dp"
             android:layout_height="wrap_content"
             android:checked="true"
             android:onClick="onClickMode"
-            android:text="@string/pinio_pintype_input"/>
+            android:text="@string/pinio_pintype_input" />
 
         <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
 
         <RadioButton
             android:id="@+id/outputRadioButton"
-            android:layout_width="wrap_content"
+            android:layout_width="80dp"
             android:layout_height="wrap_content"
             android:onClick="onClickMode"
-            android:text="@string/pinio_pintype_output"/>
+            android:text="@string/pinio_pintype_output" />
 
         <View
             android:id="@+id/spacer2View"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
 
         <RadioButton
             android:id="@+id/pwmRadioButton"
-            android:layout_width="wrap_content"
+            android:layout_width="80dp"
             android:layout_height="wrap_content"
             android:onClick="onClickMode"
-            android:text="@string/pinio_pintype_pwm"/>
+            android:text="@string/pinio_pintype_pwm" />
 
-        <RadioButton
-            android:id="@+id/analogRadioButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onClickMode"
-            android:text="@string/pinio_pintype_analog"/>
 
         <View
             android:id="@+id/spacer3View"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
 
+        <RadioButton
+            android:id="@+id/analogRadioButton"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:onClick="onClickMode"
+            android:text="@string/pinio_pintype_analog" />
+
+
+        <View
+            android:id="@+id/spacer4View"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
     </RadioGroup>
 
     <RadioGroup
-        android:id="@+id/stateRadioGroup"
-        android:layout_width="match_parent"
+        android:id="@+id/inputRadioGroup"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="-20dp"
         android:layout_marginTop="10dp"
         android:orientation="horizontal">
 
         <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
+
+        <RadioButton
+            android:id="@+id/floatingRadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:minWidth="80dp"
+            android:onClick="onClickInputType"
+            android:text="@string/pinio_pintype_input_floating" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <RadioButton
+            android:id="@+id/pullupRadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="80dp"
+            android:onClick="onClickInputType"
+            android:text="@string/pinio_pintype_input_pullup" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+    </RadioGroup>
+
+    <RadioGroup
+        android:id="@+id/stateRadioGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="-20dp"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
 
         <RadioButton
             android:id="@+id/lowRadioButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
+            android:minWidth="80dp"
             android:onClick="onClickOutputType"
-            android:text="@string/pinio_pintype_low"/>
+            android:text="@string/pinio_pintype_low" />
 
         <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
 
         <RadioButton
             android:id="@+id/highRadioButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:minWidth="80dp"
             android:onClick="onClickOutputType"
-            android:text="@string/pinio_pintype_high"/>
+            android:text="@string/pinio_pintype_high" />
 
         <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"/>
-
+            android:layout_weight="1" />
     </RadioGroup>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="30dp"
         android:layout_marginTop="20dp"
         android:orientation="horizontal">
 
         <View
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.1"/>
+            android:layout_weight="0.1" />
 
         <SeekBar
             android:id="@+id/pmwSeekBar"
@@ -119,12 +176,12 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_weight="0.8"
-            android:max="255"/>
+            android:max="255" />
 
         <View
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.1"/>
+            android:layout_weight="0.1" />
 
     </LinearLayout>
 </LinearLayout>

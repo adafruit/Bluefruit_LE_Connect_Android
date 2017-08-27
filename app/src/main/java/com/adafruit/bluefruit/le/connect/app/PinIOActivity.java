@@ -62,25 +62,30 @@ public class PinIOActivity extends UartInterfaceActivity {
         private static final int kMode_Analog = 2;
         private static final int kMode_PWM = 3;
         private static final int kMode_Servo = 4;
+        private static final int kMode_InputPullup = 0xb;
 
         private static final int kDigitalValue_Low = 0;
         private static final int kDigitalValue_High = 1;
 
         int digitalPinId = -1;
         int analogPinId = -1;
-        boolean isDigital;
+        boolean isInput;
+        boolean isOutput;
         boolean isAnalog;
         boolean isPwm;
+        boolean isInputPullup;
 
         int mode = kMode_Input;
         int digitalValue = kDigitalValue_Low;
         int analogValue = 0;
 
-        PinData(int digitalPinId, boolean isDigital, boolean isAnalog, boolean isPwm) {
+        PinData(int digitalPinId, boolean isInput, boolean isOutput, boolean isAnalog, boolean isPwm, boolean isInputPullup) {
             this.digitalPinId = digitalPinId;
-            this.isDigital = isDigital;
+            this.isInput = isInput;
+            this.isOutput = isOutput;
             this.isAnalog = isAnalog;
             this.isPwm = isPwm;
+            this.isInputPullup = isInputPullup;
         }
     }
 
@@ -372,8 +377,7 @@ public class PinIOActivity extends UartInterfaceActivity {
             for (int j = 0; j < pinsBytes.size(); j++) {
                 ArrayList<Byte> pinBytes = pinsBytes.get(j);
 
-                boolean isInput = false, isOutput = false, isAnalog = false, isPWM = false;
-
+                boolean isInput = false, isOutput = false, isAnalog = false, isPWM = false, isInputPullup = false;
 
                 if (pinBytes.size() > 0) {
                     int i = 0;
@@ -406,7 +410,7 @@ public class PinIOActivity extends UartInterfaceActivity {
                                 break;
                             case 0x0b:
                                 // INPUT_PULLUP
-                                isInput = true;
+                                isInputPullup = true;
                                 i++;        // skip resolution byte
                                 break;
                             default:
@@ -416,8 +420,8 @@ public class PinIOActivity extends UartInterfaceActivity {
                         i++;
                     }
 
-                    PinData pinData = new PinData(pinNumber, isInput && isOutput, isAnalog, isPWM);
-                    Log.d(TAG, "pin id: " + pinNumber + " digital: " + (pinData.isDigital ? "yes" : "no") + " analog: " + (pinData.isAnalog ? "yes" : "no"));
+                    PinData pinData = new PinData(pinNumber, isInput, isOutput, isAnalog, isPWM, isInputPullup);
+                    Log.d(TAG, "pin id: " + pinNumber + " isInput: " + (pinData.isInput ? "yes" : "no") + " isOutput: " + (pinData.isOutput ? "yes" : "no") + " analog: " + (pinData.isAnalog ? "yes" : "no") + " isInputPullup: " + (pinData.isInputPullup ? "yes" : "no"));
                     mPins.add(pinData);
                 }
 
@@ -491,11 +495,11 @@ public class PinIOActivity extends UartInterfaceActivity {
         for (int i = 0; i < DEFAULT_PINS_COUNT; i++) {
             PinData pin = null;
             if (i == 3 || i == 5 || i == 6) {
-                pin = new PinData(i, true, false, false);
+                pin = new PinData(i, true, true, false, false, false);
             } else if (i >= FIRST_DIGITAL_PIN && i <= LAST_DIGITAL_PIN) {
-                pin = new PinData(i, true, false, false);
+                pin = new PinData(i, true, true, false, false, false);
             } else if (i >= FIRST_ANALOG_PIN && i <= LAST_ANALOG_PIN) {
-                pin = new PinData(i, true, true, false);
+                pin = new PinData(i, true, true, true, false, false);
                 pin.analogPinId = i - FIRST_ANALOG_PIN;
             }
 
@@ -528,8 +532,8 @@ public class PinIOActivity extends UartInterfaceActivity {
 
         // Store
         pin.mode = mode;
-        pin.digitalValue = PinData.kDigitalValue_Low;       // Reset dialog value when chaning mode
-        pin.analogValue = 0;                                // Reset analog value when chaging mode
+        pin.digitalValue = PinData.kDigitalValue_Low;       // Reset dialog value when changing mode
+        pin.analogValue = 0;                                // Reset analog value when changing mode
 
         // Write pin mode
         byte bytes[] = new byte[]{(byte) 0xf4, (byte) pin.digitalPinId, (byte) mode};
@@ -546,7 +550,7 @@ public class PinIOActivity extends UartInterfaceActivity {
     private void setAnalogValueReporting(PinData pin, boolean enabled) {
         // Write pin mode
         byte data0 = (byte) (0xc0 + pin.analogPinId);       // start analog reporting for pin (192 + pin#)
-        byte data1 = (byte) (enabled ? 1 : 0);       // enable
+        byte data1 = (byte) (enabled ? 1 : 0);              // enable
 
         // send data
         byte bytes[] = {data0, data1};
@@ -802,7 +806,7 @@ public class PinIOActivity extends UartInterfaceActivity {
         int newMode = PinData.kMode_Unknown;
         switch (view.getId()) {
             case R.id.inputRadioButton:
-                newMode = PinData.kMode_Input;
+                newMode = PinData.kMode_Input;      // Reset mode to input
                 break;
             case R.id.outputRadioButton:
                 newMode = PinData.kMode_Output;
@@ -815,8 +819,27 @@ public class PinIOActivity extends UartInterfaceActivity {
                 break;
         }
 
-        setControlMode(pinData, newMode);
+        if (newMode != PinData.kMode_Unknown) {
+            setControlMode(pinData, newMode);
 
+            mPinListAdapter.notifyDataSetChanged();
+        }
+    }
+
+    public void onClickInputType(View view) {
+        PinData pinData = (PinData) view.getTag();
+
+        int newMode = PinData.kMode_Input;
+        switch (view.getId()) {
+            case R.id.floatingRadioButton:
+                newMode = PinData.kMode_Input;
+                break;
+            case R.id.pullupRadioButton:
+                newMode = PinData.kMode_InputPullup;
+                break;
+        }
+
+        setControlMode(pinData, newMode);
         mPinListAdapter.notifyDataSetChanged();
     }
 
@@ -998,6 +1021,7 @@ public class PinIOActivity extends UartInterfaceActivity {
             String valueString;
             switch (pin.mode) {
                 case PinData.kMode_Input:
+                case PinData.kMode_InputPullup:
                     valueString = stringForPinDigitalValue(pin.digitalValue);
                     break;
                 case PinData.kMode_Output:
@@ -1023,7 +1047,7 @@ public class PinIOActivity extends UartInterfaceActivity {
             int modeStringResourceId;
             switch (mode) {
                 case PinData.kMode_Input:
-                    modeStringResourceId = R.string.pinio_pintype_input;
+                    modeStringResourceId = R.string.pinio_pintype_inputfloating_long;
                     break;
                 case PinData.kMode_Output:
                     modeStringResourceId = R.string.pinio_pintype_output;
@@ -1037,6 +1061,10 @@ public class PinIOActivity extends UartInterfaceActivity {
                 case PinData.kMode_Servo:
                     modeStringResourceId = R.string.pinio_pintype_servo;
                     break;
+                case PinData.kMode_InputPullup:
+                    modeStringResourceId = R.string.pinio_pintype_inputpullup_long;
+                    break;
+
                 default:
                     modeStringResourceId = R.string.pinio_pintype_unknown;
                     break;
@@ -1073,13 +1101,13 @@ public class PinIOActivity extends UartInterfaceActivity {
             // Setup mode
             RadioButton inputRadioButton = (RadioButton) convertView.findViewById(R.id.inputRadioButton);
             inputRadioButton.setTag(pin);
-            inputRadioButton.setChecked(pin.mode == PinData.kMode_Input);
-            inputRadioButton.setVisibility(pin.isDigital ? View.VISIBLE : View.GONE);
+            inputRadioButton.setChecked(pin.mode == PinData.kMode_Input || pin.mode == PinData.kMode_InputPullup);
+            inputRadioButton.setVisibility(pin.isInput || pin.isInputPullup ? View.VISIBLE : View.GONE);
 
             RadioButton outputRadioButton = (RadioButton) convertView.findViewById(R.id.outputRadioButton);
             outputRadioButton.setTag(pin);
             outputRadioButton.setChecked(pin.mode == PinData.kMode_Output);
-            outputRadioButton.setVisibility(pin.isDigital ? View.VISIBLE : View.GONE);
+            outputRadioButton.setVisibility(pin.isOutput ? View.VISIBLE : View.GONE);
 
             RadioButton pwmRadioButton = (RadioButton) convertView.findViewById(R.id.pwmRadioButton);
             pwmRadioButton.setTag(pin);
@@ -1091,18 +1119,33 @@ public class PinIOActivity extends UartInterfaceActivity {
             analogRadioButton.setChecked(pin.mode == PinData.kMode_Analog);
             analogRadioButton.setVisibility(pin.isAnalog ? View.VISIBLE : View.GONE);
 
-            // Setup state
-            RadioButton lowRadioButton = (RadioButton) convertView.findViewById(R.id.lowRadioButton);
-            lowRadioButton.setTag(pin);
-            lowRadioButton.setChecked(pin.digitalValue == PinData.kDigitalValue_Low);
+            // Setup input mode
+            boolean isInputModeVisible = pin.mode == PinData.kMode_Input || pin.mode == PinData.kMode_InputPullup;
+            RadioGroup inputRadioGroup = (RadioGroup) convertView.findViewById(R.id.inputRadioGroup);
+            inputRadioGroup.setVisibility(isInputModeVisible ? View.VISIBLE : View.GONE);
+            if (isInputModeVisible) {
+                RadioButton floatingRadioButton = (RadioButton) convertView.findViewById(R.id.floatingRadioButton);
+                floatingRadioButton.setTag(pin);
+                floatingRadioButton.setChecked(pin.mode == PinData.kMode_Input);
 
-            RadioButton highRadioButton = (RadioButton) convertView.findViewById(R.id.highRadioButton);
-            highRadioButton.setTag(pin);
-            highRadioButton.setChecked(pin.digitalValue == PinData.kDigitalValue_High);
+                RadioButton pullupRadioButton = (RadioButton) convertView.findViewById(R.id.pullupRadioButton);
+                pullupRadioButton.setTag(pin);
+                pullupRadioButton.setChecked(pin.mode == PinData.kMode_InputPullup);
+            }
 
+            // Setup output state
             boolean isStateVisible = pin.mode == PinData.kMode_Output;
             RadioGroup stateRadioGroup = (RadioGroup) convertView.findViewById(R.id.stateRadioGroup);
             stateRadioGroup.setVisibility(isStateVisible ? View.VISIBLE : View.GONE);
+            if (isStateVisible) {
+                RadioButton lowRadioButton = (RadioButton) convertView.findViewById(R.id.lowRadioButton);
+                lowRadioButton.setTag(pin);
+                lowRadioButton.setChecked(pin.digitalValue == PinData.kDigitalValue_Low);
+
+                RadioButton highRadioButton = (RadioButton) convertView.findViewById(R.id.highRadioButton);
+                highRadioButton.setTag(pin);
+                highRadioButton.setChecked(pin.digitalValue == PinData.kDigitalValue_High);
+            }
 
             // pwm slider bar
             boolean isPwmBarVisible = pin.mode == PinData.kMode_PWM;
@@ -1142,11 +1185,11 @@ public class PinIOActivity extends UartInterfaceActivity {
             final boolean isSpacer2Visible = pin.isPwm || pin.isAnalog;
             View spacer2View = convertView.findViewById(R.id.spacer2View);
             spacer2View.setVisibility(isSpacer2Visible ? View.VISIBLE : View.GONE);
-            /*
-            final boolean isSpacer3Visible = isSpacer2Visible || (!pin.isPwm && pin.isDigital);
+
+            final boolean isSpacer3Visible = pin.isPwm && pin.isAnalog;
             View spacer3View = convertView.findViewById(R.id.spacer3View);
             spacer3View.setVisibility(isSpacer3Visible ? View.VISIBLE : View.GONE);
-*/
+
             return convertView;
         }
 
