@@ -12,7 +12,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.adafruit.bluefruit.le.connect.FileUtils;
+import com.adafruit.bluefruit.le.connect.utils.FileUtils;
 import com.adafruit.bluefruit.le.connect.R;
 
 import org.json.JSONArray;

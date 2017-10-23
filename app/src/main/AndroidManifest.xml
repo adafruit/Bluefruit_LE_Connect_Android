@@ -177,6 +177,17 @@
                 android:value="com.adafruit.bluefruit.le.connect.app.neopixel.NeopixelActivity" />
         </activity>
 
+
+        <provider
+            android:name=".utils.LegacyCompatFileProvider"
+            android:authorities="com.adafruit.bluefruit.le.connect.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+
+        </provider>
     </application>
 
 </manifest>

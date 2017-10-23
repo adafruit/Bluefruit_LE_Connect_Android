@@ -27,9 +27,8 @@ android {
 }
 
 repositories {
-    maven {
-        url "https://repo.eclipse.org/content/repositories/paho-releases/"
-    }
+    maven { url "https://repo.eclipse.org/content/repositories/paho-releases/" }
+    maven { url "https://s3.amazonaws.com/repo.commonsware.com" }
 }
 
 dependencies {
@@ -45,4 +44,6 @@ dependencies {
     compile 'com.google.android.gms:play-services-analytics:11.0.4'
     compile 'com.google.android.gms:play-services-location:11.0.4'
     compile 'com.google.android.gms:play-services-vision:11.0.4'
+
+    compile 'com.commonsware.cwac:provider:0.5.1'
 }

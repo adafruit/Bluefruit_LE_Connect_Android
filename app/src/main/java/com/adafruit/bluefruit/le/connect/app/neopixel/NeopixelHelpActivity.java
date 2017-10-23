@@ -1,17 +1,25 @@
 package com.adafruit.bluefruit.le.connect.app.neopixel;
 
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.content.FileProvider;
+import android.util.Log;
 import android.view.View;
 
-import com.adafruit.bluefruit.le.connect.FileUtils;
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.app.CommonHelpActivity;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class NeopixelHelpActivity extends CommonHelpActivity {
+
+    // Constants
+    private static final String AUTHORITY = "com.adafruit.bluefruit.le.connect.fileprovider";          // Same as the authority field on the manifest provider
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,20 +30,47 @@ public class NeopixelHelpActivity extends CommonHelpActivity {
     }
 
     public void onClickExportSketch(View view) {
-        String outPath = FileUtils.copyAssetFile(getAssets(), "neopixel" + File.separator + "Neopixel_Arduino.zip", "Neopixel_Arduino.zip");
-        if (outPath != null) {
+        exportSketch();
+    }
+
+    private void exportSketch() {
+
+        // Copy file from assets to FilesDir
+        String filename = "Neopixel_Arduino.zip";
+        File file = new File(getFilesDir(), filename);
+        AssetManager assets = getResources().getAssets();
+        try {
+            copy(assets.open("neopixel" + File.separator + filename), file);
+        } catch (IOException e) {
+            Log.e("FileProvider", "Exception copying from assets", e);
+        }
+
+        // Export uri
+        Uri uri = FileProvider.getUriForFile(this, AUTHORITY, file);
+
+        if (uri != null) {
             Intent intentShareFile = new Intent(Intent.ACTION_SEND);
             intentShareFile.setType("application/zip");
 
-            final String fileUrlString = "file://" + outPath;
-            //final String fileUrlString = "https://github.com/adafruit/Bluefruit_LE_Connect_v2/releases/download/OSXcommandline_0.3/Bluefruit.CommandLine.dmg";
-            //final String fileUrlString = "file:///android_asset/neopixel/Neopixel_Arduino.zip";
-            //final String fileUrlString = "content://com.adafruit.bluefruit.le.connect/neopixel/Neopixel_Arduino.zip";
-            intentShareFile.putExtra(Intent.EXTRA_STREAM, Uri.parse(fileUrlString));
+            intentShareFile.putExtra(Intent.EXTRA_STREAM, uri);
 
             intentShareFile.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.neopixel_help_export_subject));
             intentShareFile.putExtra(Intent.EXTRA_TEXT, getString(R.string.neopixel_help_export_text));
+            intentShareFile.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);        // to avoid the android.os.FileUriExposedException on api 24+
             startActivity(Intent.createChooser(intentShareFile, getString(R.string.neopixel_help_export_chooser_title)));
         }
+    }
+
+    private static void copy(InputStream in, File dst) throws IOException {
+        FileOutputStream out = new FileOutputStream(dst);
+        byte[] buf = new byte[1024];
+        int len;
+
+        while ((len = in.read(buf)) > 0) {
+            out.write(buf, 0, len);
+        }
+
+        in.close();
+        out.close();
     }
 }

@@ -27,7 +27,7 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.adafruit.bluefruit.le.connect.FileUtils;
+import com.adafruit.bluefruit.le.connect.utils.FileUtils;
 import com.adafruit.bluefruit.le.connect.R;
 import com.adafruit.bluefruit.le.connect.app.UartInterfaceActivity;
 import com.adafruit.bluefruit.le.connect.ble.BleManager;

@@ -1,4 +1,4 @@
-package com.adafruit.bluefruit.le.connect;
+package com.adafruit.bluefruit.le.connect.utils;
 
 import android.content.res.AssetManager;
 import android.os.Environment;

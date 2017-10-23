@@ -3,15 +3,13 @@ package com.adafruit.bluefruit.le.connect.app.neopixel;
 
 import android.content.Context;
 
-import com.adafruit.bluefruit.le.connect.FileUtils;
+import com.adafruit.bluefruit.le.connect.utils.FileUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 public class NeopixelBoard {
     static final short kDefaultType = 82;

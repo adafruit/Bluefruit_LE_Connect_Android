@@ -1702,7 +1702,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
             String address = deviceData.device.getAddress();
             result.append(getString(R.string.scan_device_address)).append(": <b>").append(address == null ? "" : address).append("</b><br>");
 
-            final byte[] manufacturerBytes = {deviceData.scanRecord[6], deviceData.scanRecord[5]};      // Little endan
+            final byte[] manufacturerBytes = {deviceData.scanRecord[6], deviceData.scanRecord[5]};      // Little endian
             String manufacturer = BleUtils.bytesToHex(manufacturerBytes);
 
             // Check if the manufacturer is known, and replace the id for a name

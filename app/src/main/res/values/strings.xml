@@ -94,7 +94,7 @@
 
 
     <string-array name="scan_devicetypes">
-        <item>Uknown</item>
+        <item>Unkown</item>
         <item>UART capable</item>
         <item>Beacon</item>
         <item>Eddystone</item>
