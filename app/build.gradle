@@ -9,7 +9,7 @@ android {
         minSdkVersion 19
         targetSdkVersion 25
         versionCode 18
-        versionName "2.2.2"
+        versionName "2.3.0"
     }
 
     useLibrary 'org.apache.http.legacy'     // TODO: remove Apache library and use HttpURLConnection (Apache is deprecated since Android 6.0)
