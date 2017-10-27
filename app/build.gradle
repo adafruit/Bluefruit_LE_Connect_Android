@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.3"
+    buildToolsVersion '26.0.2'
 
     defaultConfig {
         applicationId "com.adafruit.bluefruit.le.connect"
@@ -29,6 +29,7 @@ android {
 repositories {
     maven { url "https://repo.eclipse.org/content/repositories/paho-releases/" }
     maven { url "https://s3.amazonaws.com/repo.commonsware.com" }
+    google()
 }
 
 dependencies {
@@ -37,13 +38,13 @@ dependencies {
     compile(group: 'org.eclipse.paho', name: 'org.eclipse.paho.android.service', version: '1.0.2') {
         exclude module: 'support-v4'
     }
-    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support:appcompat-v7:25.4.0'
     compile 'com.larswerkman:HoloColorPicker:1.4'
-    compile 'com.android.support:design:25.3.1'
+    compile 'com.android.support:design:25.4.0'
 
-    compile 'com.google.android.gms:play-services-analytics:11.0.4'
-    compile 'com.google.android.gms:play-services-location:11.0.4'
-    compile 'com.google.android.gms:play-services-vision:11.0.4'
+    compile 'com.google.android.gms:play-services-analytics:11.4.2'
+    compile 'com.google.android.gms:play-services-location:11.4.2'
+    compile 'com.google.android.gms:play-services-vision:11.4.2'
 
     compile 'com.commonsware.cwac:provider:0.5.1'
 }
