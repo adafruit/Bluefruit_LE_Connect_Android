@@ -44,7 +44,6 @@ import com.adafruit.bluefruit.le.connect.mqtt.MqttSettings;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -65,6 +64,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
     // Constants
     private final static String kPreferences = "UartActivity_prefs";
     private final static String kPreferences_eol = "eol";
+    private final static String kPreferences_eolCharactersId = "eolCharactersId";
     private final static String kPreferences_echo = "echo";
     private final static String kPreferences_asciiMode = "ascii";
     private final static String kPreferences_timestampDisplayMode = "timestampdisplaymode";
@@ -102,6 +102,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
     private boolean mIsTimestampDisplayMode;
     private boolean mIsEchoEnabled;
     private boolean mIsEolEnabled;
+    private int mEolCharactersId;
 
     private volatile SpannableStringBuilder mTextSpanBuffer;
     private volatile ArrayList<UartDataChunk> mDataBuffer;
@@ -176,6 +177,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
         setDisplayFormatToTimestamp(isTimestampDisplayMode);
         mIsEchoEnabled = preferences.getBoolean(kPreferences_echo, true);
         mIsEolEnabled = preferences.getBoolean(kPreferences_eol, true);
+        mEolCharactersId = preferences.getInt(kPreferences_eolCharactersId, 0);
         invalidateOptionsMenu();        // udpate options menu with current values
 
         // Continue
@@ -220,6 +222,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean(kPreferences_echo, mIsEchoEnabled);
         editor.putBoolean(kPreferences_eol, mIsEolEnabled);
+        editor.putInt(kPreferences_eolCharactersId, mEolCharactersId);
         editor.putBoolean(kPreferences_asciiMode, !mShowDataInHexFormat);
         editor.putBoolean(kPreferences_timestampDisplayMode, mIsTimestampDisplayMode);
 
@@ -241,7 +244,9 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
 
     public void dismissKeyboard(View view) {
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 
     public void onClickSend(View view) {
@@ -265,7 +270,7 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
         // Add eol
         if (mIsEolEnabled) {
             // Add newline character if checked
-            data += "\n";
+            data += getEolCharacters();//"\n";
         }
 
         // Send to uart
@@ -295,11 +300,39 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
         updateUI();
     }
 
+    private String getEolCharacters() {
+        switch (mEolCharactersId) {
+            case 1:
+                return "\r";
+            case 2:
+                return "\n\r";
+            case 3:
+                return "\r\n";
+            default:
+                return "\n";
+        }
+    }
+
+    private int getEolCharactersStringId() {
+        switch (mEolCharactersId) {
+            case 1:
+                return R.string.uart_eolmode_r;
+            case 2:
+                return R.string.uart_eolmode_nr;
+            case 3:
+                return R.string.uart_eolmode_rn;
+            default:
+                return R.string.uart_eolmode_n;
+        }
+    }
+
     public void onClickCopy(View view) {
         String text = mBufferTextView.getText().toString(); // mShowDataInHexFormat ? mHexSpanBuffer.toString() : mAsciiSpanBuffer.toString();
         ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText("UART", text);
-        clipboard.setPrimaryClip(clip);
+        if (clipboard != null) {
+            ClipData clip = ClipData.newPlainText("UART", text);
+            clipboard.setPrimaryClip(clip);
+        }
     }
 
     public void onClickClear(View view) {
@@ -333,28 +366,6 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
                     .show();
         }
     }
-
-    /*
-    public void onClickFormatAscii(View view) {
-        mShowDataInHexFormat = false;
-        recreateDataView();
-    }
-
-    public void onClickFormatHex(View view) {
-        mShowDataInHexFormat = true;
-        recreateDataView();
-    }
-
-    public void onClickDisplayFormatText(View view) {
-        setDisplayFormatToTimestamp(false);
-        recreateDataView();
-    }
-
-    public void onClickDisplayFormatTimestamp(View view) {
-        setDisplayFormatToTimestamp(true);
-        recreateDataView();
-    }
-    */
 
     private void setDisplayFormatToTimestamp(boolean enabled) {
         mIsTimestampDisplayMode = enabled;
@@ -406,6 +417,28 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
         MenuItem eolMenuItem = menu.findItem(R.id.action_eol);
         eolMenuItem.setTitle(R.string.uart_action_eol);
         eolMenuItem.setChecked(mIsEolEnabled);
+
+        // Eol Characters
+        MenuItem eolModeMenuItem = menu.findItem(R.id.action_eolmode);
+        eolModeMenuItem.setTitle(String.format(getString(R.string.uart_action_eolmode_format), getString(getEolCharactersStringId())));
+        SubMenu eolModeSubMenu = eolModeMenuItem.getSubMenu();
+        int selectedEolCharactersSubMenuId;
+        switch (mEolCharactersId) {
+            case 1:
+                selectedEolCharactersSubMenuId = R.id.action_eolmode_r;
+                break;
+            case 2:
+                selectedEolCharactersSubMenuId = R.id.action_eolmode_nr;
+                break;
+            case 3:
+                selectedEolCharactersSubMenuId = R.id.action_eolmode_rn;
+                break;
+            default:
+                selectedEolCharactersSubMenuId = R.id.action_eolmode_n;
+                break;
+        }
+        MenuItem selectedEolCharacterMenuItem = eolModeSubMenu.findItem(selectedEolCharactersSubMenuId);
+        selectedEolCharacterMenuItem.setChecked(true);
 
         return true;
     }
@@ -499,6 +532,28 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
                 mIsEolEnabled = !mIsEolEnabled;
                 invalidateOptionsMenu();
                 return true;
+
+            case R.id.action_eolmode_n:
+                mEolCharactersId = 0;
+                invalidateOptionsMenu();
+                return true;
+
+            case R.id.action_eolmode_r:
+                mEolCharactersId = 1;
+                invalidateOptionsMenu();
+                return true;
+
+
+            case R.id.action_eolmode_nr:
+                mEolCharactersId = 2;
+                invalidateOptionsMenu();
+                return true;
+
+            case R.id.action_eolmode_rn:
+                mEolCharactersId = 3;
+                invalidateOptionsMenu();
+                return true;
+
         }
 
         return super.onOptionsItemSelected(item);
@@ -677,7 +732,6 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
             mBufferTextView.setText("");
         }
     }
-
 
 
     // region DataFragment

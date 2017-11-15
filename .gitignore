@@ -9,3 +9,4 @@ R.java
 dFULibrary/build
 app-release.apk
 manifest-merger-release-report.txt
+app/release

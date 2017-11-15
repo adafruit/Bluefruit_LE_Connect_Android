@@ -114,7 +114,12 @@
     <!-- Uart Activity -->
     <string name="title_activity_uart">UART</string>
     <string name="uart_echo">Echo:</string>
-    <string name="uart_eol">EOL:</string>
+    <string name="uart_eol">EoL:</string>
+    <string name="uart_action_eolmode_format">EoL Characters: %s</string>
+    <string name="uart_eolmode_n">\\n</string>
+    <string name="uart_eolmode_r">\\r</string>
+    <string name="uart_eolmode_nr">\\n\\r</string>
+    <string name="uart_eolmode_rn">\\r\\n</string>
     <string name="uart_format_ascii">Ascii</string>
     <string name="uart_format_hex">Hex</string>
     <string name="uart_format_hexadecimal">Hexadecimal</string>

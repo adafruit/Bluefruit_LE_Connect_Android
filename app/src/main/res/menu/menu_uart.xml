@@ -74,6 +74,35 @@
                 android:title="@string/uart_action_eol"
                 app:showAsAction="never" />
         </group>
+
+        <item
+            android:id="@+id/action_eolmode"
+            android:title="@string/uart_action_eolmode_format"
+            app:showAsAction="never">
+
+            <menu>
+                <group
+                    android:id="@+id/eolMode"
+                    android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/action_eolmode_n"
+                        android:title="@string/uart_eolmode_n"
+                        app:showAsAction="never" />
+                    <item
+                        android:id="@+id/action_eolmode_r"
+                        android:title="@string/uart_eolmode_r"
+                        app:showAsAction="never" />
+                    <item
+                        android:id="@+id/action_eolmode_nr"
+                        android:title="@string/uart_eolmode_nr"
+                        app:showAsAction="never" />
+                    <item
+                        android:id="@+id/action_eolmode_rn"
+                        android:title="@string/uart_eolmode_rn"
+                        app:showAsAction="never" />
+                </group>
+            </menu>
+        </item>
     </group>
 
 

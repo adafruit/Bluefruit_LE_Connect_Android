@@ -34,7 +34,6 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
     private final BleGattExecutor mExecutor = BleGattExecutor.createExecutor(this);
     private BluetoothAdapter mAdapter;
     private BluetoothGatt mGatt;
-//    private Context mContext;
 
     private BluetoothDevice mDevice;
     private String mDeviceAddress;
@@ -67,7 +66,6 @@ public class BleManager implements BleGattExecutor.BleExecutorListener {
 
     public BleManager(Context context) {
         // Init Adapter
-        //mContext = context.getApplicationContext();
         if (mAdapter == null) {
             mAdapter = BleUtils.getBluetoothAdapter(context);
         }

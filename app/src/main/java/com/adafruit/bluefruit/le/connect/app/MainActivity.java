@@ -1303,7 +1303,6 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
         });
     }
 
-
     // endregion
 
     // region Helpers
