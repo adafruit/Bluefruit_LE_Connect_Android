@@ -8,7 +8,7 @@ android {
         applicationId "com.adafruit.bluefruit.le.connect"
         minSdkVersion 19
         targetSdkVersion 25
-        versionCode 18
+        versionCode 19
         versionName "2.3.0"
     }
 
@@ -42,9 +42,9 @@ dependencies {
     compile 'com.larswerkman:HoloColorPicker:1.4'
     compile 'com.android.support:design:26.1.0'
 
-    compile 'com.google.android.gms:play-services-analytics:11.6.0'
-    compile 'com.google.android.gms:play-services-location:11.6.0'
-    compile 'com.google.android.gms:play-services-vision:11.6.0'
+    compile 'com.google.android.gms:play-services-analytics:11.6.2'
+    compile 'com.google.android.gms:play-services-location:11.6.2'
+    compile 'com.google.android.gms:play-services-vision:11.6.2'
 
     compile 'com.commonsware.cwac:provider:0.5.1'
 }
