@@ -78,6 +78,7 @@ public class PadActivity extends UartInterfaceActivity {
         ImageButton bottomArrowImageButton = (ImageButton) findViewById(R.id.bottomArrowImageButton);
         bottomArrowImageButton.setOnTouchListener(mPadButtonTouchListener);
 
+        /**
         ImageButton button1ImageButton = (ImageButton) findViewById(R.id.button1ImageButton);
         button1ImageButton.setOnTouchListener(mPadButtonTouchListener);
         ImageButton button2ImageButton = (ImageButton) findViewById(R.id.button2ImageButton);
@@ -86,6 +87,7 @@ public class PadActivity extends UartInterfaceActivity {
         button3ImageButton.setOnTouchListener(mPadButtonTouchListener);
         ImageButton button4ImageButton = (ImageButton) findViewById(R.id.button4ImageButton);
         button4ImageButton.setOnTouchListener(mPadButtonTouchListener);
+        **/
 
         // Read shared preferences
         maxPacketsToPaintAsText = PreferencesFragment.getUartTextMaxPackets(this);
