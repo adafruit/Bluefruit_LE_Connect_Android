@@ -54,7 +54,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.adafruit.bluefruit.le.connect.R;
-import com.adafruit.bluefruit.le.connect.app.neopixel.NeopixelActivity;
+//import com.adafruit.bluefruit.le.connect.app.neopixel.NeopixelActivity;
 import com.adafruit.bluefruit.le.connect.app.settings.SettingsActivity;
 import com.adafruit.bluefruit.le.connect.app.update.FirmwareUpdater;
 import com.adafruit.bluefruit.le.connect.app.update.ReleasesParser;
@@ -626,20 +626,12 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
                                 mComponentToStartWhenConnected = UartActivity.class;
                                 break;
                             }
-                            case R.string.scan_connectservice_pinio: {        // PinIO
-                                mComponentToStartWhenConnected = PinIOActivity.class;
-                                break;
-                            }
                             case R.string.scan_connectservice_controller: {    // Controller
                                 mComponentToStartWhenConnected = ControllerActivity.class;
                                 break;
                             }
                             case R.string.scan_connectservice_beacon: {        // Beacon
                                 mComponentToStartWhenConnected = BeaconActivity.class;
-                                break;
-                            }
-                            case R.string.scan_connectservice_neopixel: {       // Neopixel
-                                mComponentToStartWhenConnected = NeopixelActivity.class;
                                 break;
                             }
                         }

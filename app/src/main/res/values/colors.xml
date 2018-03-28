@@ -3,5 +3,6 @@
     <drawable name="default_background">#333333</drawable>
     <drawable name="default_textcolor">#B8B8B8</drawable>
     <drawable name="default_infotextcolor">#7c7c7c</drawable>
+    <drawable name="white_background">#ffffff</drawable>
 
 </resources>
