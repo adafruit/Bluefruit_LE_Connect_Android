@@ -11,18 +11,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.adafruit.bluefruit.le.connect.app.PadActivity">
 
-    <EditText
-        android:id="@+id/bufferTextView"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginBottom="20dp"
-        android:background="#cccccc"
-        android:cursorVisible="false"
-        android:gravity="top"
-        android:scrollbarFadeDuration="0"
-        android:textColorHighlight="#cccccc"
-        android:textStyle="bold" />
-
     <LinearLayout
         android:id="@+id/contentView"
         android:layout_width="match_parent"
@@ -81,6 +69,76 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1" />
+
+                    <ImageButton
+                        android:id="@+id/bottomArrowImageButton"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_margin="2dp"
+                        android:layout_weight=".8"
+                        android:background="@drawable/roundedbutton"
+
+                        android:scaleType="centerInside"
+                        android:src="@drawable/pad_arrow_button_down"
+                        android:tag="6" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Separator -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="match_parent" />
+
+            <!-- KeyPad -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1.1"
                     android:orientation="horizontal">
 
@@ -112,118 +170,10 @@
                         android:tag="8" />
                 </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="horizontal">
-
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1" />
-
-                    <ImageButton
-                        android:id="@+id/bottomArrowImageButton"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_margin="2dp"
-                        android:layout_weight=".8"
-                        android:background="@drawable/roundedbutton"
-
-                        android:scaleType="centerInside"
-                        android:src="@drawable/pad_arrow_button_down"
-                        android:tag="6" />
-
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <!-- Separator -->
-            <View
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="0.3" />
-
-            <!-- KeyPad -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="horizontal">
-
-                    <ImageButton
-                        android:id="@+id/button1ImageButton"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:background="@drawable/roundedbutton"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/pad_button_numbers_1"
-                        android:tag="1" />
-
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1" />
-
-                    <ImageButton
-                        android:id="@+id/button2ImageButton"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:background="@drawable/roundedbutton"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/pad_button_numbers_2"
-                        android:tag="2" />
-
-                </LinearLayout>
-
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="horizontal">
-
-                    <ImageButton
-                        android:id="@+id/button3ImageButton"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:background="@drawable/roundedbutton"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/pad_button_numbers_3"
-                        android:tag="3" />
-
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1" />
-
-                    <ImageButton
-                        android:id="@+id/button4ImageButton"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:background="@drawable/roundedbutton"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/pad_button_numbers_4"
-                        android:tag="4" />
-                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
 

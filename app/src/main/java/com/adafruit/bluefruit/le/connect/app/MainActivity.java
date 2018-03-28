@@ -1805,7 +1805,7 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        onClickDeviceConnect(groupPosition);
+                        onClickDeviceConnect(groupPosition);                                                                                                        ///HEREEEEE
                         return true;
                     }
                     return false;
