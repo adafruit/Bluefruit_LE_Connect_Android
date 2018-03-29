@@ -2,8 +2,8 @@
 <resources>
 
     <!-- General -->
-    <string name="app_name">Bluefruit LE</string>
-    <string name="app_full_name">Bluefruit LE Connect</string>
+    <string name="app_name">Zoey</string>
+    <string name="app_full_name">Zoey Cats Conundrum</string>
     <string name="action_info">Info</string>
     <string name="action_mqttsettings">MQTT</string>
     <string name="action_settings">Settings</string>
@@ -187,7 +187,6 @@
     <string name="controller_magnetometermissing">Your device doesn\'t have magnetic sensor</string>
 
     <string-array name="controller_stream_items">
-        <item>Quaternion</item>
         <item>Accelerometer</item>
         <item>Gyro</item>
         <item>Magnetometer</item>
@@ -201,7 +200,7 @@
     </string-array>
 
     <!-- Pad Activity -->
-    <string name="title_activity_pad">Control Pad</string>
+    <string name="title_activity_pad">Cat's Conundrum</string>
 
     <!-- Color Picker -->
     <string name="title_activity_color_picker">Color Picker</string>
