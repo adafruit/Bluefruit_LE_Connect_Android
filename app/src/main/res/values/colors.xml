@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <drawable name="default_background">#333333</drawable>
+    <drawable name="default_background">#ffffff</drawable>
     <drawable name="default_textcolor">#B8B8B8</drawable>
     <drawable name="default_infotextcolor">#7c7c7c</drawable>
     <drawable name="white_background">#ffffff</drawable>
+    <color name="colorPrimary">#0055ff</color>
+    <color name="colorPrimaryDark">#143e91</color>
 
 </resources>

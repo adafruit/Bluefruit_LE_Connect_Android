@@ -3,13 +3,22 @@
     android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/default_background"
+    android:background="@drawable/white_background"
     android:orientation="vertical"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.adafruit.bluefruit.le.connect.app.PadActivity">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="40dp"
+        android:src="@mipmap/tank_transparent"
+        tools:ignore="ContentDescription" />
 
     <LinearLayout
         android:id="@+id/contentView"
@@ -35,7 +44,7 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1.2"
+                android:layout_weight="1"
                 android:orientation="vertical">
 
                 <LinearLayout
@@ -54,10 +63,10 @@
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_margin="2dp"
-                        android:layout_weight="0.8"
-                        android:background="@drawable/roundedbutton"
+                        android:layout_weight="1"
+                        android:background="@android:color/transparent"
                         android:scaleType="centerInside"
-                        android:src="@drawable/pad_arrow_button_up"
+                        android:src="@drawable/up_light"
                         android:tag="5" />
 
                     <View
@@ -69,7 +78,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_weight="1.75"
                     android:orientation="horizontal">
 
                     <View
@@ -95,11 +104,11 @@
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_margin="2dp"
-                        android:layout_weight=".8"
-                        android:background="@drawable/roundedbutton"
+                        android:layout_weight="1"
+                        android:background="@android:color/transparent"
 
                         android:scaleType="centerInside"
-                        android:src="@drawable/pad_arrow_button_down"
+                        android:src="@drawable/down_light"
                         android:tag="6" />
 
                     <View
@@ -114,7 +123,7 @@
             <View
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:layout_weight=".2" />
+                android:layout_weight=".1" />
 
             <!-- KeyPad -->
             <LinearLayout
@@ -140,7 +149,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1.1"
+                    android:layout_weight="1"
                     android:orientation="horizontal">
 
                     <ImageButton
@@ -149,15 +158,15 @@
                         android:layout_height="match_parent"
                         android:layout_margin="2dp"
                         android:layout_weight="1"
-                        android:background="@drawable/roundedbutton"
+                        android:background="@android:color/transparent"
                         android:scaleType="centerInside"
-                        android:src="@drawable/pad_arrow_button_left"
+                        android:src="@drawable/left_light"
                         android:tag="7" />
 
                     <View
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
-                        android:layout_weight="1" />
+                        android:layout_weight=".25" />
 
                     <ImageButton
                         android:id="@+id/rightArrowImageButton"
@@ -165,9 +174,9 @@
                         android:layout_height="match_parent"
                         android:layout_margin="2dp"
                         android:layout_weight="1"
-                        android:background="@drawable/roundedbutton"
+                        android:background="@android:color/transparent"
                         android:scaleType="centerInside"
-                        android:src="@drawable/pad_arrow_button_right"
+                        android:src="@drawable/right_light"
                         android:tag="8" />
                 </LinearLayout>
 
