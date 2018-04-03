@@ -1,15 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion '26.0.3'
+    compileSdkVersion 27
+    buildToolsVersion '27.0.3'
 
     defaultConfig {
         applicationId "com.adafruit.bluefruit.le.connect"
         minSdkVersion 19
         targetSdkVersion 25
-        versionCode 19
-        versionName "2.3.0"
+        versionCode 20
+        versionName "2.3.1"
     }
 
     useLibrary 'org.apache.http.legacy'     // TODO: remove Apache library and use HttpURLConnection (Apache is deprecated since Android 6.0)
@@ -33,18 +33,18 @@ repositories {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'no.nordicsemi.android:dfu:1.0.4'
-    compile(group: 'org.eclipse.paho', name: 'org.eclipse.paho.android.service', version: '1.0.2') {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'no.nordicsemi.android:dfu:1.0.4'
+    implementation(group: 'org.eclipse.paho', name: 'org.eclipse.paho.android.service', version: '1.0.2') {
         exclude module: 'support-v4'
     }
-    compile 'com.android.support:appcompat-v7:26.1.0'
-    compile 'com.larswerkman:HoloColorPicker:1.4'
-    compile 'com.android.support:design:26.1.0'
+    implementation 'com.android.support:appcompat-v7:27.1.0'
+    implementation 'com.larswerkman:HoloColorPicker:1.4'
+    implementation 'com.android.support:design:27.1.0'
 
-    compile 'com.google.android.gms:play-services-analytics:11.6.2'
-    compile 'com.google.android.gms:play-services-location:11.6.2'
-    compile 'com.google.android.gms:play-services-vision:11.6.2'
+    implementation 'com.google.android.gms:play-services-analytics:11.6.2'
+    implementation 'com.google.android.gms:play-services-location:11.6.2'
+    implementation 'com.google.android.gms:play-services-vision:11.6.2'
 
-    compile 'com.commonsware.cwac:provider:0.5.1'
+    implementation 'com.commonsware.cwac:provider:0.5.1'
 }

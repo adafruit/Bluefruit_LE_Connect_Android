@@ -835,9 +835,11 @@ public class UartActivity extends UartInterfaceActivity implements MqttManager.M
             }
 
             TimestampData data = getItem(position);
-            TextView textView = (TextView) convertView;
-            textView.setText(data.text);
-            textView.setTextColor(data.textColor);
+            if (data != null) {
+                TextView textView = (TextView) convertView;
+                textView.setText(data.text);
+                textView.setTextColor(data.textColor);
+            }
 
             return convertView;
         }

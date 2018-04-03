@@ -876,8 +876,9 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
                     //Log.d(TAG, "Discovered device: " + (deviceName != null ? deviceName : "<unknown>"));
 
                     BluetoothDeviceData previouslyScannedDeviceData = null;
-                    if (mScannedDevices == null)
+                    if (mScannedDevices == null) {
                         mScannedDevices = new ArrayList<>();       // Safeguard
+                    }
 
                     // Check that the device was not previously found
                     for (BluetoothDeviceData deviceData : mScannedDevices) {
@@ -1484,6 +1485,9 @@ public class MainActivity extends AppCompatActivity implements BleManager.BleMan
 
         private ArrayList<BluetoothDeviceData> calculateFilteredPeripherals() {
 
+            if (mScannedDevices == null) {
+                mScannedDevices = new ArrayList<>();       // Safegua
+            }
             ArrayList<BluetoothDeviceData> peripherals = (ArrayList<BluetoothDeviceData>) mScannedDevices.clone();
 
             // Sort devices alphabetically

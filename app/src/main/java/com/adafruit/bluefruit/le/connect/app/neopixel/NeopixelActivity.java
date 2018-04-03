@@ -499,7 +499,9 @@ public class NeopixelActivity extends UartInterfaceActivity {
             Button ledButton = (Button) ledView.findViewById(R.id.ledButton);
             setViewBackgroundColor(ledButton, mCurrentColor);
         }
-        mBoardCachedColors = new ArrayList<>(Collections.nCopies(mBoard.width * mBoard.height, mCurrentColor));
+
+        final int boardSize = Math.max(0, mBoard.width * mBoard.height);
+        mBoardCachedColors = new ArrayList<>(Collections.nCopies(boardSize, mCurrentColor));
         clearBoard(mCurrentColor);
     }
 
