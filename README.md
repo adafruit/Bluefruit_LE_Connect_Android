@@ -1,7 +1,7 @@
 Bluefruit LE Connect for Android
 ================================
 
-[For the latest version of this app go to]: https://github.com/adafruit/Bluefruit_LE_Connect_Android_v2
+For the latest version of this app go to - https://github.com/adafruit/Bluefruit_LE_Connect_Android_v2
 
 Android port of Adafruit's Bluefruit LE Connect app for iOS.
 
