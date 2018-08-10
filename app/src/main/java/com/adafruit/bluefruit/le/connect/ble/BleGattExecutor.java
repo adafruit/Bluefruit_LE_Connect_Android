@@ -144,7 +144,9 @@ class BleGattExecutor extends BluetoothGattCallback {
                     if (config == null)
                         return true;
 
-                    // enableNotification/disable remotely
+                    // enable/disable Indication (and Notification) locally
+                    bluetoothGatt.setCharacteristicNotification(dataCharacteristic, enable);
+                    // enable/disable Indication remotely
                     config.setValue(enable ? BluetoothGattDescriptor.ENABLE_INDICATION_VALUE : BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
                     bluetoothGatt.writeDescriptor(config);
 
