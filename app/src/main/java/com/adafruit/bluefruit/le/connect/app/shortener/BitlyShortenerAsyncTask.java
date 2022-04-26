@@ -16,7 +16,7 @@ import java.net.URLEncoder;
 public class BitlyShortenerAsyncTask extends ShortenerAsyncTask {
 
     // Constants
-    private static final String kBitlyApiKey = "38bc9301550f6eeec36db33334701e3a551f580d";
+    private static final String kBitlyApiKey = "abcdefghijklmnopqr1234567890"; // The previous key wasnt valid either but folks kept bugging us over it.
 
 
     public BitlyShortenerAsyncTask(ShortenerListener listener) {
